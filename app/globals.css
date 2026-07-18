@@ -1,26 +1,102 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;500;600;700;800&family=Vazirmatn:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
+@import "tw-animate-css";
 
-@theme {
-  --color-ink: #12203a;
-  --color-ink-2: #1b2f52;
-  --color-parchment: #f6f1e6;
-  --color-card: #fbf8f1;
-  --color-gold: #b08d45;
-  --color-gold-light: #d8bc7e;
-  --color-teal: #145c55;
-  --color-charcoal: #241f1a;
-  --color-muted: #6b6357;
-  --color-sand: #e2d6b8;
-  --color-danger: #a3402f;
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* brand-specific tokens, layered on top of the shadcn semantic palette above */
+  --color-ink: var(--brand-ink);
+  --color-ink-2: var(--brand-ink-2);
+  --color-parchment: var(--background);
+  --color-gold: var(--brand-gold);
+  --color-gold-light: var(--brand-gold-light);
+  --color-teal: var(--brand-teal);
+  --color-sand: var(--border);
 
   --font-display: 'Noto Kufi Arabic', sans-serif;
   --font-body: 'Vazirmatn', sans-serif;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+}
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+:root {
+  /* Sky-blue theme: a deep azure for dark surfaces (header/footer/hero), a soft
+     sky-blue for the page background, and gold kept as the accent for contrast —
+     blue + gold reads as a classic, trustworthy "official seal" pairing. */
+  --radius: 0.25rem;
+
+  --background: #eaf4fc;
+  --foreground: #16283a;
+  --card: #f7fbfe;
+  --card-foreground: #16283a;
+  --popover: #f7fbfe;
+  --popover-foreground: #16283a;
+  --primary: #b08d45;
+  --primary-foreground: #0e3a5c;
+  --secondary: #0e3a5c;
+  --secondary-foreground: #eaf4fc;
+  --muted: #dcedf9;
+  --muted-foreground: #52697c;
+  --accent: #0f7a8c;
+  --accent-foreground: #eaf4fc;
+  --destructive: #a3402f;
+  --destructive-foreground: #eaf4fc;
+  --border: #c9dcea;
+  --input: #c9dcea;
+  --ring: #b08d45;
+
+  --brand-ink: #0e3a5c;
+  --brand-ink-2: #164f78;
+  --brand-gold: #b08d45;
+  --brand-gold-light: #d8bc7e;
+  --brand-teal: #0f7a8c;
 }
 
 body {
-  background-color: var(--color-parchment);
-  color: var(--color-charcoal);
+  background-color: var(--background);
+  color: var(--foreground);
   font-family: var(--font-body);
 }
 
@@ -29,7 +105,7 @@ h1, h2, h3, h4 {
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-gold);
+  outline: 2px solid var(--brand-gold);
   outline-offset: 3px;
 }
 
