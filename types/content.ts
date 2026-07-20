@@ -52,3 +52,16 @@ export interface FaqItem {
   q: string;
   a: string;
 }
+
+export type ConsultationStatus = 'new' | 'read' | 'replied';
+
+export interface ConsultationRequest {
+  id: number;
+  name: string;
+  phone: string;
+  email: string | null;
+  practiceArea: string | null;
+  message: string;
+  status: ConsultationStatus;
+  createdAt: string;
+}

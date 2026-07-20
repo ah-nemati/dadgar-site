@@ -62,33 +62,33 @@
 }
 
 :root {
-  /* Sky-blue theme: a deep azure for dark surfaces (header/footer/hero), a soft
-     sky-blue for the page background, and gold kept as the accent for contrast —
-     blue + gold reads as a classic, trustworthy "official seal" pairing. */
+  /* Sky-blue theme: a vivid azure for dark surfaces (header/footer/hero), a
+     bright light-blue for the page background, and gold kept as the accent for
+     contrast — blue + gold reads as a classic, trustworthy "official seal" pairing. */
   --radius: 0.25rem;
 
-  --background: #eaf4fc;
-  --foreground: #16283a;
-  --card: #f7fbfe;
-  --card-foreground: #16283a;
-  --popover: #f7fbfe;
-  --popover-foreground: #16283a;
+  --background: #e3f2fd;
+  --foreground: #122943;
+  --card: #f6fbff;
+  --card-foreground: #122943;
+  --popover: #f6fbff;
+  --popover-foreground: #122943;
   --primary: #b08d45;
-  --primary-foreground: #0e3a5c;
-  --secondary: #0e3a5c;
-  --secondary-foreground: #eaf4fc;
-  --muted: #dcedf9;
-  --muted-foreground: #52697c;
+  --primary-foreground: #0c3f6e;
+  --secondary: #0c3f6e;
+  --secondary-foreground: #e3f2fd;
+  --muted: #d3e9fa;
+  --muted-foreground: #4c6478;
   --accent: #0f7a8c;
-  --accent-foreground: #eaf4fc;
+  --accent-foreground: #e3f2fd;
   --destructive: #a3402f;
-  --destructive-foreground: #eaf4fc;
-  --border: #c9dcea;
-  --input: #c9dcea;
+  --destructive-foreground: #e3f2fd;
+  --border: #bfdcf2;
+  --input: #bfdcf2;
   --ring: #b08d45;
 
-  --brand-ink: #0e3a5c;
-  --brand-ink-2: #164f78;
+  --brand-ink: #0c3f6e;
+  --brand-ink-2: #14568f;
   --brand-gold: #b08d45;
   --brand-gold-light: #d8bc7e;
   --brand-teal: #0f7a8c;

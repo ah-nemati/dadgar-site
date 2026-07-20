@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
+import { submitConsultationRequest } from '@/lib/actions/consultation';
 import type { PracticeArea } from '@/types/content';
 
 interface ContactFormProps {
@@ -32,6 +33,7 @@ export default function ContactForm({ practiceAreas }: ContactFormProps) {
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
+  const [serverError, setServerError] = useState<string | null>(null);
 
   function update<K extends keyof FormState>(field: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -52,13 +54,22 @@ export default function ContactForm({ practiceAreas }: ContactFormProps) {
     e.preventDefault();
     if (!validate()) return;
     setStatus('submitting');
-    setTimeout(() => setStatus('success'), 900);
+    setServerError(null);
+    submitConsultationRequest(form).then((result) => {
+      if (result.ok) {
+        setStatus('success');
+      } else {
+        setStatus('idle');
+        setServerError(result.error ?? 'ارسال پیام با خطا مواجه شد. لطفاً دوباره تلاش کنید.');
+      }
+    });
   }
 
   function resetForm() {
     setForm(INITIAL_FORM);
     setErrors({});
     setStatus('idle');
+    setServerError(null);
   }
 
   if (status === 'success') {
@@ -145,6 +156,7 @@ export default function ContactForm({ practiceAreas }: ContactFormProps) {
           </>
         )}
       </Button>
+      {serverError && <p className="text-sm text-destructive mt-3">{serverError}</p>}
     </form>
   );
 }

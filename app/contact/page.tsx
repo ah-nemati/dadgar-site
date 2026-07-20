@@ -32,7 +32,7 @@ export default async function ContactPage() {
                 <li className="flex items-start gap-3">
                   <Phone size={18} className="text-gold shrink-0 mt-0.5" aria-hidden="true" />
                   <span>
-                    <span className="block text-parchment text-sm">{firm.phone}</span>
+                    <span className="block text-parchment text-sm" dir="ltr" style={{ textAlign: 'right' }}>{firm.phone}</span>
                     <span className="block text-xs mt-0.5 text-parchment/60">تلفن دفتر</span>
                   </span>
                 </li>
@@ -40,7 +40,7 @@ export default async function ContactPage() {
                   <li className="flex items-start gap-3">
                     <Phone size={18} className="text-gold shrink-0 mt-0.5" aria-hidden="true" />
                     <span>
-                      <span className="block text-parchment text-sm">{firm.phone2}</span>
+                      <span className="block text-parchment text-sm" dir="ltr" style={{ textAlign: 'right' }}>{firm.phone2}</span>
                       <span className="block text-xs mt-0.5 text-parchment/60">تلفن همراه</span>
                     </span>
                   </li>

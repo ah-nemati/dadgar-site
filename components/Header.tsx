@@ -31,17 +31,17 @@ export default function Header({ firm }: { firm: Firm }) {
           <div className="flex items-center gap-6">
             <a href={firm.phoneHref} className="flex items-center gap-2 text-parchment/85 hover:text-gold-light transition-colors">
               <Phone size={14} aria-hidden="true" />
-              <span>{firm.phone}</span>
+              <span dir="ltr">{firm.phone}</span>
             </a>
             {firm.phone2 && (
               <a href={firm.phone2Href} className="flex items-center gap-2 text-parchment/85 hover:text-gold-light transition-colors">
                 <Phone size={14} aria-hidden="true" />
-                <span>{firm.phone2}</span>
+                <span dir="ltr">{firm.phone2}</span>
               </a>
             )}
-            <a href={`mailto:${firm.email}`} className="flex items-center gap-2 text-parchment/85 hover:text-gold-light transition-colors" dir="ltr">
+            <a href={`mailto:${firm.email}`} className="flex items-center gap-2 text-parchment/85 hover:text-gold-light transition-colors">
               <Mail size={14} aria-hidden="true" />
-              <span>{firm.email}</span>
+              <span dir="ltr">{firm.email}</span>
             </a>
           </div>
           <Link href="/client-login" className="flex items-center gap-2 text-parchment/85 hover:text-gold-light transition-colors">

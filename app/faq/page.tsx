@@ -14,8 +14,22 @@ export const metadata: Metadata = {
 export default async function FAQPage() {
   const faqs = await getFaqs();
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((item) => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.a,
+      },
+    })),
+  };
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <PageHero
         eyebrow="سوالات متداول"
         title="پاسخ به سوالات پرتکرار موکلین"

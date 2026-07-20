@@ -201,7 +201,7 @@ export default async function HomePage() {
             </Button>
             <Button size="lg" variant="ghostLight" asChild>
               <a href={firm.phoneHref}>
-                <Phone size={18} aria-hidden="true" /> {firm.phone}
+                <Phone size={18} aria-hidden="true" /> <span dir="ltr">{firm.phone}</span>
               </a>
             </Button>
           </div>

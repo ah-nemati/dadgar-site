@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { breadcrumbJsonLd } from '@/lib/seo';
+import { getFirm } from '@/lib/content/firm';
 import { getBlogPosts, getBlogPostBySlug } from '@/lib/content/blog';
 
 type Params = Promise<{ slug: string }>;
@@ -27,8 +29,26 @@ export default async function BlogPostDetailPage({ params }: { params: Params })
   const post = await getBlogPostBySlug(slug);
   if (!post) notFound();
 
+  const firm = await getFirm();
+  const breadcrumb = breadcrumbJsonLd([
+    { name: 'خانه', path: '/' },
+    { name: 'وبلاگ حقوقی', path: '/blog' },
+    { name: post.title, path: `/blog/${post.slug}` },
+  ]);
+  const articleJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.excerpt,
+    articleSection: post.category,
+    author: { '@type': 'Person', name: firm.shortName },
+    publisher: { '@type': 'Attorney', name: firm.shortName },
+  };
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }} />
       <section className="bg-ink">
         <div className="max-w-3xl mx-auto px-6 py-14">
           <Link href="/blog" className="inline-flex items-center gap-2 text-sm mb-8 text-parchment/85 hover:text-gold-light transition-colors">

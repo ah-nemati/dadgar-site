@@ -5,6 +5,7 @@ import { ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import Avatar from '@/components/Avatar';
 import { Button } from '@/components/ui/button';
 import { PRACTICE_AREA_ICONS } from '@/lib/icons';
+import { breadcrumbJsonLd } from '@/lib/seo';
 import { getPracticeAreas, getPracticeAreaBySlug } from '@/lib/content/practice-areas';
 import { getLawyersByPracticeArea } from '@/lib/content/lawyers';
 
@@ -32,9 +33,15 @@ export default async function PracticeAreaDetailPage({ params }: { params: Param
 
   const relatedLawyers = await getLawyersByPracticeArea(area.slug);
   const AreaIcon = PRACTICE_AREA_ICONS[area.icon];
+  const jsonLd = breadcrumbJsonLd([
+    { name: 'خانه', path: '/' },
+    { name: 'حوزه‌های تخصصی', path: '/practice-areas' },
+    { name: area.title, path: `/practice-areas/${area.slug}` },
+  ]);
 
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <section className="bg-ink relative overflow-hidden">
         <div className="max-w-6xl mx-auto px-6 py-14 relative">
           <Link href="/practice-areas" className="inline-flex items-center gap-2 text-sm mb-8 text-parchment/85 hover:text-gold-light transition-colors">

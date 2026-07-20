@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { ArrowRight, ArrowLeft, GraduationCap } from 'lucide-react';
 import Avatar from '@/components/Avatar';
 import { Button } from '@/components/ui/button';
+import { breadcrumbJsonLd } from '@/lib/seo';
 import { getLawyers, getLawyerBySlug } from '@/lib/content/lawyers';
 import { getPracticeAreas } from '@/lib/content/practice-areas';
 
@@ -32,9 +33,15 @@ export default async function LawyerDetailPage({ params }: { params: Params }) {
   const practiceAreas = await getPracticeAreas();
   const specialtyAreas = practiceAreas.filter((a) => lawyer.specialties.includes(a.slug));
   const firstName = lawyer.name.split(' ')[0];
+  const jsonLd = breadcrumbJsonLd([
+    { name: 'خانه', path: '/' },
+    { name: 'معرفی وکیل', path: '/lawyers' },
+    { name: lawyer.name, path: `/lawyers/${lawyer.slug}` },
+  ]);
 
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <section className="bg-ink">
         <div className="max-w-6xl mx-auto px-6 py-14">
           <Link href="/lawyers" className="inline-flex items-center gap-2 text-sm mb-10 text-parchment/85 hover:text-gold-light transition-colors">
