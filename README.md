@@ -18,7 +18,7 @@ exact boundary.
 
 ## ⚠️ Before publishing — confirm these
 
-- **Domain / email**: `data/firm.ts` uses `savarilawyer.ir` as a *suggested*
+- **Domain / email**: `data/firm.ts` uses `savarilawyer.ir` as a _suggested_
   domain (mirrors the Instagram handle `savari_lawyer.ahvaz` for brand
   consistency) — **not registered or availability-checked**. Confirm at
   `nic.ir` (`.ir`) or any registrar before using it, then update `url` in
@@ -158,15 +158,15 @@ architecture the rest of the content already follows.
 
 ## Phase 2 roadmap — پنل مدیریتی
 
-| RFP item | Status | Suggested approach |
-|---|---|---|
-| **Messages/consultation-request dashboard** | ✅ Built (`/admin/messages`) | Add per-message assignment + reply templates next. |
-| **CMS** (blog, pages, lawyer profile, media) | Not built | Rewrite `lib/content/*.ts` bodies to read/write the DB instead of `data/*.ts`; add `app/admin/content/...` with shadcn `Table`/`Dialog`/`Form`. |
-| **Auth + roles** (Admin/Lawyer/Staff/Client) | Basic single-password only | Auth.js (next-auth) or Clerk; replace `lib/auth.ts`. |
-| **Client portal** (case status, secure docs, messaging) | Not built | Real auth above + `Case`/`Document`/`Message` tables; replace the honest stub in `app/(site)/client-login/`. |
-| **Booking system** (calendar, reminders, sync) | Not built | `react-day-picker` (shadcn `Calendar`) + Google/Microsoft calendar APIs. |
-| **Email/SMS notifications** | Not built | Resend (email) + Kavenegar/Twilio (SMS), called from `lib/actions/consultation.ts` once a submission is saved. |
-| **Payment gateway** | Not built | ZarinPal or similar, as a step in the booking flow. |
+| RFP item                                                | Status                       | Suggested approach                                                                                                                              |
+| ------------------------------------------------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Messages/consultation-request dashboard**             | ✅ Built (`/admin/messages`) | Add per-message assignment + reply templates next.                                                                                              |
+| **CMS** (blog, pages, lawyer profile, media)            | Not built                    | Rewrite `lib/content/*.ts` bodies to read/write the DB instead of `data/*.ts`; add `app/admin/content/...` with shadcn `Table`/`Dialog`/`Form`. |
+| **Auth + roles** (Admin/Lawyer/Staff/Client)            | Basic single-password only   | Auth.js (next-auth) or Clerk; replace `lib/auth.ts`.                                                                                            |
+| **Client portal** (case status, secure docs, messaging) | Not built                    | Real auth above + `Case`/`Document`/`Message` tables; replace the honest stub in `app/(site)/client-login/`.                                    |
+| **Booking system** (calendar, reminders, sync)          | Not built                    | `react-day-picker` (shadcn `Calendar`) + Google/Microsoft calendar APIs.                                                                        |
+| **Email/SMS notifications**                             | Not built                    | Resend (email) + Kavenegar/Twilio (SMS), called from `lib/actions/consultation.ts` once a submission is saved.                                  |
+| **Payment gateway**                                     | Not built                    | ZarinPal or similar, as a step in the booking flow.                                                                                             |
 
 `.env.example` documents every variable each of these will need.
 
