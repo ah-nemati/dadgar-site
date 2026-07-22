@@ -4,11 +4,17 @@ import { getPracticeAreas } from '@/lib/content/practice-areas';
 import { getLawyers } from '@/lib/content/lawyers';
 import { getBlogPosts } from '@/lib/content/blog';
 
+// Blog routes come from Supabase; force-dynamic keeps the build independent of
+// reaching it, matching app/(site)/blog/page.tsx.
+export const dynamic = 'force-dynamic';
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const firm = await getFirm();
   const practiceAreas = await getPracticeAreas();
   const lawyers = await getLawyers();
-  const blogPosts = await getBlogPosts();
+
+  // Defensive: a Supabase hiccup should omit blog URLs, not break the sitemap.
+  const blogPosts = await getBlogPosts().catch(() => []);
 
   const staticRoutes: MetadataRoute.Sitemap = ['', '/about', '/practice-areas', '/lawyers', '/blog', '/faq', '/contact'].map(
     (path) => ({

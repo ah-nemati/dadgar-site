@@ -1,4 +1,4 @@
-import db from '@/lib/db';
+import { createClient } from '@/lib/supabase/server';
 import type { ConsultationRequest, ConsultationStatus } from '@/types/content';
 
 interface ConsultationRequestRow {
@@ -33,38 +33,43 @@ export interface NewConsultationRequest {
   message: string;
 }
 
-/** Inserts a new consultation request (a submitted Contact form). */
+/**
+ * Inserts a new consultation request (a submitted Contact form). Uses the anon
+ * key + the "Public can submit consultation requests" RLS policy — see
+ * supabase/schema.sql.
+ */
 export async function createConsultationRequest(input: NewConsultationRequest): Promise<ConsultationRequest> {
-  const stmt = db.prepare(
-    `INSERT INTO consultation_requests (name, phone, email, practice_area, message)
-     VALUES (@name, @phone, @email, @practiceArea, @message)`
-  );
-  const result = stmt.run({
-    name: input.name,
-    phone: input.phone,
-    email: input.email ?? null,
-    practiceArea: input.practiceArea ?? null,
-    message: input.message,
-  });
-  const row = db
-    .prepare('SELECT * FROM consultation_requests WHERE id = ?')
-    .get(result.lastInsertRowid) as ConsultationRequestRow;
-  return toConsultationRequest(row);
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('consultation_requests')
+    .insert({
+      name: input.name,
+      phone: input.phone,
+      email: input.email ?? null,
+      practice_area: input.practiceArea ?? null,
+      message: input.message,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return toConsultationRequest(data as ConsultationRequestRow);
 }
 
 /** Returns every consultation request, newest first — for the admin messages panel. */
 export async function getConsultationRequests(): Promise<ConsultationRequest[]> {
-  const rows = db.prepare('SELECT * FROM consultation_requests ORDER BY created_at DESC').all() as ConsultationRequestRow[];
-  return rows.map(toConsultationRequest);
-}
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('consultation_requests')
+    .select()
+    .order('created_at', { ascending: false });
 
-export async function countNewConsultationRequests(): Promise<number> {
-  const row = db.prepare("SELECT COUNT(*) as count FROM consultation_requests WHERE status = 'new'").get() as {
-    count: number;
-  };
-  return row.count;
+  if (error) throw error;
+  return (data as ConsultationRequestRow[]).map(toConsultationRequest);
 }
 
 export async function updateConsultationRequestStatus(id: number, status: ConsultationStatus): Promise<void> {
-  db.prepare('UPDATE consultation_requests SET status = ? WHERE id = ?').run(status, id);
+  const supabase = await createClient();
+  const { error } = await supabase.from('consultation_requests').update({ status }).eq('id', id);
+  if (error) throw error;
 }

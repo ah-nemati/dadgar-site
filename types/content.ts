@@ -39,13 +39,15 @@ export interface Lawyer {
 }
 
 export interface BlogPost {
+  id: number;
   slug: string;
   title: string;
   category: string;
   date: string;
   readTime: string;
   excerpt: string;
-  content: string[];
+  content: string;
+  published: boolean;
 }
 
 export interface FaqItem {

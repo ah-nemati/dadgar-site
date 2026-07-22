@@ -1,30 +1,24 @@
 'use server';
 
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { ADMIN_COOKIE_NAME, createSessionToken, verifyAdminPassword } from '@/lib/auth';
+import { createClient } from '@/lib/supabase/server';
 
 export async function login(_prevState: { error?: string } | undefined, formData: FormData) {
+  const email = String(formData.get('email') ?? '');
   const password = String(formData.get('password') ?? '');
 
-  if (!verifyAdminPassword(password)) {
-    return { error: 'رمز عبور اشتباه است.' };
-  }
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
 
-  const cookieStore = await cookies();
-  cookieStore.set(ADMIN_COOKIE_NAME, createSessionToken(), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 60 * 60 * 24 * 7, // 7 days
-  });
+  if (error) {
+    return { error: 'ایمیل یا رمز عبور اشتباه است.' };
+  }
 
   redirect('/admin/messages');
 }
 
 export async function logout() {
-  const cookieStore = await cookies();
-  cookieStore.delete(ADMIN_COOKIE_NAME);
+  const supabase = await createClient();
+  await supabase.auth.signOut();
   redirect('/admin/login');
 }

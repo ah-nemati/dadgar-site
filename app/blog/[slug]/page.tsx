@@ -5,14 +5,15 @@ import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { breadcrumbJsonLd } from '@/lib/seo';
 import { getFirm } from '@/lib/content/firm';
-import { getBlogPosts, getBlogPostBySlug } from '@/lib/content/blog';
+import { getBlogPostBySlug } from '@/lib/content/blog';
 
 type Params = Promise<{ slug: string }>;
 
-export async function generateStaticParams() {
-  const posts = await getBlogPosts();
-  return posts.map((post) => ({ slug: post.slug }));
-}
+// CMS-managed content: rendered on demand rather than pre-built at build time
+// (a new/edited post shouldn't need a redeploy to appear, and the build
+// shouldn't depend on reaching Supabase). See app/(site)/blog/page.tsx for the
+// ISR alternative if traffic ever makes the extra DB round-trip worth avoiding.
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { slug } = await params;
@@ -66,7 +67,7 @@ export default async function BlogPostDetailPage({ params }: { params: Params })
       <section className="bg-parchment">
         <div className="max-w-3xl mx-auto px-6 py-16">
           <div className="flex flex-col gap-5">
-            {post.content.map((para, i) => (
+            {post.content.split(/\n\s*\n/).map((para, i) => (
               <p key={i} className="text-foreground leading-8">{para}</p>
             ))}
           </div>

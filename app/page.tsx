@@ -36,7 +36,9 @@ export default async function HomePage() {
   const firm = await getFirm();
   const practiceAreas = await getPracticeAreas();
   const lawyers = await getLawyers();
-  const blogPosts = await getBlogPosts();
+  // Defensive: the rest of this page is static content, so a Supabase hiccup
+  // should just hide the blog-preview section, not break the whole page.
+  const blogPosts = await getBlogPosts().catch(() => []);
 
   return (
     <>
@@ -156,6 +158,7 @@ export default async function HomePage() {
       </section>
 
       {/* BLOG PREVIEW */}
+      {blogPosts.length > 0 && (
       <section className="bg-card">
         <div className="max-w-6xl mx-auto px-6 py-20">
           <div className="flex flex-wrap items-end justify-between gap-6 mb-12">
@@ -187,6 +190,7 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* CTA BAND */}
       <section className="bg-teal">
