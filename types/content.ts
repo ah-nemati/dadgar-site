@@ -1,4 +1,4 @@
-import type { PracticeAreaIconName } from '@/lib/icons';
+import type { PracticeAreaIconName } from "@/lib/icons";
 
 export interface Firm {
   name: string;
@@ -16,7 +16,7 @@ export interface Firm {
   url: string;
 }
 
-export type PracticeAreaSlug = 'real-estate' | 'cheque' | 'family';
+export type PracticeAreaSlug = "real-estate" | "cheque" | "family";
 
 export interface PracticeArea {
   slug: PracticeAreaSlug;
@@ -46,7 +46,7 @@ export interface BlogPost {
   date: string;
   readTime: string;
   excerpt: string;
-  content: string;
+  content: string[];
   published: boolean;
 }
 
@@ -55,7 +55,7 @@ export interface FaqItem {
   a: string;
 }
 
-export type ConsultationStatus = 'new' | 'read' | 'replied';
+export type ConsultationStatus = "new" | "read" | "replied";
 
 export interface ConsultationRequest {
   id: number;
