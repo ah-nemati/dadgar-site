@@ -1,9 +1,10 @@
-import Link from "next/link";
-import type { Metadata } from "next";
-import Avatar from "@/components/Avatar";
 import PageHero from "@/components/PageHero";
 import { getLawyers } from "@/lib/content/lawyers";
 import { getPracticeAreas } from "@/lib/content/practice-areas";
+import profile from "@/public/images/profile.jpeg";
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "معرفی وکیل",
@@ -31,7 +32,13 @@ export default async function LawyersPage() {
                 href={`/lawyers/${lw.slug}`}
                 className="bg-card border border-border hover:border-gold hover:-translate-y-0.5 transition-all rounded-sm p-6 text-center flex flex-col items-center"
               >
-                <Avatar initials={lw.initials} size={84} />
+                <Image
+                  src={profile}
+                  alt={`تصویر ${lw.name}`}
+                  priority
+                  sizes="(max-width: 640px) 144px, 160px"
+                  className="object-cover object-center"
+                />{" "}
                 <h3 className="text-base font-bold text-foreground mt-4 mb-1">
                   {lw.name}
                 </h3>
