@@ -9,6 +9,7 @@ import { getPracticeAreas } from '@/lib/content/practice-areas';
 export const metadata: Metadata = {
   title: 'تماس با ما',
   description: 'درخواست مشاوره حقوقی از مجید سواری، وکیل پایه یک دادگستری در اهواز. فرم تماس، شماره تماس و آدرس دفتر.',
+  keywords: ['تماس با وکیل اهواز', 'مشاوره حقوقی اهواز', 'آدرس دفتر وکالت اهواز', 'رزرو وقت مشاوره حقوقی'],
 };
 
 export default async function ContactPage() {

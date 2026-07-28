@@ -16,18 +16,38 @@ export async function generateMetadata(): Promise<Metadata> {
     description: firm.description,
     keywords: [
       "وکیل اهواز",
-      "وکیل ملکی اهواز",
-      "وکیل چک",
-      "وکیل خانواده اهواز",
-      "مجید سواری",
+      "بهترین وکیل اهواز",
+      "وکیل پایه یک دادگستری اهواز",
       "دفتر وکالت اهواز",
+      "مشاوره حقوقی اهواز",
+      "مشاوره حقوقی آنلاین",
+      "وکیل ملکی اهواز",
+      "وکیل ملک و املاک",
+      "وکیل مبایعه‌نامه",
+      "وکیل چک",
+      "وکیل چک برگشتی",
+      "وکیل مطالبه وجه چک",
+      "وکیل خانواده اهواز",
+      "وکیل طلاق اهواز",
+      "وکیل مهریه",
+      "وکیل حضانت فرزند",
+      "مجید سواری",
       "کانون وکلای خوزستان",
+      "وکیل خوزستان",
     ],
+    alternates: { canonical: "/" },
     openGraph: {
       title: `${firm.shortName} | وکیل پایه یک دادگستری در اهواز`,
       description: firm.description,
+      url: firm.url,
+      siteName: firm.name,
       locale: "fa_IR",
       type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${firm.shortName} | وکیل پایه یک دادگستری در اهواز`,
+      description: firm.description,
     },
   };
 }
@@ -74,12 +94,25 @@ export default async function RootLayout({
     },
   };
 
+  const websiteJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: firm.name,
+    alternateName: firm.shortName,
+    url: firm.url,
+    inLanguage: "fa-IR",
+  };
+
   return (
     <html lang="fa" dir="rtl">
       <head>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         />
       </head>
       <body className="antialiased min-h-screen flex flex-col bg-parchment text-foreground">

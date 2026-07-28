@@ -2,6 +2,72 @@
 -- Safe to re-run: every statement is idempotent (IF NOT EXISTS / OR REPLACE).
 
 -- ============================================================================
+-- profiles — one row per Supabase Auth user; distinguishes admin vs. client
+-- accounts (Phase 2, section 4.5 — user access levels)
+-- ============================================================================
+create table if not exists profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  full_name text not null default '',
+  phone text,
+  role text not null default 'client' check (role in ('admin', 'client')),
+  created_at timestamptz not null default now()
+);
+
+alter table profiles enable row level security;
+
+-- SECURITY DEFINER so policies can call this without triggering "infinite
+-- recursion detected in policy" (a policy on `profiles` querying `profiles`
+-- directly would recurse into itself).
+create or replace function is_admin()
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (select 1 from profiles where id = auth.uid() and role = 'admin');
+$$;
+
+drop policy if exists "Users can view own profile" on profiles;
+create policy "Users can view own profile"
+  on profiles for select
+  to authenticated
+  using (id = auth.uid() or is_admin());
+
+drop policy if exists "Users can update own profile" on profiles;
+create policy "Users can update own profile"
+  on profiles for update
+  to authenticated
+  using (id = auth.uid())
+  with check (id = auth.uid() and role = (select role from profiles where id = auth.uid()));
+  -- the `with check` re-reads the existing role so a client can edit their own
+  -- name/phone but can't grant themselves admin by editing their own row.
+
+-- Auto-create a profile (role defaults to 'client') whenever someone signs up
+-- through the public /client-login/signup form.
+create or replace function handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.profiles (id, full_name, phone)
+  values (
+    new.id,
+    coalesce(new.raw_user_meta_data->>'full_name', ''),
+    new.raw_user_meta_data->>'phone'
+  );
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function handle_new_user();
+
+-- ============================================================================
 -- consultation_requests — Contact form submissions (Phase 2, section 4.4)
 -- ============================================================================
 create table if not exists consultation_requests (
@@ -24,16 +90,18 @@ create policy "Public can submit consultation requests"
   with check (true);
 
 drop policy if exists "Authenticated users can view consultation requests" on consultation_requests;
-create policy "Authenticated users can view consultation requests"
+drop policy if exists "Admins can view consultation requests" on consultation_requests;
+create policy "Admins can view consultation requests"
   on consultation_requests for select
   to authenticated
-  using (true);
+  using (is_admin());
 
 drop policy if exists "Authenticated users can update consultation requests" on consultation_requests;
-create policy "Authenticated users can update consultation requests"
+drop policy if exists "Admins can update consultation requests" on consultation_requests;
+create policy "Admins can update consultation requests"
   on consultation_requests for update
   to authenticated
-  using (true);
+  using (is_admin());
 
 -- ============================================================================
 -- blog_posts — CMS-managed articles (Phase 2, section 4.1)
@@ -59,28 +127,32 @@ create policy "Public can view published posts"
   using (published = true);
 
 drop policy if exists "Authenticated users can view all posts" on blog_posts;
-create policy "Authenticated users can view all posts"
+drop policy if exists "Admins can view all posts" on blog_posts;
+create policy "Admins can view all posts"
   on blog_posts for select
   to authenticated
-  using (true);
+  using (is_admin());
 
 drop policy if exists "Authenticated users can insert posts" on blog_posts;
-create policy "Authenticated users can insert posts"
+drop policy if exists "Admins can insert posts" on blog_posts;
+create policy "Admins can insert posts"
   on blog_posts for insert
   to authenticated
-  with check (true);
+  with check (is_admin());
 
 drop policy if exists "Authenticated users can update posts" on blog_posts;
-create policy "Authenticated users can update posts"
+drop policy if exists "Admins can update posts" on blog_posts;
+create policy "Admins can update posts"
   on blog_posts for update
   to authenticated
-  using (true);
+  using (is_admin());
 
 drop policy if exists "Authenticated users can delete posts" on blog_posts;
-create policy "Authenticated users can delete posts"
+drop policy if exists "Admins can delete posts" on blog_posts;
+create policy "Admins can delete posts"
   on blog_posts for delete
   to authenticated
-  using (true);
+  using (is_admin());
 
 -- Keep updated_at current on every edit.
 create or replace function set_updated_at()
@@ -98,10 +170,13 @@ create trigger blog_posts_set_updated_at
   execute function set_updated_at();
 
 -- ============================================================================
--- ⚠️ IMPORTANT — these RLS policies grant full access to ANY authenticated
--- Supabase user, because right now the only accounts are the site admin(s).
--- If you later add real client accounts (Phase 2 client portal), add a
--- `role` column (e.g. on a `profiles` table keyed to auth.users) and rewrite
--- the `to authenticated` policies above to check `role = 'admin'` instead —
--- otherwise every client login would also get admin access to this data.
+-- ⚠️ After creating your admin user in Authentication → Users, run this once
+-- (with their real email) so they're recognized as admin, not client:
+--
+--   update profiles set role = 'admin'
+--   where id = (select id from auth.users where email = 'your-admin-email@example.com');
+--
+-- Every other Supabase-authenticated user (anyone who signs up at
+-- /client-login/signup) is a 'client' by default and has no access to
+-- consultation_requests or blog_posts — only to their own profiles row.
 -- ============================================================================

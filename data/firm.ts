@@ -17,7 +17,7 @@ export const FIRM: Firm = {
   email: "savari.vakil2023@gmail.com",
   address:
     "اهواز، گلستان، بلوار اصلی گلستان، نبش خیابان تربت، روبروی مدیریت بانک کشاورزی",
-  hours: " شنبه تا چهارشنبه — ساعت ۱۷ الی ۲۲ ",
+  hours: "شنبه تا چهارشنبه — ساعت ۹ الی ۱۷",
   established: "[تعداد سال‌های سابقه]",
   url: "https://majidsavarivakil.ir/",
 };

@@ -2,9 +2,10 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 /**
- * Refreshes the Supabase session on every request that touches /admin, and
- * gates access to it. This mirrors Supabase's official Next.js proxy pattern:
- * https://supabase.com/docs/guides/auth/server-side/nextjs
+ * Refreshes the Supabase session on every request that touches /admin or
+ * /portal, and gates access: /admin requires role='admin' (checked via the
+ * profiles table), /portal requires any signed-in user. Mirrors Supabase's
+ * official Next.js proxy pattern: https://supabase.com/docs/guides/auth/server-side/nextjs
  */
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -34,15 +35,28 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
-  const isLoginPage = pathname === '/admin/login';
+  const isAdminRoute = pathname.startsWith('/admin') && pathname !== '/admin/login';
+  const isPortalRoute = pathname.startsWith('/portal');
 
-  if (!user && !isLoginPage) {
-    const loginUrl = new URL('/admin/login', request.url);
-    return NextResponse.redirect(loginUrl);
+  if (isAdminRoute) {
+    if (!user) {
+      return NextResponse.redirect(new URL('/admin/login', request.url));
+    }
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
+    if (profile?.role !== 'admin') {
+      return NextResponse.redirect(new URL('/admin/login', request.url));
+    }
   }
 
-  if (user && isLoginPage) {
-    return NextResponse.redirect(new URL('/admin/messages', request.url));
+  if (isPortalRoute && !user) {
+    return NextResponse.redirect(new URL('/client-login', request.url));
+  }
+
+  if (user && pathname === '/admin/login') {
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
+    if (profile?.role === 'admin') {
+      return NextResponse.redirect(new URL('/admin/messages', request.url));
+    }
   }
 
   return response;

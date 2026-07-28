@@ -8,10 +8,16 @@ export async function login(_prevState: { error?: string } | undefined, formData
   const password = String(formData.get('password') ?? '');
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-  if (error) {
+  if (error || !data.user) {
     return { error: 'ایمیل یا رمز عبور اشتباه است.' };
+  }
+
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.user.id).maybeSingle();
+  if (profile?.role !== 'admin') {
+    await supabase.auth.signOut();
+    return { error: 'این حساب دسترسی مدیریتی ندارد.' };
   }
 
   redirect('/admin/messages');

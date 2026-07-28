@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import Seal from '@/components/Seal';
 import ClientLoginForm from '@/components/ClientLoginForm';
-import { getFirm } from '@/lib/content/firm';
 
 export const metadata: Metadata = {
   title: 'ورود موکلین',
@@ -9,8 +8,6 @@ export const metadata: Metadata = {
 };
 
 export default async function ClientLoginPage() {
-  const firm = await getFirm();
-
   return (
     <section className="bg-parchment flex items-center" style={{ minHeight: '70vh' }}>
       <div className="max-w-md mx-auto px-6 py-20 w-full">
@@ -19,7 +16,7 @@ export default async function ClientLoginPage() {
             <Seal size={52} />
           </div>
           <h1 className="text-2xl font-bold text-foreground mb-2">ورود موکلین</h1>
-          <p className="text-sm text-muted-foreground">این بخش صرفاً برای موکلین فعال {firm.name} است.</p>
+          <p className="text-sm text-muted-foreground">به حساب کاربری خود وارد شوید تا وضعیت درخواست‌های خود را پیگیری کنید.</p>
         </div>
         <ClientLoginForm />
       </div>

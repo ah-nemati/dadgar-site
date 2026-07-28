@@ -11,7 +11,7 @@ type Params = Promise<{ slug: string }>;
 
 // CMS-managed content: rendered on demand rather than pre-built at build time
 // (a new/edited post shouldn't need a redeploy to appear, and the build
-// shouldn't depend on reaching Supabase). See app/(site)/blog/page.tsx for the
+// shouldn't depend on reaching Supabase). See app/blog/page.tsx for the
 // ISR alternative if traffic ever makes the extra DB round-trip worth avoiding.
 export const dynamic = "force-dynamic";
 
@@ -88,7 +88,7 @@ export default async function BlogPostDetailPage({
       <section className="bg-parchment">
         <div className="max-w-3xl mx-auto px-6 py-16">
           <div className="flex flex-col gap-5">
-            {post.content.map((para, i) => (
+            {post.content.split(/\n\s*\n/).map((para, i) => (
               <p key={i} className="text-foreground leading-8">
                 {para}
               </p>
