@@ -54,6 +54,7 @@ cp .env.example .env.local
 مقادیر پروژه Supabase را در `.env.local` قرار دهید:
 
 ```env
+NEXT_PUBLIC_SITE_URL="http://localhost:3000"
 NEXT_PUBLIC_SUPABASE_URL="https://YOUR_PROJECT.supabase.co"
 NEXT_PUBLIC_SUPABASE_ANON_KEY="YOUR_ANON_OR_PUBLISHABLE_KEY"
 ```
@@ -76,6 +77,63 @@ supabase/schema.sql
 - توابع امن گفت‌وگو
 - تمام RLS Policyها
 - Storage Bucketهای `blog-images` و `client-documents`
+
+## تنظیمات ضروری Supabase Auth
+
+در **Authentication → Providers → Email** موارد زیر را بررسی کنید:
+
+- Email Provider فعال باشد.
+- گزینه ساخت کاربر جدید غیرفعال نشده باشد.
+- برای محیط Production، Custom SMTP تنظیم شود. SMTP پیش‌فرض Supabase برای ثبت‌نام عمومی مناسب نیست و ممکن است فقط به ایمیل اعضای سازمان اجازه ارسال بدهد.
+- برای آزمایش محلی می‌توانید موقتاً تأیید ایمیل را غیرفعال کنید؛ در Production بهتر است تأیید ایمیل فعال بماند.
+
+در **Authentication → URL Configuration** این مقادیر را قرار دهید:
+
+```text
+Site URL: https://YOUR-DOMAIN.example
+Redirect URLs:
+https://YOUR-DOMAIN.example/auth/callback
+https://YOUR-DOMAIN.example/auth/confirm
+http://localhost:3000/auth/callback
+http://localhost:3000/auth/confirm
+```
+
+پروژه هر دو روش تأیید را پشتیبانی می‌کند:
+
+1. قالب پیش‌فرض Supabase با `{{ .ConfirmationURL }}` و مسیر `/auth/callback`.
+2. قالب مناسب SSR با Token Hash و مسیر `/auth/confirm`.
+
+برای روش دوم، لینک قالب **Confirm signup** را به شکل زیر قرار دهید:
+
+```html
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email">تأیید ایمیل</a>
+```
+
+و لینک قالب **Reset password** را به شکل زیر تنظیم کنید:
+
+```html
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password">تغییر رمز عبور</a>
+```
+
+### رفع خطا برای پروژه‌ای که قبلاً نصب شده است
+
+پس از جایگزینی کد، یکی از این دو کار را انجام دهید:
+
+```text
+روش کامل: اجرای دوباره supabase/schema.sql
+روش محدود: اجرای supabase/migrations/20260806010000_auth_repair.sql
+```
+
+این Migration پروفایل کاربران قدیمی را تکمیل می‌کند و تابع امن `ensure_my_profile()` را می‌سازد.
+
+### معنی خطاهای رایج فرم
+
+- `email_address_not_authorized`: Custom SMTP تنظیم نشده و ایمیل مقصد در اعضای سازمان Supabase نیست.
+- `email_provider_disabled`: ورود با ایمیل در Providers غیرفعال است.
+- `signup_disabled`: ساخت حساب جدید غیرفعال است.
+- `email_not_confirmed`: کاربر ساخته شده ولی لینک تأیید را نزده است.
+- `invalid_credentials`: ایمیل/رمز نادرست است یا حساب قابل ورود با رمز نیست.
+- `profile_missing`: Schema یا Migration جدید هنوز روی دیتابیس اجرا نشده است.
 
 برای افزودن نوشته‌های نمونه، فایل زیر اختیاری است:
 
@@ -176,8 +234,12 @@ npm run lint
 
 ```text
 app/
-  auth/actions.ts             ورود، ثبت‌نام و خروج مشترک
+  auth/actions.ts             ورود، ثبت‌نام، تأیید، بازیابی و خروج
+  auth/callback/              تبادل کد PKCE و ساخت Session
+  auth/confirm/               تأیید Token Hash برای SSR
   login/                      صفحه ورود مشترک
+  forgot-password/            درخواست بازیابی رمز
+  reset-password/             تعیین رمز جدید
   admin/                      پنل مدیریت
   portal/                     پنل کاربر
   loading.tsx                 لودینگ Route Segment

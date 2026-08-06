@@ -12,6 +12,7 @@ export const config = {
     '/portal/:path*',
     '/login',
     '/signup',
+    '/forgot-password',
     '/client-login',
     '/client-login/signup',
   ],

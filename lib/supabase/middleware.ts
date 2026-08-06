@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { isSupabaseConfigured } from '@/lib/supabase/config';
 import type { UserRole } from '@/types/content';
 
-const LOGIN_PATHS = new Set(['/login', '/signup', '/client-login', '/client-login/signup', '/admin/login']);
+const LOGIN_PATHS = new Set(['/login', '/signup', '/forgot-password', '/client-login', '/client-login/signup', '/admin/login']);
 
 function redirectWithReturn(request: NextRequest, path = '/login') {
   const url = new URL(path, request.url);
