@@ -1,7 +1,14 @@
-import type { NextConfig } from "next";
+
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  devIndicators: false,
+  poweredByHeader: false,
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '12mb',
+    },
+  },
 };
 
 export default nextConfig;

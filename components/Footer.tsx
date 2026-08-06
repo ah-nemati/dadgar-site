@@ -29,7 +29,7 @@ export default async function Footer() {
               <li><Link href="/lawyers" className="text-parchment/70 hover:text-gold-light transition-colors">معرفی وکیل</Link></li>
               <li><Link href="/blog" className="text-parchment/70 hover:text-gold-light transition-colors">وبلاگ حقوقی</Link></li>
               <li><Link href="/faq" className="text-parchment/70 hover:text-gold-light transition-colors">سوالات متداول</Link></li>
-              <li><Link href="/client-login" className="text-parchment/70 hover:text-gold-light transition-colors">ورود موکلین</Link></li>
+              <li><Link href="/login" className="text-parchment/70 hover:text-gold-light transition-colors">ورود کاربران</Link></li>
             </ul>
           </div>
 

@@ -1,30 +1,35 @@
 import * as React from 'react';
-import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
+import type { ChangeEvent } from 'react';
 import { Check } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
-function Checkbox({ className, ...props }: React.ComponentProps<typeof CheckboxPrimitive.Root>) {
+type CheckboxProps = Omit<React.ComponentProps<'input'>, 'type' | 'onChange'> & {
+  onCheckedChange?: (checked: boolean) => void;
+};
+
+function Checkbox({ className, onCheckedChange, checked, defaultChecked, ...props }: CheckboxProps) {
   return (
-    <CheckboxPrimitive.Root
-      data-slot="checkbox"
-      className={cn(
-        'peer size-4 shrink-0 rounded-[4px] border border-input bg-card outline-none transition-shadow',
-        'focus-visible:ring-2 focus-visible:ring-ring/30',
-        'disabled:cursor-not-allowed disabled:opacity-50',
-        'data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[state=checked]:border-primary',
-        'aria-invalid:border-destructive',
-        className
-      )}
-      {...props}
-    >
-      <CheckboxPrimitive.Indicator
-        data-slot="checkbox-indicator"
-        className="flex items-center justify-center text-current"
+    <span className={cn('relative inline-flex size-4 shrink-0', className)}>
+      <input
+        type="checkbox"
+        className="peer absolute inset-0 z-10 size-4 cursor-pointer opacity-0 disabled:cursor-not-allowed"
+        checked={checked}
+        defaultChecked={defaultChecked}
+        onChange={(event: ChangeEvent<HTMLInputElement>) => onCheckedChange?.(event.target.checked)}
+        {...props}
+      />
+      <span
+        aria-hidden="true"
+        className={cn(
+          'flex size-4 items-center justify-center rounded-[4px] border border-input bg-card text-transparent transition-colors',
+          'peer-focus-visible:ring-2 peer-focus-visible:ring-ring/30',
+          'peer-disabled:opacity-50 peer-checked:border-primary peer-checked:bg-primary peer-checked:text-primary-foreground'
+        )}
       >
         <Check className="size-3" strokeWidth={3} />
-      </CheckboxPrimitive.Indicator>
-    </CheckboxPrimitive.Root>
+      </span>
+    </span>
   );
 }
 

@@ -1,3 +1,4 @@
+
 import type { PracticeAreaIconName } from '@/lib/icons';
 
 export interface Firm {
@@ -48,6 +49,10 @@ export interface BlogPost {
   excerpt: string;
   content: string;
   published: boolean;
+  featured: boolean;
+  imageUrl: string | null;
+  imagePath: string | null;
+  imageAlt: string | null;
 }
 
 export interface FaqItem {
@@ -60,6 +65,7 @@ export type UserRole = 'admin' | 'client';
 export interface Profile {
   id: string;
   fullName: string;
+  email: string | null;
   phone: string | null;
   role: UserRole;
   createdAt: string;
@@ -75,5 +81,79 @@ export interface ConsultationRequest {
   practiceArea: string | null;
   message: string;
   status: ConsultationStatus;
+  createdAt: string;
+}
+
+export type CaseStatus = 'new' | 'in_progress' | 'waiting' | 'closed';
+
+export interface ClientCase {
+  id: number;
+  clientId: string;
+  clientName: string;
+  caseNumber: string;
+  title: string;
+  court: string | null;
+  status: CaseStatus;
+  description: string | null;
+  nextAction: string | null;
+  nextActionAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CaseUpdate {
+  id: number;
+  caseId: number;
+  title: string;
+  body: string;
+  createdAt: string;
+}
+
+export interface ClientDocument {
+  id: number;
+  caseId: number;
+  clientId: string;
+  title: string;
+  filePath: string;
+  fileName: string;
+  mimeType: string | null;
+  fileSize: number | null;
+  createdAt: string;
+  downloadUrl?: string;
+}
+
+export type SupportThreadStatus = 'open' | 'answered' | 'closed';
+
+export interface SupportThread {
+  id: number;
+  clientId: string;
+  clientName: string;
+  subject: string;
+  status: SupportThreadStatus;
+  createdAt: string;
+  updatedAt: string;
+  lastMessage?: string | null;
+}
+
+export interface SupportMessage {
+  id: number;
+  threadId: number;
+  senderId: string;
+  senderName: string;
+  senderRole: UserRole;
+  body: string;
+  createdAt: string;
+}
+
+export type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
+
+export interface Appointment {
+  id: number;
+  clientId: string;
+  clientName: string;
+  subject: string;
+  requestedAt: string;
+  status: AppointmentStatus;
+  notes: string | null;
   createdAt: string;
 }

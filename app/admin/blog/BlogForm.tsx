@@ -1,11 +1,14 @@
+
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useEffect, useState, type ChangeEvent } from 'react';
+import { ImagePlus, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import type { BlogFormState } from './actions';
 import type { BlogPost } from '@/types/content';
 
@@ -15,81 +18,148 @@ interface BlogFormProps {
   submitLabel: string;
 }
 
-const CATEGORIES = ['حقوق ملک', 'دعاوی چک', 'حقوق خانواده'];
+const CATEGORIES = ['حقوق ملک', 'دعاوی چک', 'حقوق خانواده', 'آموزش حقوقی', 'اخبار حقوقی'];
 
 export default function BlogForm({ action, post, submitLabel }: BlogFormProps) {
   const [state, formAction, pending] = useActionState(action, undefined);
   const [slugTouched, setSlugTouched] = useState(Boolean(post));
   const [slug, setSlug] = useState(post?.slug ?? '');
+  const [preview, setPreview] = useState<string | null>(post?.imageUrl ?? null);
+
+  useEffect(() => {
+    return () => {
+      if (preview?.startsWith('blob:')) URL.revokeObjectURL(preview);
+    };
+  }, [preview]);
 
   return (
-    <form action={formAction} className="bg-card border border-border rounded-sm p-6 md:p-8 space-y-5">
-      <div className="space-y-2">
-        <Label htmlFor="title">عنوان *</Label>
-        <Input
-          id="title"
-          name="title"
-          defaultValue={post?.title}
-          required
-          onChange={(e) => {
-            if (!slugTouched) setSlug(slugify(e.target.value));
-          }}
-        />
+    <form action={formAction} className="dashboard-card p-5 md:p-8 space-y-6">
+      {post && (
+        <>
+          <input type="hidden" name="previousSlug" value={post.slug} />
+          <input type="hidden" name="previousImageUrl" value={post.imageUrl ?? ''} />
+          <input type="hidden" name="previousImagePath" value={post.imagePath ?? ''} />
+        </>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="space-y-2 md:col-span-2">
+          <Label htmlFor="title">عنوان مطلب *</Label>
+          <Input
+            id="title"
+            name="title"
+            defaultValue={post?.title}
+            required
+            onChange={(event: ChangeEvent<HTMLInputElement>) => {
+              if (!slugTouched) setSlug(slugify(event.target.value));
+            }}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="slug">نامک (آدرس صفحه) *</Label>
+          <Input
+            id="slug"
+            name="slug"
+            dir="ltr"
+            className="text-right"
+            value={slug}
+            required
+            onChange={(event: ChangeEvent<HTMLInputElement>) => {
+              setSlugTouched(true);
+              setSlug(event.target.value);
+            }}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="category">دسته‌بندی *</Label>
+          <Input
+            id="category"
+            name="category"
+            list="blog-categories"
+            defaultValue={post?.category ?? CATEGORIES[0]}
+            required
+          />
+          <datalist id="blog-categories">
+            {CATEGORIES.map((category) => <option key={category} value={category} />)}
+          </datalist>
+        </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="slug">نامک (slug) — بخشی از آدرس صفحه</Label>
-        <Input
-          id="slug"
-          name="slug"
-          dir="ltr"
-          style={{ textAlign: 'right' }}
-          value={slug}
-          onChange={(e) => {
-            setSlugTouched(true);
-            setSlug(e.target.value);
-          }}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="category">دسته‌بندی *</Label>
-        <select
-          id="category"
-          name="category"
-          defaultValue={post?.category ?? CATEGORIES[0]}
-          required
-          className="w-full h-11 px-4 rounded-sm text-sm bg-card border border-input focus:outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+      <div className="space-y-3">
+        <Label htmlFor="image">تصویر شاخص</Label>
+        <label
+          htmlFor="image"
+          className="block border-2 border-dashed border-border rounded-lg overflow-hidden cursor-pointer hover:border-primary transition-colors bg-muted/30"
         >
-          {CATEGORIES.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+          {preview ? (
+            <img src={preview} alt="پیش‌نمایش تصویر شاخص" className="blog-cover" />
+          ) : (
+            <span className="min-h-48 flex flex-col items-center justify-center gap-3 text-muted-foreground">
+              <ImagePlus size={34} aria-hidden="true" />
+              <span className="text-sm">برای انتخاب تصویر کلیک کنید</span>
+              <span className="text-xs">JPG، PNG، WEBP یا GIF — حداکثر ۵ مگابایت</span>
+            </span>
+          )}
+        </label>
+        <Input
+          id="image"
+          name="image"
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          className="sr-only"
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            const file = event.target.files?.[0];
+            if (!file) return;
+            setPreview(URL.createObjectURL(file));
+          }}
+        />
+        <div className="space-y-2">
+          <Label htmlFor="imageAlt">متن جایگزین تصویر (برای دسترس‌پذیری و سئو)</Label>
+          <Input id="imageAlt" name="imageAlt" defaultValue={post?.imageAlt ?? ''} />
+        </div>
+        {post?.imageUrl && (
+          <label className="flex items-center gap-2.5 text-sm text-muted-foreground">
+            <Checkbox id="removeImage" name="removeImage" />
+            حذف تصویر فعلی
+          </label>
+        )}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="excerpt">خلاصه (در لیست مطالب نمایش داده می‌شود) *</Label>
-        <Textarea id="excerpt" name="excerpt" rows={2} defaultValue={post?.excerpt} required />
+        <Label htmlFor="excerpt">خلاصه مطلب *</Label>
+        <Textarea id="excerpt" name="excerpt" rows={3} defaultValue={post?.excerpt} required />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="content">متن کامل مطلب * (هر پاراگراف را با یک خط خالی از پاراگراف بعدی جدا کنید)</Label>
-        <Textarea id="content" name="content" rows={14} defaultValue={post?.content} required />
+        <Label htmlFor="content">متن کامل مطلب *</Label>
+        <p className="text-xs text-muted-foreground">هر پاراگراف را با یک خط خالی از پاراگراف بعدی جدا کنید.</p>
+        <Textarea id="content" name="content" rows={18} defaultValue={post?.content} required className="resize-y" />
       </div>
 
-      <div className="flex items-center gap-2.5">
-        <Checkbox id="published" name="published" defaultChecked={post?.published ?? false} />
-        <Label htmlFor="published" className="font-normal cursor-pointer">
-          منتشر شود (در غیر این صورت به‌عنوان پیش‌نویس ذخیره می‌شود)
-        </Label>
+      <div className="flex flex-wrap gap-5 rounded-lg bg-muted/45 p-4">
+        <label className="flex items-center gap-2.5 cursor-pointer">
+          <Checkbox id="published" name="published" defaultChecked={post?.published ?? false} />
+          <span className="text-sm">انتشار عمومی مطلب</span>
+        </label>
+        <label className="flex items-center gap-2.5 cursor-pointer">
+          <Checkbox id="featured" name="featured" defaultChecked={post?.featured ?? false} />
+          <span className="text-sm flex items-center gap-1.5">
+            <Star size={15} aria-hidden="true" />
+            مطلب ویژه
+          </span>
+        </label>
       </div>
 
-      {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
+      {state?.error && (
+        <Alert variant="destructive">
+          <AlertDescription className="col-start-1">{state.error}</AlertDescription>
+        </Alert>
+      )}
 
       <Button type="submit" disabled={pending}>
-        {pending ? 'در حال ذخیره...' : submitLabel}
+        {pending ? <><span className="button-spinner" aria-hidden="true" />در حال ذخیره...</> : submitLabel}
       </Button>
     </form>
   );

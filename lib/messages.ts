@@ -73,3 +73,9 @@ export async function updateConsultationRequestStatus(id: number, status: Consul
   const { error } = await supabase.from('consultation_requests').update({ status }).eq('id', id);
   if (error) throw error;
 }
+
+export async function deleteConsultationRequest(id: number): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase.from('consultation_requests').delete().eq('id', id);
+  if (error) throw error;
+}

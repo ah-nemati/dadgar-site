@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { updateOwnProfile } from '@/lib/profile';
+import { requireClient } from '@/lib/session';
 
 export interface ProfileFormState {
   error?: string;
@@ -12,6 +13,7 @@ export async function updateProfileAction(
   _prevState: ProfileFormState | undefined,
   formData: FormData
 ): Promise<ProfileFormState> {
+  await requireClient();
   const fullName = String(formData.get('fullName') ?? '').trim();
   const phone = String(formData.get('phone') ?? '').trim();
 
@@ -26,5 +28,6 @@ export async function updateProfileAction(
   }
 
   revalidatePath('/portal');
+  revalidatePath('/portal/profile');
   return { success: true };
 }

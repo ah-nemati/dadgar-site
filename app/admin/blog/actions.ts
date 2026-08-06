@@ -1,16 +1,26 @@
+
 'use server';
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { createBlogPost, updateBlogPost, deleteBlogPost, slugify } from '@/lib/content/blog-admin';
+import {
+  createBlogPost,
+  deleteBlogPost,
+  removeBlogImage,
+  slugify,
+  updateBlogPost,
+  uploadBlogImage,
+} from '@/lib/content/blog-admin';
+import { requireAdmin } from '@/lib/session';
 
 export interface BlogFormState {
   error?: string;
 }
 
-function readForm(formData: FormData) {
+function baseForm(formData: FormData) {
   const title = String(formData.get('title') ?? '').trim();
   const slugInput = String(formData.get('slug') ?? '').trim();
+
   return {
     title,
     slug: slugInput || slugify(title),
@@ -18,32 +28,58 @@ function readForm(formData: FormData) {
     excerpt: String(formData.get('excerpt') ?? '').trim(),
     content: String(formData.get('content') ?? '').trim(),
     published: formData.get('published') === 'on',
+    featured: formData.get('featured') === 'on',
+    imageAlt: String(formData.get('imageAlt') ?? '').trim() || null,
   };
 }
 
-function revalidateBlog(slug?: string) {
+function revalidateBlog(slug?: string, previousSlug?: string) {
+  revalidatePath('/');
+  revalidatePath('/admin');
   revalidatePath('/admin/blog');
   revalidatePath('/blog');
   if (slug) revalidatePath(`/blog/${slug}`);
+  if (previousSlug && previousSlug !== slug) revalidatePath(`/blog/${previousSlug}`);
 }
 
-export async function createPost(_prevState: BlogFormState | undefined, formData: FormData): Promise<BlogFormState> {
-  const input = readForm(formData);
-  if (!input.title || !input.category || !input.excerpt || !input.content) {
+function formError(error: unknown): string {
+  const message = error instanceof Error ? error.message : '';
+  if (message.includes('duplicate') || message.includes('unique')) {
+    return 'این نامک قبلاً استفاده شده است؛ نامک دیگری انتخاب کنید.';
+  }
+  if (message === 'INVALID_IMAGE_TYPE') return 'فایل انتخاب‌شده تصویر معتبر نیست.';
+  if (message === 'IMAGE_TOO_LARGE') return 'حجم تصویر باید کمتر از ۵ مگابایت باشد.';
+  return 'ذخیره مطلب با خطا مواجه شد. تنظیمات دیتابیس و Storage را بررسی کنید.';
+}
+
+export async function createPost(
+  _prevState: BlogFormState | undefined,
+  formData: FormData
+): Promise<BlogFormState> {
+  await requireAdmin();
+  const base = baseForm(formData);
+
+  if (!base.title || !base.category || !base.excerpt || !base.content || !base.slug) {
     return { error: 'لطفاً همه فیلدهای الزامی را تکمیل کنید.' };
   }
 
+  const image = formData.get('image');
+  let uploaded: { path: string; url: string } | null = null;
+
   try {
-    await createBlogPost(input);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : '';
-    if (message.includes('duplicate') || message.includes('unique')) {
-      return { error: 'این نامک (slug) قبلاً استفاده شده؛ نامک دیگری انتخاب کنید.' };
-    }
-    return { error: 'ثبت مطلب با خطا مواجه شد.' };
+    if (image instanceof File && image.size > 0) uploaded = await uploadBlogImage(image);
+
+    await createBlogPost({
+      ...base,
+      imageUrl: uploaded?.url ?? null,
+      imagePath: uploaded?.path ?? null,
+    });
+  } catch (error) {
+    if (uploaded) await removeBlogImage(uploaded.path);
+    return { error: formError(error) };
   }
 
-  revalidateBlog(input.slug);
+  revalidateBlog(base.slug);
   redirect('/admin/blog');
 }
 
@@ -52,26 +88,46 @@ export async function editPost(
   _prevState: BlogFormState | undefined,
   formData: FormData
 ): Promise<BlogFormState> {
-  const input = readForm(formData);
-  if (!input.title || !input.category || !input.excerpt || !input.content) {
+  await requireAdmin();
+  const base = baseForm(formData);
+
+  if (!base.title || !base.category || !base.excerpt || !base.content || !base.slug) {
     return { error: 'لطفاً همه فیلدهای الزامی را تکمیل کنید.' };
   }
 
+  const previousSlug = String(formData.get('previousSlug') ?? '');
+  const previousImageUrl = String(formData.get('previousImageUrl') ?? '') || null;
+  const previousImagePath = String(formData.get('previousImagePath') ?? '') || null;
+  const removeImage = formData.get('removeImage') === 'on';
+  const image = formData.get('image');
+
+  let imageUrl = removeImage ? null : previousImageUrl;
+  let imagePath = removeImage ? null : previousImagePath;
+  let uploaded: { path: string; url: string } | null = null;
+
   try {
-    await updateBlogPost(id, input);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : '';
-    if (message.includes('duplicate') || message.includes('unique')) {
-      return { error: 'این نامک (slug) قبلاً استفاده شده؛ نامک دیگری انتخاب کنید.' };
+    if (image instanceof File && image.size > 0) {
+      uploaded = await uploadBlogImage(image);
+      imageUrl = uploaded.url;
+      imagePath = uploaded.path;
     }
-    return { error: 'ذخیره تغییرات با خطا مواجه شد.' };
+
+    await updateBlogPost(id, { ...base, imageUrl, imagePath });
+
+    if ((uploaded || removeImage) && previousImagePath && previousImagePath !== imagePath) {
+      await removeBlogImage(previousImagePath);
+    }
+  } catch (error) {
+    if (uploaded) await removeBlogImage(uploaded.path);
+    return { error: formError(error) };
   }
 
-  revalidateBlog(input.slug);
+  revalidateBlog(base.slug, previousSlug);
   redirect('/admin/blog');
 }
 
 export async function removePost(id: number, slug: string) {
+  await requireAdmin();
   await deleteBlogPost(id);
   revalidateBlog(slug);
 }

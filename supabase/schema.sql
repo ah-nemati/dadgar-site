@@ -1,76 +1,118 @@
--- Run this once in your Supabase project's SQL Editor (Dashboard → SQL Editor → New query).
--- Safe to re-run: every statement is idempotent (IF NOT EXISTS / OR REPLACE).
+
+-- Complete database schema for the public website, admin panel and client portal.
+-- Run in Supabase Dashboard → SQL Editor. It is safe to re-run.
 
 -- ============================================================================
--- profiles — one row per Supabase Auth user; distinguishes admin vs. client
--- accounts (Phase 2, section 4.5 — user access levels)
+-- Helpers
 -- ============================================================================
-create table if not exists profiles (
+create or replace function public.set_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+-- ============================================================================
+-- Profiles / roles
+-- ============================================================================
+create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   full_name text not null default '',
+  email text,
   phone text,
   role text not null default 'client' check (role in ('admin', 'client')),
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
-alter table profiles enable row level security;
+alter table public.profiles add column if not exists email text;
+alter table public.profiles add column if not exists updated_at timestamptz not null default now();
+alter table public.profiles enable row level security;
 
--- SECURITY DEFINER so policies can call this without triggering "infinite
--- recursion detected in policy" (a policy on `profiles` querying `profiles`
--- directly would recurse into itself).
-create or replace function is_admin()
+create or replace function public.is_admin()
 returns boolean
 language sql
 security definer
 set search_path = public
 stable
 as $$
-  select exists (select 1 from profiles where id = auth.uid() and role = 'admin');
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role = 'admin'
+  );
 $$;
 
-drop policy if exists "Users can view own profile" on profiles;
-create policy "Users can view own profile"
-  on profiles for select
-  to authenticated
-  using (id = auth.uid() or is_admin());
+create or replace function public.my_role()
+returns text
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select role from public.profiles where id = auth.uid();
+$$;
 
-drop policy if exists "Users can update own profile" on profiles;
+drop policy if exists "Users can view own profile" on public.profiles;
+create policy "Users can view own profile"
+  on public.profiles for select
+  to authenticated
+  using (id = auth.uid() or public.is_admin());
+
+drop policy if exists "Users can update own profile" on public.profiles;
 create policy "Users can update own profile"
-  on profiles for update
+  on public.profiles for update
   to authenticated
   using (id = auth.uid())
-  with check (id = auth.uid() and role = (select role from profiles where id = auth.uid()));
-  -- the `with check` re-reads the existing role so a client can edit their own
-  -- name/phone but can't grant themselves admin by editing their own row.
+  with check (id = auth.uid() and role = public.my_role());
 
--- Auto-create a profile (role defaults to 'client') whenever someone signs up
--- through the public /client-login/signup form.
-create or replace function handle_new_user()
+drop policy if exists "Admins can update profiles" on public.profiles;
+create policy "Admins can update profiles"
+  on public.profiles for update
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
 security definer
 set search_path = public
 as $$
 begin
-  insert into public.profiles (id, full_name, phone)
+  insert into public.profiles (id, full_name, email, phone)
   values (
     new.id,
     coalesce(new.raw_user_meta_data->>'full_name', ''),
+    new.email,
     new.raw_user_meta_data->>'phone'
-  );
+  )
+  on conflict (id) do nothing;
   return new;
 end;
 $$;
 
+update public.profiles p
+set email = u.email
+from auth.users u
+where p.id = u.id and p.email is null;
+
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
-  for each row execute function handle_new_user();
+  for each row execute function public.handle_new_user();
+
+drop trigger if exists profiles_set_updated_at on public.profiles;
+create trigger profiles_set_updated_at
+  before update on public.profiles
+  for each row execute function public.set_updated_at();
 
 -- ============================================================================
--- consultation_requests — Contact form submissions (Phase 2, section 4.4)
+-- Public consultation requests
 -- ============================================================================
-create table if not exists consultation_requests (
+create table if not exists public.consultation_requests (
   id bigint generated by default as identity primary key,
   name text not null,
   phone text not null,
@@ -81,32 +123,37 @@ create table if not exists consultation_requests (
   created_at timestamptz not null default now()
 );
 
-alter table consultation_requests enable row level security;
+alter table public.consultation_requests enable row level security;
 
-drop policy if exists "Public can submit consultation requests" on consultation_requests;
+drop policy if exists "Public can submit consultation requests" on public.consultation_requests;
 create policy "Public can submit consultation requests"
-  on consultation_requests for insert
-  to anon
+  on public.consultation_requests for insert
+  to anon, authenticated
   with check (true);
 
-drop policy if exists "Authenticated users can view consultation requests" on consultation_requests;
-drop policy if exists "Admins can view consultation requests" on consultation_requests;
+drop policy if exists "Admins can view consultation requests" on public.consultation_requests;
 create policy "Admins can view consultation requests"
-  on consultation_requests for select
+  on public.consultation_requests for select
   to authenticated
-  using (is_admin());
+  using (public.is_admin());
 
-drop policy if exists "Authenticated users can update consultation requests" on consultation_requests;
-drop policy if exists "Admins can update consultation requests" on consultation_requests;
+drop policy if exists "Admins can update consultation requests" on public.consultation_requests;
 create policy "Admins can update consultation requests"
-  on consultation_requests for update
+  on public.consultation_requests for update
   to authenticated
-  using (is_admin());
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop policy if exists "Admins can delete consultation requests" on public.consultation_requests;
+create policy "Admins can delete consultation requests"
+  on public.consultation_requests for delete
+  to authenticated
+  using (public.is_admin());
 
 -- ============================================================================
--- blog_posts — CMS-managed articles (Phase 2, section 4.1)
+-- Blog CMS
 -- ============================================================================
-create table if not exists blog_posts (
+create table if not exists public.blog_posts (
   id bigint generated by default as identity primary key,
   slug text not null unique,
   title text not null,
@@ -114,69 +161,436 @@ create table if not exists blog_posts (
   excerpt text not null,
   content text not null,
   published boolean not null default false,
+  featured boolean not null default false,
+  image_url text,
+  image_path text,
+  image_alt text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
 
-alter table blog_posts enable row level security;
+alter table public.blog_posts add column if not exists featured boolean not null default false;
+alter table public.blog_posts add column if not exists image_url text;
+alter table public.blog_posts add column if not exists image_path text;
+alter table public.blog_posts add column if not exists image_alt text;
+alter table public.blog_posts enable row level security;
 
-drop policy if exists "Public can view published posts" on blog_posts;
+drop policy if exists "Public can view published posts" on public.blog_posts;
 create policy "Public can view published posts"
-  on blog_posts for select
+  on public.blog_posts for select
   to anon
   using (published = true);
 
-drop policy if exists "Authenticated users can view all posts" on blog_posts;
-drop policy if exists "Admins can view all posts" on blog_posts;
-create policy "Admins can view all posts"
-  on blog_posts for select
+drop policy if exists "Authenticated can view published posts" on public.blog_posts;
+create policy "Authenticated can view published posts"
+  on public.blog_posts for select
   to authenticated
-  using (is_admin());
+  using (published = true or public.is_admin());
 
-drop policy if exists "Authenticated users can insert posts" on blog_posts;
-drop policy if exists "Admins can insert posts" on blog_posts;
+drop policy if exists "Admins can insert posts" on public.blog_posts;
 create policy "Admins can insert posts"
-  on blog_posts for insert
+  on public.blog_posts for insert
   to authenticated
-  with check (is_admin());
+  with check (public.is_admin());
 
-drop policy if exists "Authenticated users can update posts" on blog_posts;
-drop policy if exists "Admins can update posts" on blog_posts;
+drop policy if exists "Admins can update posts" on public.blog_posts;
 create policy "Admins can update posts"
-  on blog_posts for update
+  on public.blog_posts for update
   to authenticated
-  using (is_admin());
+  using (public.is_admin())
+  with check (public.is_admin());
 
-drop policy if exists "Authenticated users can delete posts" on blog_posts;
-drop policy if exists "Admins can delete posts" on blog_posts;
+drop policy if exists "Admins can delete posts" on public.blog_posts;
 create policy "Admins can delete posts"
-  on blog_posts for delete
+  on public.blog_posts for delete
   to authenticated
-  using (is_admin());
+  using (public.is_admin());
 
--- Keep updated_at current on every edit.
-create or replace function set_updated_at()
-returns trigger as $$
-begin
-  new.updated_at = now();
-  return new;
-end;
-$$ language plpgsql;
-
-drop trigger if exists blog_posts_set_updated_at on blog_posts;
+drop trigger if exists blog_posts_set_updated_at on public.blog_posts;
 create trigger blog_posts_set_updated_at
-  before update on blog_posts
-  for each row
-  execute function set_updated_at();
+  before update on public.blog_posts
+  for each row execute function public.set_updated_at();
 
 -- ============================================================================
--- ⚠️ After creating your admin user in Authentication → Users, run this once
--- (with their real email) so they're recognized as admin, not client:
---
---   update profiles set role = 'admin'
---   where id = (select id from auth.users where email = 'your-admin-email@example.com');
---
--- Every other Supabase-authenticated user (anyone who signs up at
--- /client-login/signup) is a 'client' by default and has no access to
--- consultation_requests or blog_posts — only to their own profiles row.
+-- Client cases and updates
 -- ============================================================================
+create table if not exists public.client_cases (
+  id bigint generated by default as identity primary key,
+  client_id uuid not null references public.profiles(id) on delete cascade,
+  case_number text not null unique,
+  title text not null,
+  court text,
+  status text not null default 'new' check (status in ('new', 'in_progress', 'waiting', 'closed')),
+  description text,
+  next_action text,
+  next_action_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.client_cases enable row level security;
+
+drop policy if exists "Clients can view own cases" on public.client_cases;
+create policy "Clients can view own cases"
+  on public.client_cases for select
+  to authenticated
+  using (client_id = auth.uid() or public.is_admin());
+
+drop policy if exists "Admins can insert cases" on public.client_cases;
+create policy "Admins can insert cases"
+  on public.client_cases for insert
+  to authenticated
+  with check (public.is_admin());
+
+drop policy if exists "Admins can update cases" on public.client_cases;
+create policy "Admins can update cases"
+  on public.client_cases for update
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop policy if exists "Admins can delete cases" on public.client_cases;
+create policy "Admins can delete cases"
+  on public.client_cases for delete
+  to authenticated
+  using (public.is_admin());
+
+drop trigger if exists client_cases_set_updated_at on public.client_cases;
+create trigger client_cases_set_updated_at
+  before update on public.client_cases
+  for each row execute function public.set_updated_at();
+
+create table if not exists public.case_updates (
+  id bigint generated by default as identity primary key,
+  case_id bigint not null references public.client_cases(id) on delete cascade,
+  title text not null,
+  body text not null,
+  created_at timestamptz not null default now()
+);
+
+alter table public.case_updates enable row level security;
+
+drop policy if exists "Clients can view own case updates" on public.case_updates;
+create policy "Clients can view own case updates"
+  on public.case_updates for select
+  to authenticated
+  using (
+    public.is_admin() or exists (
+      select 1 from public.client_cases c
+      where c.id = case_updates.case_id and c.client_id = auth.uid()
+    )
+  );
+
+drop policy if exists "Admins can insert case updates" on public.case_updates;
+create policy "Admins can insert case updates"
+  on public.case_updates for insert
+  to authenticated
+  with check (public.is_admin());
+
+drop policy if exists "Admins can update case updates" on public.case_updates;
+create policy "Admins can update case updates"
+  on public.case_updates for update
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop policy if exists "Admins can delete case updates" on public.case_updates;
+create policy "Admins can delete case updates"
+  on public.case_updates for delete
+  to authenticated
+  using (public.is_admin());
+
+-- ============================================================================
+-- Client documents
+-- ============================================================================
+create table if not exists public.client_documents (
+  id bigint generated by default as identity primary key,
+  case_id bigint not null references public.client_cases(id) on delete cascade,
+  client_id uuid not null references public.profiles(id) on delete cascade,
+  title text not null,
+  file_path text not null unique,
+  file_name text not null,
+  mime_type text,
+  file_size bigint,
+  created_at timestamptz not null default now()
+);
+
+alter table public.client_documents enable row level security;
+
+drop policy if exists "Clients can view own documents" on public.client_documents;
+create policy "Clients can view own documents"
+  on public.client_documents for select
+  to authenticated
+  using (client_id = auth.uid() or public.is_admin());
+
+drop policy if exists "Admins can insert documents" on public.client_documents;
+create policy "Admins can insert documents"
+  on public.client_documents for insert
+  to authenticated
+  with check (public.is_admin());
+
+drop policy if exists "Admins can delete documents" on public.client_documents;
+create policy "Admins can delete documents"
+  on public.client_documents for delete
+  to authenticated
+  using (public.is_admin());
+
+-- ============================================================================
+-- Secure support conversations
+-- ============================================================================
+create table if not exists public.support_threads (
+  id bigint generated by default as identity primary key,
+  client_id uuid not null references public.profiles(id) on delete cascade,
+  subject text not null,
+  status text not null default 'open' check (status in ('open', 'answered', 'closed')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.support_threads enable row level security;
+
+drop policy if exists "Clients can view own support threads" on public.support_threads;
+create policy "Clients can view own support threads"
+  on public.support_threads for select
+  to authenticated
+  using (client_id = auth.uid() or public.is_admin());
+
+drop policy if exists "Clients can create support threads" on public.support_threads;
+create policy "Clients can create support threads"
+  on public.support_threads for insert
+  to authenticated
+  with check (client_id = auth.uid() and public.my_role() = 'client');
+
+drop policy if exists "Admins can update support threads" on public.support_threads;
+create policy "Admins can update support threads"
+  on public.support_threads for update
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop trigger if exists support_threads_set_updated_at on public.support_threads;
+create trigger support_threads_set_updated_at
+  before update on public.support_threads
+  for each row execute function public.set_updated_at();
+
+create table if not exists public.support_messages (
+  id bigint generated by default as identity primary key,
+  thread_id bigint not null references public.support_threads(id) on delete cascade,
+  sender_id uuid not null references public.profiles(id) on delete cascade,
+  body text not null,
+  created_at timestamptz not null default now()
+);
+
+alter table public.support_messages enable row level security;
+
+drop policy if exists "Participants can view support messages" on public.support_messages;
+create policy "Participants can view support messages"
+  on public.support_messages for select
+  to authenticated
+  using (
+    public.is_admin() or exists (
+      select 1 from public.support_threads t
+      where t.id = support_messages.thread_id and t.client_id = auth.uid()
+    )
+  );
+
+drop policy if exists "Participants can send support messages" on public.support_messages;
+create policy "Participants can send support messages"
+  on public.support_messages for insert
+  to authenticated
+  with check (
+    sender_id = auth.uid() and (
+      public.is_admin() or exists (
+        select 1 from public.support_threads t
+        where t.id = support_messages.thread_id
+          and t.client_id = auth.uid()
+          and t.status <> 'closed'
+      )
+    )
+  );
+
+
+create or replace function public.create_support_thread(p_subject text, p_body text)
+returns bigint
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  new_thread_id bigint;
+begin
+  if auth.uid() is null or public.my_role() <> 'client' then
+    raise exception 'not allowed';
+  end if;
+  if length(trim(p_subject)) < 3 or length(trim(p_body)) < 2 then
+    raise exception 'invalid input';
+  end if;
+
+  insert into public.support_threads (client_id, subject)
+  values (auth.uid(), trim(p_subject))
+  returning id into new_thread_id;
+
+  insert into public.support_messages (thread_id, sender_id, body)
+  values (new_thread_id, auth.uid(), trim(p_body));
+
+  return new_thread_id;
+end;
+$$;
+
+create or replace function public.reply_support_thread(p_thread_id bigint, p_body text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  thread_owner uuid;
+  thread_status text;
+  admin_user boolean;
+begin
+  if auth.uid() is null or length(trim(p_body)) < 1 then
+    raise exception 'not allowed';
+  end if;
+
+  select client_id, status into thread_owner, thread_status
+  from public.support_threads where id = p_thread_id;
+
+  admin_user := public.is_admin();
+
+  if thread_owner is null or (not admin_user and thread_owner <> auth.uid()) then
+    raise exception 'not allowed';
+  end if;
+  if thread_status = 'closed' and not admin_user then
+    raise exception 'thread closed';
+  end if;
+
+  insert into public.support_messages (thread_id, sender_id, body)
+  values (p_thread_id, auth.uid(), trim(p_body));
+
+  update public.support_threads
+  set status = case when admin_user then 'answered' else 'open' end,
+      updated_at = now()
+  where id = p_thread_id;
+end;
+$$;
+
+-- ============================================================================
+-- Consultation appointments
+-- ============================================================================
+create table if not exists public.appointments (
+  id bigint generated by default as identity primary key,
+  client_id uuid not null references public.profiles(id) on delete cascade,
+  subject text not null,
+  requested_at timestamptz not null,
+  status text not null default 'pending' check (status in ('pending', 'confirmed', 'cancelled', 'completed')),
+  notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.appointments enable row level security;
+
+drop policy if exists "Clients can view own appointments" on public.appointments;
+create policy "Clients can view own appointments"
+  on public.appointments for select
+  to authenticated
+  using (client_id = auth.uid() or public.is_admin());
+
+drop policy if exists "Clients can request appointments" on public.appointments;
+create policy "Clients can request appointments"
+  on public.appointments for insert
+  to authenticated
+  with check (client_id = auth.uid() and public.my_role() = 'client');
+
+drop policy if exists "Admins can update appointments" on public.appointments;
+create policy "Admins can update appointments"
+  on public.appointments for update
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop policy if exists "Admins can delete appointments" on public.appointments;
+create policy "Admins can delete appointments"
+  on public.appointments for delete
+  to authenticated
+  using (public.is_admin());
+
+drop trigger if exists appointments_set_updated_at on public.appointments;
+create trigger appointments_set_updated_at
+  before update on public.appointments
+  for each row execute function public.set_updated_at();
+
+-- ============================================================================
+-- Storage buckets and policies
+-- ============================================================================
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'blog-images',
+  'blog-images',
+  true,
+  5242880,
+  array['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+)
+on conflict (id) do update
+set public = excluded.public,
+    file_size_limit = excluded.file_size_limit,
+    allowed_mime_types = excluded.allowed_mime_types;
+
+insert into storage.buckets (id, name, public, file_size_limit)
+values ('client-documents', 'client-documents', false, 10485760)
+on conflict (id) do update
+set public = excluded.public,
+    file_size_limit = excluded.file_size_limit;
+
+drop policy if exists "Public can view blog images" on storage.objects;
+create policy "Public can view blog images"
+  on storage.objects for select
+  to anon, authenticated
+  using (bucket_id = 'blog-images');
+
+drop policy if exists "Admins can upload blog images" on storage.objects;
+create policy "Admins can upload blog images"
+  on storage.objects for insert
+  to authenticated
+  with check (bucket_id = 'blog-images' and public.is_admin());
+
+drop policy if exists "Admins can update blog images" on storage.objects;
+create policy "Admins can update blog images"
+  on storage.objects for update
+  to authenticated
+  using (bucket_id = 'blog-images' and public.is_admin())
+  with check (bucket_id = 'blog-images' and public.is_admin());
+
+drop policy if exists "Admins can delete blog images" on storage.objects;
+create policy "Admins can delete blog images"
+  on storage.objects for delete
+  to authenticated
+  using (bucket_id = 'blog-images' and public.is_admin());
+
+drop policy if exists "Clients can view own document files" on storage.objects;
+create policy "Clients can view own document files"
+  on storage.objects for select
+  to authenticated
+  using (
+    bucket_id = 'client-documents'
+    and (
+      public.is_admin()
+      or (storage.foldername(name))[1] = auth.uid()::text
+    )
+  );
+
+drop policy if exists "Admins can upload client documents" on storage.objects;
+create policy "Admins can upload client documents"
+  on storage.objects for insert
+  to authenticated
+  with check (bucket_id = 'client-documents' and public.is_admin());
+
+drop policy if exists "Admins can delete client documents" on storage.objects;
+create policy "Admins can delete client documents"
+  on storage.objects for delete
+  to authenticated
+  using (bucket_id = 'client-documents' and public.is_admin());
+
+-- Promote an existing account to admin after creating it in Authentication:
+-- update public.profiles set role = 'admin'
+-- where id = (select id from auth.users where email = 'admin@example.com');

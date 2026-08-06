@@ -1,22 +1,33 @@
-import type { Metadata } from "next";
-import { FIRM } from "@/data/firm";
+
+import type { Metadata } from 'next';
+import DashboardShell, { type DashboardNavItem } from '@/components/dashboard/DashboardShell';
+import { getCurrentAccount } from '@/lib/session';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(FIRM.url),
-  title: "پنل مدیریت",
+  title: 'پنل مدیریت',
   robots: { index: false, follow: false },
 };
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+const NAV_ITEMS: DashboardNavItem[] = [
+  { href: '/admin', label: 'داشبورد', icon: 'dashboard' },
+  { href: '/admin/messages', label: 'درخواست‌های مشاوره', icon: 'inbox' },
+  { href: '/admin/blog', label: 'مدیریت وبلاگ', icon: 'blog' },
+  { href: '/admin/clients', label: 'موکلین', icon: 'users' },
+  { href: '/admin/cases', label: 'پرونده‌ها', icon: 'cases' },
+  { href: '/admin/support', label: 'گفت‌وگوها', icon: 'messages' },
+  { href: '/admin/appointments', label: 'نوبت‌ها', icon: 'calendar' },
+];
+
+export const dynamic = 'force-dynamic';
+
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const account = await getCurrentAccount();
+
+  if (!account || account.role !== 'admin') return <>{children}</>;
+
   return (
-    <html lang="fa" dir="rtl">
-      <body className="antialiased min-h-screen flex flex-col bg-parchment text-foreground">
-        {children}
-      </body>
-    </html>
+    <DashboardShell account={account} navItems={NAV_ITEMS} panelTitle="پنل مدیریت">
+      {children}
+    </DashboardShell>
   );
 }

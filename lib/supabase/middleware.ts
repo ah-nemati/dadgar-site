@@ -1,13 +1,40 @@
+
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { isSupabaseConfigured } from '@/lib/supabase/config';
+import type { UserRole } from '@/types/content';
 
-/**
- * Refreshes the Supabase session on every request that touches /admin or
- * /portal, and gates access: /admin requires role='admin' (checked via the
- * profiles table), /portal requires any signed-in user. Mirrors Supabase's
- * official Next.js proxy pattern: https://supabase.com/docs/guides/auth/server-side/nextjs
- */
+const LOGIN_PATHS = new Set(['/login', '/signup', '/client-login', '/client-login/signup', '/admin/login']);
+
+function redirectWithReturn(request: NextRequest, path = '/login') {
+  const url = new URL(path, request.url);
+  const current = `${request.nextUrl.pathname}${request.nextUrl.search}`;
+  if (current !== '/login') url.searchParams.set('next', current);
+  return NextResponse.redirect(url);
+}
+
 export async function updateSession(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  if (pathname === '/client-login' || pathname === '/admin/login') {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+  if (pathname === '/client-login/signup') {
+    return NextResponse.redirect(new URL('/signup', request.url));
+  }
+
+  const isAdminRoute = pathname.startsWith('/admin');
+  const isPortalRoute = pathname.startsWith('/portal');
+
+  if (!isSupabaseConfigured()) {
+    if (isAdminRoute || isPortalRoute) {
+      const url = new URL('/login', request.url);
+      url.searchParams.set('config', 'missing');
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next({ request });
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -21,42 +48,40 @@ export async function updateSession(request: NextRequest) {
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           response = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          );
         },
       },
     }
   );
 
-  // getUser() re-validates the token against the Supabase Auth server on every
-  // call, so it's safe to use for access control (unlike getSession(), which
-  // only reads the cookie and isn't guaranteed to be a valid/current token).
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { pathname } = request.nextUrl;
-  const isAdminRoute = pathname.startsWith('/admin') && pathname !== '/admin/login';
-  const isPortalRoute = pathname.startsWith('/portal');
+  let role: UserRole | null = null;
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+    role = (profile?.role as UserRole | undefined) ?? null;
+  }
 
   if (isAdminRoute) {
-    if (!user) {
-      return NextResponse.redirect(new URL('/admin/login', request.url));
-    }
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
-    if (profile?.role !== 'admin') {
-      return NextResponse.redirect(new URL('/admin/login', request.url));
-    }
+    if (!user || !role) return redirectWithReturn(request);
+    if (role !== 'admin') return NextResponse.redirect(new URL('/portal', request.url));
   }
 
-  if (isPortalRoute && !user) {
-    return NextResponse.redirect(new URL('/client-login', request.url));
+  if (isPortalRoute) {
+    if (!user || !role) return redirectWithReturn(request);
+    if (role === 'admin') return NextResponse.redirect(new URL('/admin', request.url));
   }
 
-  if (user && pathname === '/admin/login') {
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
-    if (profile?.role === 'admin') {
-      return NextResponse.redirect(new URL('/admin/messages', request.url));
-    }
+  if (user && role && LOGIN_PATHS.has(pathname)) {
+    return NextResponse.redirect(new URL(role === 'admin' ? '/admin' : '/portal', request.url));
   }
 
   return response;

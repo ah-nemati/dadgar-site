@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowRight } from 'lucide-react';
@@ -13,18 +14,13 @@ export default async function EditBlogPostPage({ params }: { params: Promise<{ i
   const post = await getBlogPostByIdForAdmin(Number(id));
   if (!post) notFound();
 
-  const editPostWithId = editPost.bind(null, post.id);
-
   return (
-    <>
-      <AdminHeader title="ویرایش مطلب" />
-      <main className="max-w-3xl mx-auto px-6 py-10">
-        <Link href="/admin/blog" className="inline-flex items-center gap-2 text-sm mb-6 text-muted-foreground hover:text-foreground transition-colors">
-          <ArrowRight size={16} aria-hidden="true" /> بازگشت به مطالب وبلاگ
-        </Link>
-        <h1 className="text-xl font-bold text-foreground mb-6">ویرایش: {post.title}</h1>
-        <BlogForm action={editPostWithId} post={post} submitLabel="ذخیره تغییرات" />
-      </main>
-    </>
+    <div className="max-w-4xl mx-auto">
+      <Link href="/admin/blog" className="inline-flex items-center gap-2 text-sm mb-5 text-muted-foreground hover:text-foreground transition-colors">
+        <ArrowRight size={16} /> بازگشت به مطالب وبلاگ
+      </Link>
+      <AdminHeader title={`ویرایش: ${post.title}`} />
+      <BlogForm action={editPost.bind(null, post.id)} post={post} submitLabel="ذخیره تغییرات" />
+    </div>
   );
 }
