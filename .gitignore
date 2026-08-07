@@ -53,3 +53,4 @@ next-env.d.ts
 .open-next/
 cloudflare-env.d.ts
 .github-secrets.env
+.worker-secrets.env
