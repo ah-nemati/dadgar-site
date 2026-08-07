@@ -1,9 +1,16 @@
 /**
- * Add this Action to Auth0 → Actions → Flows → Login.
- * It exposes the app_metadata.role value as a namespaced ID-token claim.
+ * Auth0 Dashboard → Actions → Flows → Login
+ *
+ * Add a Secret named ROLE_CLAIM_NAMESPACE with this value:
+ * https://majidsavarivakil.ir
  */
 exports.onExecutePostLogin = async (event, api) => {
-  const namespace = event.secrets.ROLE_CLAIM_NAMESPACE || 'https://dadgar.example.com';
-  const role = event.user.app_metadata?.role || 'client';
+  const namespace = String(
+    event.secrets.ROLE_CLAIM_NAMESPACE || 'https://majidsavarivakil.ir',
+  ).replace(/\/$/, '');
+
+  // Only the two application roles are allowed into the token.
+  const role = event.user.app_metadata?.role === 'admin' ? 'admin' : 'client';
+
   api.idToken.setCustomClaim(`${namespace}/role`, role);
 };

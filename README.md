@@ -36,6 +36,8 @@ npm run dev
 
 ## ۲. تنظیم Auth0 Regular Web Application
 
+> **نکته سازگاری Cloudflare:** در این نسخه هیچ `middleware.ts` یا `proxy.ts` وجود ندارد. مسیرهای Auth0 از `app/auth/[auth0]/route.ts` اجرا می‌شوند تا مشکل Node.js Middleware و هنگ درخواست در Next.js 16/Cloudflare ایجاد نشود. Sessionهای Auth0 نیز به‌صورت غیر Rolling و با عمر ثابت سه‌روزه تنظیم شده‌اند.
+
 در Auth0 یک **Regular Web Application** بسازید و Database Connection مورد استفاده را برای آن فعال کنید. اگر ثبت‌نام عمومی لازم است، گزینه غیرفعال‌کردن Sign Up در همان Connection روشن نباشد.
 
 مقادیر زیر را در `.env.local` قرار دهید:
@@ -155,9 +157,26 @@ IMAGEKIT_PRIVATE_FOLDER="/client-documents"
 ## ۸. Build و اجرا
 
 ```bash
+npm run audit:storage
+npm run audit:runtime
+npm run typecheck
 npm run lint
 npm run build
 npm run start
+```
+
+برای Preview واقعی Cloudflare، فایل `.dev.vars` باید `APP_BASE_URL="http://localhost:8787"` داشته باشد:
+
+```bash
+cp .dev.vars.example .dev.vars
+npm run preview
+```
+
+سپس این دو مسیر را بررسی کنید:
+
+```text
+http://localhost:8787/api/health
+http://localhost:8787/auth/login
 ```
 
 ## کنترل‌های امنیتی پیاده‌شده
@@ -178,7 +197,7 @@ npm run start
 npm run audit:storage
 ```
 
-این دستور تأیید می‌کند که تمام کدهای پروژه از لایه ImageKit استفاده می‌کنند.
+این دستور تأیید می‌کند که تمام کدهای پروژه از لایه ImageKit استفاده می‌کنند. دستور `npm run audit:runtime` نیز نبودن Middleware/Proxy ناسازگار و وجود Route Handler Auth0 را کنترل می‌کند.
 
 ## نصب بدون وابستگی ذخیره‌سازی اضافی
 
@@ -198,3 +217,10 @@ npm run build
 npm run preview
 npm run deploy
 ```
+
+## انتشار در صورت خطای شبکه محلی
+
+اگر npm با `ECONNRESET` یا Wrangler با `403 bot challenge` متوقف شد، از Workflow آماده GitHub Actions استفاده کن:
+
+- `.github/workflows/deploy-cloudflare.yml`
+- `GITHUB_DEPLOY_FA.md`

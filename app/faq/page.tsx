@@ -29,7 +29,7 @@ export default async function FAQPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
       <PageHero
         eyebrow="سوالات متداول"
         title="پاسخ به سوالات پرتکرار موکلین"

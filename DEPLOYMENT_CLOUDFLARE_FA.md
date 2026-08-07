@@ -29,6 +29,7 @@ Allowed Callback URLs:
 
 ```text
 http://localhost:3000/auth/callback,
+http://localhost:8787/auth/callback,
 https://majidsavarivakil.ir/auth/callback
 ```
 
@@ -36,6 +37,7 @@ Allowed Logout URLs:
 
 ```text
 http://localhost:3000,
+http://localhost:8787,
 https://majidsavarivakil.ir
 ```
 
@@ -43,7 +45,23 @@ Allowed Web Origins:
 
 ```text
 http://localhost:3000,
+http://localhost:8787,
 https://majidsavarivakil.ir
+```
+
+
+### روش اجرای Auth0 در این پروژه
+
+برای جلوگیری از ناسازگاری Next.js 16 با Node.js Middleware روی Cloudflare، فایل‌های `middleware.ts` و `proxy.ts` عمداً وجود ندارند. مسیرهای `/auth/login`، `/auth/logout`، `/auth/callback` و `/auth/profile` توسط این Route Handler اجرا می‌شوند:
+
+```text
+app/auth/[auth0]/route.ts
+```
+
+در صورت بازگشت Middleware/Proxy، دستور زیر Build را متوقف می‌کند:
+
+```bash
+npm run audit:runtime
 ```
 
 فایل `auth0/post-login-action.js` را به Login Flow اضافه کنید و secret زیر را در Action بسازید:
@@ -92,6 +110,7 @@ export CLOUDFLARE_ACCOUNT_ID="YOUR_ACCOUNT_ID"
 npx wrangler whoami
 
 cp .dev.vars.example .dev.vars
+# در .dev.vars مقدار APP_BASE_URL باید http://localhost:8787 باشد
 npm run preview
 ```
 
@@ -99,6 +118,8 @@ npm run preview
 
 در Preview موارد زیر را تست کنید:
 
+- Health check در `http://localhost:8787/api/health`
+- انتقال `/auth/login` به صفحه Auth0
 - صفحه اصلی و تمام صفحات عمومی
 - ورود و خروج Auth0
 - پنل مدیر و موکل
