@@ -5,19 +5,20 @@
   "scripts": {
     "dev": "next dev",
     "audit:storage": "node scripts/audit-storage.mjs",
+    "audit:runtime": "node scripts/audit-runtime.mjs",
     "typecheck": "tsc --noEmit",
-    "build": "node scripts/build-next.mjs",
+    "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint .",
     "db:migrate": "node scripts/migrate.mjs",
     "db:seed": "node scripts/seed.mjs",
-    "cf:build": "NEXT_IGNORE_INCORRECT_LOCKFILE=1 NEXT_TELEMETRY_DISABLED=1 npx --yes @opennextjs/cloudflare@1.20.2 build",
-    "preview": "npm run cf:build && npx --yes @opennextjs/cloudflare@1.20.2 preview",
-    "deploy": "npm run cf:build && npx --yes @opennextjs/cloudflare@1.20.2 deploy -- --keep-vars",
-    "upload": "npm run cf:build && npx --yes @opennextjs/cloudflare@1.20.2 upload",
+    "cf:build": "NEXT_IGNORE_INCORRECT_LOCKFILE=1 NEXT_TELEMETRY_DISABLED=1 opennextjs-cloudflare build",
+    "cf:deploy": "opennextjs-cloudflare deploy -- --keep-vars",
+    "preview": "npm run cf:build && opennextjs-cloudflare preview",
+    "deploy": "npm run cf:build && npm run cf:deploy",
+    "upload": "npm run cf:build && opennextjs-cloudflare upload",
     "cf:typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
-    "check": "npm run audit:storage && npm run audit:runtime && npm run typecheck && npm run lint",
-    "audit:runtime": "node scripts/audit-runtime.mjs"
+    "check": "npm run audit:storage && npm run audit:runtime && npm run typecheck && npm run lint"
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "4.26.0",
@@ -48,6 +49,6 @@
     "wrangler": "^4.30.0"
   },
   "engines": {
-    "node": ">=20.19.0"
+    "node": ">=22 <23"
   }
 }

@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-
   workflow_dispatch:
 
 concurrency:
@@ -59,11 +58,6 @@ jobs:
           node-version: "22"
           cache: "npm"
 
-      - name: Show versions
-        run: |
-          node --version
-          npm --version
-
       - name: Install dependencies
         run: |
           npm install \
@@ -74,31 +68,71 @@ jobs:
       - name: Storage audit
         run: npm run audit:storage
 
+      - name: Runtime audit
+        run: npm run audit:runtime
+
       - name: TypeScript check
         run: npm run typecheck
 
       - name: ESLint check
         run: npm run lint
 
-      - name: Build OpenNext worker
+      - name: Create Worker secrets file
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require("fs");
+
+          const keys = [
+            "AUTH0_DOMAIN",
+            "AUTH0_CLIENT_ID",
+            "AUTH0_CLIENT_SECRET",
+            "AUTH0_SECRET",
+            "AUTH0_ADMIN_EMAILS",
+            "AUTH0_M2M_CLIENT_ID",
+            "AUTH0_M2M_CLIENT_SECRET",
+            "DATABASE_URL",
+            "IMAGEKIT_PUBLIC_KEY",
+            "IMAGEKIT_PRIVATE_KEY",
+            "IMAGEKIT_URL_ENDPOINT"
+          ];
+
+          const lines = [];
+
+          for (const key of keys) {
+            const value = process.env[key];
+
+            if (!value || !value.trim()) {
+              throw new Error(`Missing required secret: ${key}`);
+            }
+
+            const escaped = value
+              .replace(/\\/g, "\\\\")
+              .replace(/"/g, '\\"')
+              .replace(/\n/g, "\\n");
+
+            lines.push(`${key}="${escaped}"`);
+          }
+
+          fs.writeFileSync(
+            ".worker-secrets.env",
+            lines.join("\n") + "\n"
+          );
+          NODE
+
+      - name: Build OpenNext Worker
         run: |
           npx --yes @opennextjs/cloudflare@1.20.2 build
 
       - name: Verify OpenNext output
         shell: bash
         run: |
-          if [ ! -d ".open-next" ]; then
-            echo "::error::.open-next directory was not created"
+          test -f .open-next/worker.js || {
+            echo "::error::.open-next/worker.js does not exist"
             exit 1
-          fi
+          }
 
-          if [ ! -f ".open-next/worker.js" ]; then
-            echo "::error::.open-next/worker.js was not created"
-            exit 1
-          fi
-
-          echo "OpenNext build output is valid"
-          ls -lh .open-next/worker.js
+          echo "OpenNext output is ready."
 
       - name: Validate Cloudflare credentials
         env:
@@ -112,4 +146,11 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          npx --yes @opennextjs/cloudflare@1.20.2 deploy -- --keep-vars
+          npx --yes @opennextjs/cloudflare@1.20.2 deploy -- \
+            --keep-vars \
+            --secrets-file .worker-secrets.env
+
+      - name: Remove temporary secrets file
+        if: always()
+        run: |
+          rm -f .worker-secrets.env
