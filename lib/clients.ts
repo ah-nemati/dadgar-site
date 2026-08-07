@@ -1,48 +1,31 @@
-
-import { createClient } from '@/lib/supabase/server';
+import { db } from '@/lib/db';
 import type { Profile } from '@/types/content';
 
 interface ProfileRow {
   id: string;
-  full_name: string;
+  fullName: string;
   email: string | null;
   phone: string | null;
   role: 'admin' | 'client';
-  created_at: string;
+  createdAt: Date;
 }
 
 function toProfile(row: ProfileRow): Profile {
-  return {
-    id: row.id,
-    fullName: row.full_name,
-    email: row.email,
-    phone: row.phone,
-    role: row.role,
-    createdAt: row.created_at,
-  };
+  return { ...row, createdAt: row.createdAt.toISOString() };
 }
 
 export async function getClients(): Promise<Profile[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('id, full_name, email, phone, role, created_at')
-    .eq('role', 'client')
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return (data as ProfileRow[]).map(toProfile);
+  const rows = await db<ProfileRow[]>`
+    select id, full_name, email, phone, role, created_at
+    from profiles where role = 'client' order by created_at desc
+  `;
+  return rows.map(toProfile);
 }
 
 export async function getClientById(id: string): Promise<Profile | null> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('id, full_name, email, phone, role, created_at')
-    .eq('id', id)
-    .eq('role', 'client')
-    .maybeSingle();
-
-  if (error) throw error;
-  return data ? toProfile(data as ProfileRow) : null;
+  const [row] = await db<ProfileRow[]>`
+    select id, full_name, email, phone, role, created_at
+    from profiles where id = ${id} and role = 'client' limit 1
+  `;
+  return row ? toProfile(row) : null;
 }

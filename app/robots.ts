@@ -8,8 +8,9 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/admin', '/portal'],
+      disallow: ['/admin/', '/portal/', '/login', '/signup', '/forgot-password', '/reset-password', '/auth/', '/client-login'],
     },
-    sitemap: `${firm.url}/sitemap.xml`,
+    sitemap: new URL('/sitemap.xml', firm.url).toString(),
+    host: new URL(firm.url).origin,
   };
 }

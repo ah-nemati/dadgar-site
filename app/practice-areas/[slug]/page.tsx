@@ -8,6 +8,7 @@ import { PRACTICE_AREA_ICONS } from '@/lib/icons';
 import { breadcrumbJsonLd } from '@/lib/seo';
 import { getPracticeAreas, getPracticeAreaBySlug } from '@/lib/content/practice-areas';
 import { getLawyersByPracticeArea } from '@/lib/content/lawyers';
+import { getFirm } from '@/lib/content/firm';
 
 type Params = Promise<{ slug: string }>;
 
@@ -23,6 +24,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   return {
     title: area.title,
     description: area.shortDesc,
+    alternates: { canonical: `/practice-areas/${area.slug}` },
     keywords: [area.title, `${area.title} اهواز`, `وکیل ${area.title}`, `وکیل ${area.title} اهواز`, 'مجید سواری'],
   };
 }
@@ -32,17 +34,40 @@ export default async function PracticeAreaDetailPage({ params }: { params: Param
   const area = await getPracticeAreaBySlug(slug);
   if (!area) notFound();
 
-  const relatedLawyers = await getLawyersByPracticeArea(area.slug);
+  const [relatedLawyers, firm] = await Promise.all([
+    getLawyersByPracticeArea(area.slug),
+    getFirm(),
+  ]);
   const AreaIcon = PRACTICE_AREA_ICONS[area.icon];
-  const jsonLd = breadcrumbJsonLd([
+  const breadcrumb = breadcrumbJsonLd([
     { name: 'خانه', path: '/' },
     { name: 'حوزه‌های تخصصی', path: '/practice-areas' },
     { name: area.title, path: `/practice-areas/${area.slug}` },
   ]);
+  const serviceJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'LegalService',
+    name: `${area.title} در اهواز`,
+    description: area.longDesc,
+    url: new URL(`/practice-areas/${area.slug}`, firm.url).toString(),
+    provider: {
+      '@type': 'Attorney',
+      name: firm.shortName,
+      url: firm.url,
+      telephone: firm.phoneHref.replace('tel:', ''),
+    },
+    areaServed: { '@type': 'City', name: 'اهواز' },
+    serviceType: area.title,
+    availableChannel: {
+      '@type': 'ServiceChannel',
+      servicePhone: { '@type': 'ContactPoint', telephone: firm.phoneHref.replace('tel:', ''), contactType: 'customer service' },
+    },
+  };
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb).replace(/</g, '\\u003c') }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd).replace(/</g, '\\u003c') }} />
       <section className="bg-ink relative overflow-hidden">
         <div className="max-w-6xl mx-auto px-6 py-14 relative">
           <Link href="/practice-areas" className="inline-flex items-center gap-2 text-sm mb-8 text-parchment/85 hover:text-gold-light transition-colors">

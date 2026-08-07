@@ -20,8 +20,7 @@ import {
   X,
 } from 'lucide-react';
 import Seal from '@/components/Seal';
-import { signOut } from '@/app/auth/actions';
-import type { CurrentAccount } from '@/lib/session';
+import type { CurrentAccount } from '@/types/content';
 
 export type DashboardIconName =
   | 'dashboard'
@@ -118,12 +117,10 @@ export default function DashboardShell({
             <ExternalLink size={18} aria-hidden="true" />
             مشاهده سایت
           </Link>
-          <form action={signOut}>
-            <button type="submit" className="dashboard-nav-link !mx-0 w-full">
-              <LogOut size={18} aria-hidden="true" />
-              خروج از حساب
-            </button>
-          </form>
+          <a href="/auth/logout" className="dashboard-nav-link !mx-0 w-full">
+            <LogOut size={18} aria-hidden="true" />
+            خروج از حساب
+          </a>
         </div>
       </aside>
 

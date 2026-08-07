@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { getFirm } from '@/lib/content/firm';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/about' },
   title: 'درباره ما',
   description: 'آشنایی با مجید سواری، وکیل پایه یک دادگستری در اهواز، و روش کاری دفتر وکالت وی.',
   keywords: ['مجید سواری', 'وکیل پایه یک دادگستری اهواز', 'کانون وکلای خوزستان', 'درباره وکیل اهواز'],

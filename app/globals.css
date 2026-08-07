@@ -207,52 +207,23 @@ h1, h2, h3, h4 {
   transition: border-color 0.2s ease, color 0.2s ease;
 }
 
-/* Custom route loader. The native Next.js development badge is disabled in next.config.ts. */
-.navigation-loader {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: grid;
-  place-items: center;
-  padding: 1.5rem;
-  background: rgb(12 63 110 / 0.22);
-  backdrop-filter: blur(3px);
+/* Skeleton loading keeps the surrounding layout visible while route data streams. */
+.skeleton {
+  position: relative;
+  overflow: hidden;
 }
 
-.navigation-loader__bar {
+.skeleton::after {
+  content: "";
   position: absolute;
-  top: 0;
-  right: 0;
-  height: 3px;
-  width: 45%;
-  background: linear-gradient(90deg, transparent, var(--brand-gold), var(--brand-gold-light));
-  animation: loadingBar 1.15s ease-in-out infinite;
+  inset: 0;
+  transform: translateX(105%);
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.58), transparent);
+  animation: skeletonShimmer 1.35s ease-in-out infinite;
 }
 
-.navigation-loader__card {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  min-width: min(22rem, 92vw);
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  background: var(--card);
-  padding: 1.1rem 1.35rem;
-  box-shadow: 0 24px 70px rgb(12 63 110 / 0.24);
-}
-
-.navigation-loader__seal {
-  animation: loaderPulse 1.15s ease-in-out infinite;
-}
-
-@keyframes loadingBar {
-  0% { transform: translateX(120vw); }
-  100% { transform: translateX(-220vw); }
-}
-
-@keyframes loaderPulse {
-  0%, 100% { transform: scale(0.94); opacity: 0.72; }
-  50% { transform: scale(1.04); opacity: 1; }
+@keyframes skeletonShimmer {
+  to { transform: translateX(-105%); }
 }
 
 /* Dashboard shell */
@@ -419,8 +390,7 @@ h1, h2, h3, h4 {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .navigation-loader__bar,
-  .navigation-loader__seal,
+  .skeleton::after,
   .button-spinner {
     animation-duration: 1.6s !important;
   }

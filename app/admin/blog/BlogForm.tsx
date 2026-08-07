@@ -38,7 +38,7 @@ export default function BlogForm({ action, post, submitLabel }: BlogFormProps) {
         <>
           <input type="hidden" name="previousSlug" value={post.slug} />
           <input type="hidden" name="previousImageUrl" value={post.imageUrl ?? ''} />
-          <input type="hidden" name="previousImagePath" value={post.imagePath ?? ''} />
+          <input type="hidden" name="previousImageFileId" value={post.imageFileId ?? ''} />
         </>
       )}
 

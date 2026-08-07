@@ -1,12 +1,10 @@
-
-import { createPublicClient } from '@/lib/supabase/public';
+import { db } from '@/lib/db';
 import { formatJalaliDate, estimateReadTime } from '@/lib/format';
 import type { BlogPost } from '@/types/content';
 import { BLOG_POSTS } from '@/data/blog-posts';
-import { isSupabaseConfigured } from '@/lib/supabase/config';
 
-interface BlogPostRow {
-  id: number;
+interface Row {
+  id: number | string;
   slug: string;
   title: string;
   category: string;
@@ -14,15 +12,15 @@ interface BlogPostRow {
   content: string;
   published: boolean;
   featured: boolean;
-  image_url: string | null;
-  image_path: string | null;
-  image_alt: string | null;
-  created_at: string;
+  imageUrl: string | null;
+  imageFileId: string | null;
+  imageAlt: string | null;
+  createdAt: Date;
 }
 
-function toBlogPost(row: BlogPostRow): BlogPost {
+function map(row: Row): BlogPost {
   return {
-    id: row.id,
+    id: Number(row.id),
     slug: row.slug,
     title: row.title,
     category: row.category,
@@ -30,43 +28,44 @@ function toBlogPost(row: BlogPostRow): BlogPost {
     content: row.content,
     published: row.published,
     featured: row.featured,
-    imageUrl: row.image_url,
-    imagePath: row.image_path,
-    imageAlt: row.image_alt,
-    date: formatJalaliDate(row.created_at),
+    imageUrl: row.imageUrl,
+    imageFileId: row.imageFileId,
+    imageAlt: row.imageAlt,
+    date: formatJalaliDate(row.createdAt.toISOString()),
     readTime: estimateReadTime(row.content),
   };
 }
 
 export async function getBlogPosts(): Promise<BlogPost[]> {
-  if (!isSupabaseConfigured()) return BLOG_POSTS;
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from('blog_posts')
-    .select()
-    .eq('published', true)
-    .order('featured', { ascending: false })
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return (data as BlogPostRow[]).map(toBlogPost);
+  try {
+    const rows = await db<Row[]>`
+      select id, slug, title, category, excerpt, content, published, featured,
+             image_url, image_file_id, image_alt, created_at
+      from blog_posts
+      where published = true
+      order by featured desc, created_at desc
+    `;
+    return rows.map(map);
+  } catch {
+    return BLOG_POSTS;
+  }
 }
 
 export async function getBlogPostBySlug(slug: string): Promise<BlogPost | undefined> {
-  if (!isSupabaseConfigured()) return BLOG_POSTS.find((post) => post.slug === slug && post.published);
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from('blog_posts')
-    .select()
-    .eq('slug', slug)
-    .eq('published', true)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data ? toBlogPost(data as BlogPostRow) : undefined;
+  try {
+    const [row] = await db<Row[]>`
+      select id, slug, title, category, excerpt, content, published, featured,
+             image_url, image_file_id, image_alt, created_at
+      from blog_posts
+      where slug = ${slug} and published = true
+      limit 1
+    `;
+    return row ? map(row) : BLOG_POSTS.find((post) => post.slug === slug && post.published);
+  } catch {
+    return BLOG_POSTS.find((post) => post.slug === slug && post.published);
+  }
 }
 
 export async function getBlogCategories(): Promise<string[]> {
-  const posts = await getBlogPosts();
-  return Array.from(new Set(posts.map((post) => post.category)));
+  return Array.from(new Set((await getBlogPosts()).map((post) => post.category)));
 }

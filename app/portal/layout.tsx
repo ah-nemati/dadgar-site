@@ -1,7 +1,7 @@
 
 import type { Metadata } from 'next';
 import DashboardShell, { type DashboardNavItem } from '@/components/dashboard/DashboardShell';
-import { getCurrentAccount } from '@/lib/session';
+import { requireClient } from '@/lib/session';
 
 export const metadata: Metadata = {
   title: 'پنل کاربری',
@@ -19,9 +19,7 @@ const NAV_ITEMS: DashboardNavItem[] = [
 export const dynamic = 'force-dynamic';
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
-  const account = await getCurrentAccount();
-
-  if (!account || account.role === 'admin') return <>{children}</>;
+  const account = await requireClient();
 
   return (
     <DashboardShell account={account} navItems={NAV_ITEMS} panelTitle="پنل موکلین">

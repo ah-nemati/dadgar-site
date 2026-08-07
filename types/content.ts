@@ -51,7 +51,7 @@ export interface BlogPost {
   published: boolean;
   featured: boolean;
   imageUrl: string | null;
-  imagePath: string | null;
+  imageFileId: string | null;
   imageAlt: string | null;
 }
 
@@ -61,6 +61,14 @@ export interface FaqItem {
 }
 
 export type UserRole = 'admin' | 'client';
+
+export interface CurrentAccount {
+  id: string;
+  email: string;
+  fullName: string;
+  phone: string | null;
+  role: UserRole;
+}
 
 export interface Profile {
   id: string;
@@ -114,6 +122,7 @@ export interface ClientDocument {
   caseId: number;
   clientId: string;
   title: string;
+  fileId: string | null;
   filePath: string;
   fileName: string;
   mimeType: string | null;

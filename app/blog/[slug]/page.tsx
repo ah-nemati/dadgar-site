@@ -10,7 +10,7 @@ import { getBlogPostBySlug } from '@/lib/content/blog';
 
 type Params = Promise<{ slug: string }>;
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { slug } = await params;
@@ -20,6 +20,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   return {
     title: post.title,
     description: post.excerpt,
+    alternates: { canonical: `/blog/${post.slug}` },
     openGraph: post.imageUrl ? { images: [{ url: post.imageUrl, alt: post.imageAlt || post.title }] } : undefined,
   };
 }
@@ -42,6 +43,8 @@ export default async function BlogPostDetailPage({ params }: { params: Params })
     headline: post.title,
     description: post.excerpt,
     articleSection: post.category,
+    inLanguage: 'fa-IR',
+    mainEntityOfPage: new URL(`/blog/${post.slug}`, firm.url).toString(),
     image: post.imageUrl || undefined,
     author: { '@type': 'Person', name: firm.shortName },
     publisher: { '@type': 'Attorney', name: firm.shortName },
@@ -49,8 +52,8 @@ export default async function BlogPostDetailPage({ params }: { params: Params })
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb).replace(/</g, '\\u003c') }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd).replace(/</g, '\\u003c') }} />
 
       <section className="bg-ink">
         <div className="max-w-4xl mx-auto px-6 py-12">

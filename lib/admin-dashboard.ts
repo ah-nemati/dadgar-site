@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { db } from '@/lib/db';
 
 export interface AdminDashboardStats {
   clients: number;
@@ -10,39 +10,34 @@ export interface AdminDashboardStats {
   draftPosts: number;
 }
 
-function readCount(result: { count: number | null; error: { message: string } | null }) {
-  if (result.error) throw new Error(result.error.message);
-  return result.count ?? 0;
+interface StatsRow {
+  clients: number | string;
+  activeCases: number | string;
+  newConsultations: number | string;
+  openThreads: number | string;
+  pendingAppointments: number | string;
+  publishedPosts: number | string;
+  draftPosts: number | string;
 }
 
 export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
-  const supabase = await createClient();
-
-  const [
-    clientsResult,
-    activeCasesResult,
-    consultationsResult,
-    openThreadsResult,
-    appointmentsResult,
-    publishedPostsResult,
-    draftPostsResult,
-  ] = await Promise.all([
-    supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'client'),
-    supabase.from('client_cases').select('*', { count: 'exact', head: true }).neq('status', 'closed'),
-    supabase.from('consultation_requests').select('*', { count: 'exact', head: true }).eq('status', 'new'),
-    supabase.from('support_threads').select('*', { count: 'exact', head: true }).neq('status', 'closed'),
-    supabase.from('appointments').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-    supabase.from('blog_posts').select('*', { count: 'exact', head: true }).eq('published', true),
-    supabase.from('blog_posts').select('*', { count: 'exact', head: true }).eq('published', false),
-  ]);
-
+  const [row] = await db<StatsRow[]>`
+    select
+      (select count(*) from profiles where role = 'client')::int as clients,
+      (select count(*) from client_cases where status <> 'closed')::int as active_cases,
+      (select count(*) from consultation_requests where status = 'new')::int as new_consultations,
+      (select count(*) from support_threads where status <> 'closed')::int as open_threads,
+      (select count(*) from appointments where status = 'pending')::int as pending_appointments,
+      (select count(*) from blog_posts where published = true)::int as published_posts,
+      (select count(*) from blog_posts where published = false)::int as draft_posts
+  `;
   return {
-    clients: readCount(clientsResult),
-    activeCases: readCount(activeCasesResult),
-    newConsultations: readCount(consultationsResult),
-    openThreads: readCount(openThreadsResult),
-    pendingAppointments: readCount(appointmentsResult),
-    publishedPosts: readCount(publishedPostsResult),
-    draftPosts: readCount(draftPostsResult),
+    clients: Number(row.clients),
+    activeCases: Number(row.activeCases),
+    newConsultations: Number(row.newConsultations),
+    openThreads: Number(row.openThreads),
+    pendingAppointments: Number(row.pendingAppointments),
+    publishedPosts: Number(row.publishedPosts),
+    draftPosts: Number(row.draftPosts),
   };
 }

@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 export const metadata: Metadata = {
+  alternates: { canonical: '/lawyers' },
   title: "معرفی وکیل",
   description:
     "مجید سواری، وکیل پایه یک دادگستری و عضو کانون وکلای خوزستان، متخصص در دعاوی ملکی، چک و خانواده در اهواز.",

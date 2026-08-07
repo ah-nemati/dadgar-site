@@ -1,81 +1,22 @@
-import { createClient } from '@/lib/supabase/server';
+import { db } from '@/lib/db';
 import type { ConsultationRequest, ConsultationStatus } from '@/types/content';
 
-interface ConsultationRequestRow {
-  id: number;
-  name: string;
-  phone: string;
-  email: string | null;
-  practice_area: string | null;
-  message: string;
-  status: ConsultationStatus;
-  created_at: string;
-}
+interface Row { id: number | string; name: string; phone: string; email: string | null; practiceArea: string | null; message: string; status: ConsultationStatus; createdAt: Date }
+function map(row: Row): ConsultationRequest { return { ...row, id: Number(row.id), createdAt: row.createdAt.toISOString() }; }
+export interface NewConsultationRequest { name: string; phone: string; email?: string; practiceArea?: string; message: string }
 
-function toConsultationRequest(row: ConsultationRequestRow): ConsultationRequest {
-  return {
-    id: row.id,
-    name: row.name,
-    phone: row.phone,
-    email: row.email,
-    practiceArea: row.practice_area,
-    message: row.message,
-    status: row.status,
-    createdAt: row.created_at,
-  };
-}
-
-export interface NewConsultationRequest {
-  name: string;
-  phone: string;
-  email?: string;
-  practiceArea?: string;
-  message: string;
-}
-
-/**
- * Inserts a new consultation request (a submitted Contact form). Uses the anon
- * key + the "Public can submit consultation requests" RLS policy — see
- * supabase/schema.sql.
- */
 export async function createConsultationRequest(input: NewConsultationRequest): Promise<ConsultationRequest> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('consultation_requests')
-    .insert({
-      name: input.name,
-      phone: input.phone,
-      email: input.email ?? null,
-      practice_area: input.practiceArea ?? null,
-      message: input.message,
-    })
-    .select()
-    .single();
-
-  if (error) throw error;
-  return toConsultationRequest(data as ConsultationRequestRow);
+  const [row] = await db<Row[]>`
+    insert into consultation_requests (name, phone, email, practice_area, message)
+    values (${input.name}, ${input.phone}, ${input.email ?? null}, ${input.practiceArea ?? null}, ${input.message})
+    returning id, name, phone, email, practice_area, message, status, created_at
+  `;
+  return map(row);
 }
-
-/** Returns every consultation request, newest first — for the admin messages panel. */
 export async function getConsultationRequests(): Promise<ConsultationRequest[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('consultation_requests')
-    .select()
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return (data as ConsultationRequestRow[]).map(toConsultationRequest);
+  return (await db<Row[]>`select id, name, phone, email, practice_area, message, status, created_at from consultation_requests order by created_at desc`).map(map);
 }
-
 export async function updateConsultationRequestStatus(id: number, status: ConsultationStatus): Promise<void> {
-  const supabase = await createClient();
-  const { error } = await supabase.from('consultation_requests').update({ status }).eq('id', id);
-  if (error) throw error;
+  await db`update consultation_requests set status = ${status} where id = ${id}`;
 }
-
-export async function deleteConsultationRequest(id: number): Promise<void> {
-  const supabase = await createClient();
-  const { error } = await supabase.from('consultation_requests').delete().eq('id', id);
-  if (error) throw error;
-}
+export async function deleteConsultationRequest(id: number): Promise<void> { await db`delete from consultation_requests where id = ${id}`; }

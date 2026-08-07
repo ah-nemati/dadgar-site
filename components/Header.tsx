@@ -8,7 +8,6 @@ import { CircleUserRound, LockKeyhole, Mail, Menu, Phone, X } from 'lucide-react
 import Seal from './Seal';
 import { Button } from '@/components/ui/button';
 import type { Firm } from '@/types/content';
-import type { CurrentAccount } from '@/lib/session';
 
 const NAV_ITEMS = [
   { href: '/', label: 'خانه' },
@@ -20,40 +19,7 @@ const NAV_ITEMS = [
   { href: '/contact', label: 'تماس با ما' },
 ];
 
-function profilePath(account: CurrentAccount) {
-  return account.role === 'admin' ? '/admin' : '/portal';
-}
-
-function initials(account: CurrentAccount) {
-  const value = account.fullName.trim() || account.email;
-  const parts = value.split(/\s+/).filter(Boolean);
-  return parts.length > 1
-    ? `${parts[0][0]}${parts.at(-1)?.[0] ?? ''}`
-    : value.slice(0, 2);
-}
-
-function AccountLink({ account, compact = false }: { account: CurrentAccount; compact?: boolean }) {
-  return (
-    <Link
-      href={profilePath(account)}
-      className={`profile-link ${compact ? 'profile-link--compact' : ''}`}
-      aria-label={account.role === 'admin' ? 'ورود به پنل مدیریت' : 'ورود به پنل کاربری'}
-      title={account.fullName || account.email}
-    >
-      <span className="profile-avatar" aria-hidden="true">{initials(account)}</span>
-      {!compact && (
-        <span className="min-w-0">
-          <span className="block text-xs text-parchment/65">حساب کاربری</span>
-          <span className="block text-sm text-parchment truncate max-w-32">
-            {account.fullName || 'پروفایل من'}
-          </span>
-        </span>
-      )}
-    </Link>
-  );
-}
-
-export default function Header({ firm, account }: { firm: Firm; account: CurrentAccount | null }) {
+export default function Header({ firm }: { firm: Firm }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
   const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
@@ -100,14 +66,10 @@ export default function Header({ firm, account }: { firm: Firm; account: Current
             </a>
           </div>
 
-          {account ? (
-            <AccountLink account={account} />
-          ) : (
-            <Link href="/login" className="header-meta-link font-semibold">
-              <LockKeyhole size={14} aria-hidden="true" />
-              <span>ورود / ثبت‌نام</span>
-            </Link>
-          )}
+          <Link href="/account" className="header-meta-link font-semibold">
+            <LockKeyhole size={14} aria-hidden="true" />
+            <span>حساب کاربری</span>
+          </Link>
         </div>
       </div>
 
@@ -141,13 +103,9 @@ export default function Header({ firm, account }: { firm: Firm; account: Current
             </Button>
 
             <div className="md:hidden">
-              {account ? (
-                <AccountLink account={account} compact />
-              ) : (
-                <Link href="/login" className="header-icon-button" aria-label="ورود به حساب کاربری">
-                  <CircleUserRound size={22} aria-hidden="true" />
-                </Link>
-              )}
+              <Link href="/account" className="header-icon-button" aria-label="حساب کاربری">
+                <CircleUserRound size={22} aria-hidden="true" />
+              </Link>
             </div>
 
             <button
@@ -202,25 +160,14 @@ export default function Header({ firm, account }: { firm: Firm; account: Current
                 </Link>
               ))}
               <div className="my-2 border-t border-white/10" />
-              {account ? (
-                <Link
-                  href={profilePath(account)}
-                  onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-2 px-3 py-3 text-sm font-medium text-parchment/90"
-                >
-                  <CircleUserRound size={17} aria-hidden="true" />
-                  {account.role === 'admin' ? 'پنل مدیریت' : 'پنل کاربری'}
-                </Link>
-              ) : (
-                <Link
-                  href="/login"
-                  onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-2 px-3 py-3 text-sm font-medium text-parchment/90"
-                >
-                  <LockKeyhole size={17} aria-hidden="true" />
-                  ورود / ثبت‌نام
-                </Link>
-              )}
+              <Link
+                href="/account"
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-2 px-3 py-3 text-sm font-medium text-parchment/90"
+              >
+                <CircleUserRound size={17} aria-hidden="true" />
+                حساب کاربری
+              </Link>
               <Button asChild className="mt-2">
                 <Link href="/contact" onClick={() => setMenuOpen(false)}>درخواست مشاوره</Link>
               </Button>

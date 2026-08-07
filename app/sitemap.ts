@@ -4,16 +4,15 @@ import { getPracticeAreas } from "@/lib/content/practice-areas";
 import { getLawyers } from "@/lib/content/lawyers";
 import { getBlogPosts } from "@/lib/content/blog";
 
-// Blog routes come from Supabase; force-dynamic keeps the build independent of
-// reaching it, matching app/blog/page.tsx.
-export const dynamic = "force-dynamic";
+// Blog routes are read from PostgreSQL at request time.
+export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const firm = await getFirm();
   const practiceAreas = await getPracticeAreas();
   const lawyers = await getLawyers();
 
-  // Defensive: a Supabase hiccup should omit blog URLs, not break the sitemap.
+  // A temporary database outage should omit blog URLs instead of breaking the sitemap.
   const blogPosts = await getBlogPosts().catch(() => []);
 
   const staticRoutes: MetadataRoute.Sitemap = [
@@ -25,31 +24,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/faq",
     "/contact",
   ].map((path) => ({
-    url: `${firm.url}${path}`,
-    lastModified: new Date(),
+    url: new URL(path || "/", firm.url).toString(),
     changeFrequency: path === "" ? "weekly" : "monthly",
     priority: path === "" ? 1 : 0.8,
   }));
 
   const practiceAreaRoutes: MetadataRoute.Sitemap = practiceAreas.map(
     (area) => ({
-      url: `${firm.url}/practice-areas/${area.slug}`,
-      lastModified: new Date(),
+      url: new URL(`/practice-areas/${area.slug}`, firm.url).toString(),
       changeFrequency: "monthly",
       priority: 0.7,
     }),
   );
 
   const lawyerRoutes: MetadataRoute.Sitemap = lawyers.map((lw) => ({
-    url: `${firm.url}/lawyers/${lw.slug}`,
-    lastModified: new Date(),
+    url: new URL(`/lawyers/${lw.slug}`, firm.url).toString(),
     changeFrequency: "monthly",
     priority: 0.6,
   }));
 
   const blogRoutes: MetadataRoute.Sitemap = blogPosts.map((post) => ({
-    url: `${firm.url}/blog/${post.slug}`,
-    lastModified: new Date(),
+    url: new URL(`/blog/${post.slug}`, firm.url).toString(),
     changeFrequency: "yearly",
     priority: 0.5,
   }));

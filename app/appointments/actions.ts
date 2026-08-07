@@ -3,23 +3,18 @@
 
 import { revalidatePath } from 'next/cache';
 import {
+  cancelOwnAppointment,
   createAppointment,
   deleteAppointment,
   updateAppointment,
 } from '@/lib/appointments';
 import { requireAdmin, requireClient } from '@/lib/session';
 import type { AppointmentStatus } from '@/types/content';
+import { validateAppointmentDateTime } from '@/lib/business-hours';
 
 export interface AppointmentFormState {
   error?: string;
   success?: boolean;
-}
-
-function parseRequestedAt(value: string): string | null {
-  if (!value) return null;
-  const date = new Date(`${value}:00+03:30`);
-  if (Number.isNaN(date.getTime())) return null;
-  return date.toISOString();
 }
 
 export async function createAppointmentAction(
@@ -28,12 +23,17 @@ export async function createAppointmentAction(
 ): Promise<AppointmentFormState> {
   const account = await requireClient();
   const subject = String(formData.get('subject') ?? '').trim();
-  const requestedAt = parseRequestedAt(String(formData.get('requestedAt') ?? ''));
+  const requestedAtInput = String(formData.get('requestedAt') ?? '');
 
-  if (!subject || !requestedAt) return { error: 'موضوع و تاریخ پیشنهادی را وارد کنید.' };
-  if (new Date(requestedAt).getTime() < Date.now() + 60 * 60 * 1000) {
-    return { error: 'زمان پیشنهادی باید حداقل یک ساعت بعد باشد.' };
+  if (!subject || !requestedAtInput) {
+    return { error: 'موضوع و تاریخ پیشنهادی را وارد کنید.' };
   }
+
+  const validation = validateAppointmentDateTime(requestedAtInput);
+  if (!validation.ok || !validation.iso) {
+    return { error: validation.error ?? 'زمان پیشنهادی معتبر نیست.' };
+  }
+  const requestedAt = validation.iso;
 
   try {
     await createAppointment(account.id, subject, requestedAt);
@@ -76,4 +76,17 @@ export async function removeAppointmentAction(id: number) {
   revalidatePath('/admin');
   revalidatePath('/admin/appointments');
   revalidatePath('/portal/appointments');
+}
+
+export async function cancelAppointmentAction(id: number) {
+  await requireClient();
+  try {
+    await cancelOwnAppointment(id);
+  } catch {
+    return;
+  }
+  revalidatePath('/portal');
+  revalidatePath('/portal/appointments');
+  revalidatePath('/admin');
+  revalidatePath('/admin/appointments');
 }

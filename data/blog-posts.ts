@@ -19,7 +19,7 @@ export const BLOG_POSTS: BlogPost[] = [
     published: true,
     featured: false,
     imageUrl: null,
-    imagePath: null,
+    imageFileId: null,
     imageAlt: null,
   },
   {
@@ -40,7 +40,7 @@ export const BLOG_POSTS: BlogPost[] = [
     published: true,
     featured: false,
     imageUrl: null,
-    imagePath: null,
+    imageFileId: null,
     imageAlt: null,
   },
   {
@@ -60,7 +60,7 @@ export const BLOG_POSTS: BlogPost[] = [
     published: true,
     featured: false,
     imageUrl: null,
-    imagePath: null,
+    imageFileId: null,
     imageAlt: null,
   },
   {
@@ -81,7 +81,7 @@ export const BLOG_POSTS: BlogPost[] = [
     published: true,
     featured: false,
     imageUrl: null,
-    imagePath: null,
+    imageFileId: null,
     imageAlt: null,
   },
 ];

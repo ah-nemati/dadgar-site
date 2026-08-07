@@ -1,78 +1,43 @@
-
-import { createClient } from '@/lib/supabase/server';
+import { db } from '@/lib/db';
+import { requireAccount } from '@/lib/session';
 import type { Appointment, AppointmentStatus } from '@/types/content';
 
 interface AppointmentRow {
-  id: number;
-  client_id: string;
-  subject: string;
-  requested_at: string;
-  status: AppointmentStatus;
-  notes: string | null;
-  created_at: string;
+  id: number | string; clientId: string; clientName: string; subject: string; requestedAt: Date;
+  status: AppointmentStatus; notes: string | null; createdAt: Date;
 }
-
-async function namesMap(ids: string[]) {
-  const map = new Map<string, string>();
-  if (ids.length === 0) return map;
-  const supabase = await createClient();
-  const { data } = await supabase.from('profiles').select('id, full_name').in('id', ids);
-  for (const row of data ?? []) map.set(row.id, row.full_name || 'موکل');
-  return map;
+function toAppointment(row: AppointmentRow): Appointment {
+  return { id: Number(row.id), clientId: row.clientId, clientName: row.clientName || 'موکل', subject: row.subject,
+    requestedAt: row.requestedAt.toISOString(), status: row.status, notes: row.notes, createdAt: row.createdAt.toISOString() };
 }
 
 export async function getAppointments(): Promise<Appointment[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('appointments')
-    .select()
-    .order('requested_at', { ascending: false });
-
-  if (error) throw error;
-  const rows = data as AppointmentRow[];
-  const names = await namesMap(Array.from(new Set(rows.map((row) => row.client_id))));
-
-  return rows.map((row) => ({
-    id: row.id,
-    clientId: row.client_id,
-    clientName: names.get(row.client_id) ?? 'موکل',
-    subject: row.subject,
-    requestedAt: row.requested_at,
-    status: row.status,
-    notes: row.notes,
-    createdAt: row.created_at,
-  }));
+  const account = await requireAccount();
+  const rows = account.role === 'admin'
+    ? await db<AppointmentRow[]>`
+        select a.*, p.full_name as client_name from appointments a join profiles p on p.id = a.client_id
+        order by a.requested_at desc
+      `
+    : await db<AppointmentRow[]>`
+        select a.*, p.full_name as client_name from appointments a join profiles p on p.id = a.client_id
+        where a.client_id = ${account.id} order by a.requested_at desc
+      `;
+  return rows.map(toAppointment);
 }
 
-export async function createAppointment(
-  clientId: string,
-  subject: string,
-  requestedAt: string
-): Promise<void> {
-  const supabase = await createClient();
-  const { error } = await supabase.from('appointments').insert({
-    client_id: clientId,
-    subject,
-    requested_at: requestedAt,
-  });
-  if (error) throw error;
+export async function createAppointment(clientId: string, subject: string, requestedAt: string): Promise<void> {
+  await db`insert into appointments (client_id, subject, requested_at) values (${clientId}, ${subject}, ${requestedAt})`;
 }
-
-export async function updateAppointment(
-  id: number,
-  status: AppointmentStatus,
-  notes: string | null
-): Promise<void> {
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from('appointments')
-    .update({ status, notes })
-    .eq('id', id);
-  if (error) throw error;
+export async function updateAppointment(id: number, status: AppointmentStatus, notes: string | null): Promise<void> {
+  await db`update appointments set status = ${status}, notes = ${notes} where id = ${id}`;
 }
-
-export async function deleteAppointment(id: number): Promise<void> {
-  const supabase = await createClient();
-  const { error } = await supabase.from('appointments').delete().eq('id', id);
-  if (error) throw error;
+export async function deleteAppointment(id: number): Promise<void> { await db`delete from appointments where id = ${id}`; }
+export async function cancelOwnAppointment(id: number): Promise<void> {
+  const account = await requireAccount();
+  const result = await db`
+    update appointments set status = 'cancelled'
+    where id = ${id} and client_id = ${account.id} and status in ('pending', 'confirmed')
+    returning id
+  `;
+  if (result.length === 0) throw new Error('APPOINTMENT_NOT_CANCELLABLE');
 }

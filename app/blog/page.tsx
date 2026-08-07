@@ -4,16 +4,13 @@ import BlogList from '@/components/BlogList';
 import { getBlogPosts } from '@/lib/content/blog';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/blog' },
   title: 'وبلاگ حقوقی',
   description: 'یادداشت‌ها و مقالات حقوقی دفتر وکالت مجید سواری درباره دعاوی ملکی، چک و خانواده در اهواز.',
 };
 
-// CMS-managed content read from Supabase at request time — force-dynamic means
-// the build never depends on reaching Supabase (robust if it's unreachable
-// during a deploy) and content is always current. If this site grows enough
-// traffic that the extra DB round-trip per request matters, swap this for
-// `export const revalidate = 3600` (ISR) instead — the page code doesn't change.
-export const dynamic = 'force-dynamic';
+// Public CMS pages use ISR; admin mutations explicitly invalidate these paths.
+export const revalidate = 3600;
 
 export default async function BlogPage() {
   const posts = await getBlogPosts();

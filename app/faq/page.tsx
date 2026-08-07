@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { getFaqs } from '@/lib/content/faqs';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/faq' },
   title: 'سوالات متداول',
   description: 'پاسخ به سوالات پرتکرار موکلین دفتر وکالت مجید سواری درباره مشاوره، هزینه، محرمانگی و روند پرونده.',
 };

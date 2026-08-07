@@ -6,6 +6,7 @@ import { PRACTICE_AREA_ICONS } from '@/lib/icons';
 import { getPracticeAreas } from '@/lib/content/practice-areas';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/practice-areas' },
   title: 'حوزه‌های تخصصی',
   description: 'حوزه‌های تخصصی دفتر وکالت مجید سواری در اهواز: حقوق ملک و املاک، دعاوی چک، و حقوق خانواده.',
 };

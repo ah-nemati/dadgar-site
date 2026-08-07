@@ -54,9 +54,6 @@ export default function ForgotPasswordPage() {
             <Alert variant="destructive">
               <AlertDescription className="col-start-1">
                 {state.error}
-                {state.errorCode && (
-                  <span className="block mt-1 text-xs" dir="ltr">code: {state.errorCode}</span>
-                )}
               </AlertDescription>
             </Alert>
           )}

@@ -1,55 +1,39 @@
-
-import { createClient } from '@/lib/supabase/server';
+import { db } from '@/lib/db';
+import { updateAuth0Profile } from '@/lib/auth0-management';
+import { requireAccount } from '@/lib/session';
 import type { Profile } from '@/types/content';
 
 interface ProfileRow {
   id: string;
-  full_name: string;
+  fullName: string;
   email: string | null;
   phone: string | null;
   role: 'admin' | 'client';
-  created_at: string;
+  createdAt: Date;
 }
 
 function toProfile(row: ProfileRow): Profile {
-  return {
-    id: row.id,
-    fullName: row.full_name,
-    email: row.email,
-    phone: row.phone,
-    role: row.role,
-    createdAt: row.created_at,
-  };
+  return { ...row, createdAt: row.createdAt.toISOString() };
 }
 
 export async function getCurrentProfile(): Promise<Profile | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('id, full_name, email, phone, role, created_at')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (error || !data) return null;
-  return toProfile(data as ProfileRow);
+  const account = await requireAccount();
+  const [row] = await db<ProfileRow[]>`
+    select id, full_name, email, phone, role, created_at
+    from profiles where id = ${account.id} limit 1
+  `;
+  return row ? toProfile(row) : null;
 }
 
 export async function updateOwnProfile(input: { fullName: string; phone: string }): Promise<void> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error('Not signed in.');
-
-  const { error } = await supabase
-    .from('profiles')
-    .update({ full_name: input.fullName, phone: input.phone })
-    .eq('id', user.id);
-
-  if (error) throw error;
+  const account = await requireAccount();
+  await db`
+    update profiles set full_name = ${input.fullName}, phone = ${input.phone}
+    where id = ${account.id}
+  `;
+  try {
+    await updateAuth0Profile(account.id, input);
+  } catch {
+    // The local profile remains authoritative for application display.
+  }
 }

@@ -1,4 +1,3 @@
-
 'use server';
 
 import { revalidatePath } from 'next/cache';
@@ -8,8 +7,10 @@ import {
   deleteBlogPost,
   removeBlogImage,
   slugify,
+  updateBlogImageMetadata,
   updateBlogPost,
   uploadBlogImage,
+  type BlogImageMetadata,
 } from '@/lib/content/blog-admin';
 import { requireAdmin } from '@/lib/session';
 
@@ -33,6 +34,16 @@ function baseForm(formData: FormData) {
   };
 }
 
+function mediaMetadata(base: ReturnType<typeof baseForm>): BlogImageMetadata {
+  return {
+    slug: base.slug,
+    title: base.title,
+    category: base.category,
+    excerpt: base.excerpt,
+    alt: base.imageAlt,
+  };
+}
+
 function revalidateBlog(slug?: string, previousSlug?: string) {
   revalidatePath('/');
   revalidatePath('/admin');
@@ -49,7 +60,10 @@ function formError(error: unknown): string {
   }
   if (message === 'INVALID_IMAGE_TYPE') return 'فایل انتخاب‌شده تصویر معتبر نیست.';
   if (message === 'IMAGE_TOO_LARGE') return 'حجم تصویر باید کمتر از ۵ مگابایت باشد.';
-  return 'ذخیره مطلب با خطا مواجه شد. تنظیمات دیتابیس و Storage را بررسی کنید.';
+  if (message.includes('IMAGEKIT_') || message.includes('ImageKit')) {
+    return 'ارتباط با ImageKit برقرار نشد. کلید خصوصی و URL Endpoint را بررسی کنید.';
+  }
+  return 'ذخیره مطلب با خطا مواجه شد. تنظیمات دیتابیس و ImageKit را بررسی کنید.';
 }
 
 export async function createPost(
@@ -64,18 +78,20 @@ export async function createPost(
   }
 
   const image = formData.get('image');
-  let uploaded: { path: string; url: string } | null = null;
+  let uploaded: { fileId: string; path: string; url: string } | null = null;
 
   try {
-    if (image instanceof File && image.size > 0) uploaded = await uploadBlogImage(image);
+    if (image instanceof File && image.size > 0) {
+      uploaded = await uploadBlogImage(image, mediaMetadata(base));
+    }
 
     await createBlogPost({
       ...base,
       imageUrl: uploaded?.url ?? null,
-      imagePath: uploaded?.path ?? null,
+      imageFileId: uploaded?.fileId ?? null,
     });
   } catch (error) {
-    if (uploaded) await removeBlogImage(uploaded.path);
+    if (uploaded) await removeBlogImage(uploaded.fileId).catch(() => undefined);
     return { error: formError(error) };
   }
 
@@ -97,28 +113,30 @@ export async function editPost(
 
   const previousSlug = String(formData.get('previousSlug') ?? '');
   const previousImageUrl = String(formData.get('previousImageUrl') ?? '') || null;
-  const previousImagePath = String(formData.get('previousImagePath') ?? '') || null;
+  const previousImageFileId = String(formData.get('previousImageFileId') ?? '') || null;
   const removeImage = formData.get('removeImage') === 'on';
   const image = formData.get('image');
 
   let imageUrl = removeImage ? null : previousImageUrl;
-  let imagePath = removeImage ? null : previousImagePath;
-  let uploaded: { path: string; url: string } | null = null;
+  let imageFileId = removeImage ? null : previousImageFileId;
+  let uploaded: { fileId: string; path: string; url: string } | null = null;
 
   try {
     if (image instanceof File && image.size > 0) {
-      uploaded = await uploadBlogImage(image);
+      uploaded = await uploadBlogImage(image, mediaMetadata(base));
       imageUrl = uploaded.url;
-      imagePath = uploaded.path;
+      imageFileId = uploaded.fileId;
+    } else if (imageFileId && !removeImage) {
+      await updateBlogImageMetadata(imageFileId, mediaMetadata(base));
     }
 
-    await updateBlogPost(id, { ...base, imageUrl, imagePath });
+    await updateBlogPost(id, { ...base, imageUrl, imageFileId });
 
-    if ((uploaded || removeImage) && previousImagePath && previousImagePath !== imagePath) {
-      await removeBlogImage(previousImagePath);
+    if ((uploaded || removeImage) && previousImageFileId && previousImageFileId !== imageFileId) {
+      await removeBlogImage(previousImageFileId);
     }
   } catch (error) {
-    if (uploaded) await removeBlogImage(uploaded.path);
+    if (uploaded) await removeBlogImage(uploaded.fileId).catch(() => undefined);
     return { error: formError(error) };
   }
 

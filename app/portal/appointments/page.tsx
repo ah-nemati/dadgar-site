@@ -5,6 +5,8 @@ import { AppointmentRequestForm } from '@/components/AppointmentForms';
 import { Badge } from '@/components/ui/badge';
 import { APPOINTMENT_STATUS_LABEL, APPOINTMENT_STATUS_VARIANT } from '@/lib/status';
 import { formatJalaliDateTime } from '@/lib/format';
+import CancelAppointmentButton from '@/components/CancelAppointmentButton';
+import { BUSINESS_HOURS_LABEL } from '@/lib/business-hours';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,7 +18,7 @@ export default async function PortalAppointmentsPage() {
       <div className="dashboard-page-header">
         <div>
           <h1 className="dashboard-page-title">نوبت مشاوره</h1>
-          <p className="dashboard-page-description">زمان پیشنهادی خود را ثبت کنید؛ دفتر پس از بررسی وضعیت را تأیید می‌کند.</p>
+          <p className="dashboard-page-description">زمان پیشنهادی خود را در ساعات کاری ({BUSINESS_HOURS_LABEL}) ثبت کنید؛ دفتر پس از بررسی وضعیت را تأیید می‌کند.</p>
         </div>
       </div>
 
@@ -32,7 +34,12 @@ export default async function PortalAppointmentsPage() {
                     <p className="text-xs text-muted-foreground mt-2">زمان پیشنهادی: {formatJalaliDateTime(appointment.requestedAt)}</p>
                     {appointment.notes && <p className="text-sm text-muted-foreground mt-3 rounded-lg bg-muted/50 p-3">{appointment.notes}</p>}
                   </div>
-                  <Badge variant={APPOINTMENT_STATUS_VARIANT[appointment.status]}>{APPOINTMENT_STATUS_LABEL[appointment.status]}</Badge>
+                  <div className="flex flex-col items-end gap-2">
+                    <Badge variant={APPOINTMENT_STATUS_VARIANT[appointment.status]}>{APPOINTMENT_STATUS_LABEL[appointment.status]}</Badge>
+                    {(appointment.status === 'pending' || appointment.status === 'confirmed') && (
+                      <CancelAppointmentButton id={appointment.id} />
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

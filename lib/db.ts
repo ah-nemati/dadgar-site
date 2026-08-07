@@ -1,30 +1,27 @@
-import Database from 'better-sqlite3';
-import fs from 'fs';
-import path from 'path';
+import 'server-only';
+import postgres from 'postgres';
 
-// Local file-based SQLite — free, zero setup, works immediately with `npm install`.
-// Good for local dev and for any host with a persistent filesystem. NOT suitable
-// for Vercel's default serverless deployment (ephemeral filesystem) — see the
-// "Database" section in README.md for the free-tier upgrade path (Turso) when
-// you're ready to deploy.
-const dataDir = path.join(process.cwd(), '.data');
-fs.mkdirSync(dataDir, { recursive: true });
-const dbPath = path.join(dataDir, 'app.db');
+declare global {
+  // eslint-disable-next-line no-var
+  var __dadgarSql: ReturnType<typeof postgres> | undefined;
+}
 
-const db = new Database(dbPath);
-db.pragma('journal_mode = WAL');
+function connectionString(): string {
+  const value = process.env.DATABASE_URL?.trim();
+  if (!value) throw new Error('DATABASE_URL is not configured.');
+  return value;
+}
 
-db.exec(`
-  CREATE TABLE IF NOT EXISTS consultation_requests (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    phone TEXT NOT NULL,
-    email TEXT,
-    practice_area TEXT,
-    message TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'new',
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
-  )
-`);
+export const db =
+  globalThis.__dadgarSql ??
+  postgres(connectionString(), {
+    max: 1,
+    idle_timeout: 20,
+    connect_timeout: 15,
+    prepare: false,
+    ssl: process.env.DATABASE_SSL === 'false' ? false : 'require',
+    transform: postgres.camel,
+  });
 
-export default db;
+if (process.env.NODE_ENV !== 'production') globalThis.__dadgarSql = db;
+

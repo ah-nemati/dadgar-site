@@ -66,8 +66,28 @@ export default async function AdminCasesPage({
           <p className="text-muted-foreground">پرونده‌ای مطابق فیلتر پیدا نشد.</p>
         </div>
       ) : (
-        <div className="dashboard-table-wrap">
-          <table className="w-full text-sm min-w-[900px]">
+        <>
+          <div className="grid grid-cols-1 gap-3 md:hidden">
+            {filtered.map((item) => (
+              <article key={item.id} className="dashboard-card p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h2 className="font-bold truncate">{item.title}</h2>
+                    <p className="text-xs text-muted-foreground mt-2">موکل: {item.clientName}</p>
+                    <p className="text-xs text-muted-foreground mt-1" dir="ltr">{item.caseNumber}</p>
+                  </div>
+                  <Badge variant={CASE_STATUS_VARIANT[item.status]}>{CASE_STATUS_LABEL[item.status]}</Badge>
+                </div>
+                <div className="flex items-center justify-between gap-3 mt-4">
+                  <span className="text-[11px] text-muted-foreground">آخرین تغییر: {formatJalaliDate(item.updatedAt)}</span>
+                  <Button asChild size="sm" variant="outline"><Link href={`/admin/cases/${item.id}`}>مدیریت</Link></Button>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="dashboard-table-wrap hidden md:block">
+            <table className="w-full text-sm min-w-[900px]">
             <thead className="bg-muted/55 text-muted-foreground">
               <tr>
                 <th className="text-right p-4">وضعیت</th>
@@ -90,8 +110,9 @@ export default async function AdminCasesPage({
                 </tr>
               ))}
             </tbody>
-          </table>
-        </div>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );

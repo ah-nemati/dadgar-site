@@ -58,12 +58,13 @@ const whyUs: InfoPoint[] = [
   },
 ];
 
+export const revalidate = 3600;
+
 export default async function HomePage() {
   const firm = await getFirm();
   const practiceAreas = await getPracticeAreas();
   const lawyers = await getLawyers();
-  // Defensive: the rest of this page is static content, so a Supabase hiccup
-  // should just hide the blog-preview section, not break the whole page.
+  // Keep the public page available even during a temporary database outage.
   const blogPosts = await getBlogPosts().catch(() => []);
 
   return (

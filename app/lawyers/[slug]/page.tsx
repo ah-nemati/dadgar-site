@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { getLawyerBySlug, getLawyers } from "@/lib/content/lawyers";
 import { getPracticeAreas } from "@/lib/content/practice-areas";
+import { getFirm } from "@/lib/content/firm";
 import { breadcrumbJsonLd } from "@/lib/seo";
 import profile from "@/public/images/profile.jpeg";
 import { ArrowLeft, ArrowRight, GraduationCap } from "lucide-react";
@@ -27,6 +28,7 @@ export async function generateMetadata({
   return {
     title: lawyer.name,
     description: lawyer.bio,
+    alternates: { canonical: `/lawyers/${lawyer.slug}` },
   };
 }
 
@@ -35,22 +37,38 @@ export default async function LawyerDetailPage({ params }: { params: Params }) {
   const lawyer = await getLawyerBySlug(slug);
   if (!lawyer) notFound();
 
-  const practiceAreas = await getPracticeAreas();
+  const [practiceAreas, firm] = await Promise.all([getPracticeAreas(), getFirm()]);
   const specialtyAreas = practiceAreas.filter((a) =>
     lawyer.specialties.includes(a.slug),
   );
   const firstName = lawyer.name.split(" ")[0];
-  const jsonLd = breadcrumbJsonLd([
+  const breadcrumb = breadcrumbJsonLd([
     { name: "خانه", path: "/" },
     { name: "معرفی وکیل", path: "/lawyers" },
     { name: lawyer.name, path: `/lawyers/${lawyer.slug}` },
   ]);
+  const personJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: lawyer.name,
+    jobTitle: lawyer.role,
+    description: lawyer.bio,
+    url: new URL(`/lawyers/${lawyer.slug}`, firm.url).toString(),
+    image: new URL('/images/profile.jpeg', firm.url).toString(),
+    knowsAbout: specialtyAreas.map((area) => area.title),
+    memberOf: { '@type': 'Organization', name: 'کانون وکلای دادگستری خوزستان' },
+    worksFor: { '@type': 'LegalService', name: firm.name, url: firm.url },
+  };
 
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb).replace(/</g, '\\u003c') }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd).replace(/</g, '\\u003c') }}
       />
       <section className="bg-ink">
         <div className="max-w-6xl mx-auto px-6 py-14">

@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { Appointment } from '@/types/content';
+import { BUSINESS_HOURS_LABEL, BUSINESS_SLOT_MINUTES } from '@/lib/business-hours';
 
 function Feedback({ state }: { state: AppointmentFormState | undefined }) {
   if (state?.error) return <Alert variant="destructive"><AlertDescription className="col-start-1">{state.error}</AlertDescription></Alert>;
@@ -34,8 +35,8 @@ export function AppointmentRequestForm() {
       </div>
       <div className="space-y-2">
         <Label htmlFor="requestedAt">تاریخ و ساعت پیشنهادی</Label>
-        <Input id="requestedAt" name="requestedAt" type="datetime-local" required />
-        <p className="text-xs text-muted-foreground">زمان نهایی پس از بررسی مدیر دفتر تأیید می‌شود.</p>
+        <Input id="requestedAt" name="requestedAt" type="datetime-local" step={BUSINESS_SLOT_MINUTES * 60} required aria-describedby="appointment-hours" />
+        <p id="appointment-hours" className="text-xs text-muted-foreground leading-6">ساعات قابل رزرو: {BUSINESS_HOURS_LABEL}. زمان نهایی پس از بررسی مدیر دفتر تأیید می‌شود.</p>
       </div>
       <Feedback state={state} />
       <Button type="submit" disabled={pending}>

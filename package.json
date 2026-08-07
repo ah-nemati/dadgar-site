@@ -1,23 +1,36 @@
 {
-  "name": "dadgar-law-firm-ts",
-  "version": "0.1.0",
+  "name": "dadgar-law-firm-auth0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "audit:storage": "node scripts/audit-storage.mjs",
+    "typecheck": "tsc --noEmit",
+    "build": "npm run audit:storage && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:migrate": "node scripts/migrate.mjs",
+    "db:seed": "node scripts/seed.mjs",
+    "cf:build": "npx --yes @opennextjs/cloudflare@1.20.2 build",
+    "preview": "npm run cf:build && npx wrangler dev",
+    "deploy": "npm run cf:build && npx wrangler deploy",
+    "upload": "npx --yes @opennextjs/cloudflare@1.20.2 build && npx --yes @opennextjs/cloudflare@1.20.2 upload",
+    "cf:typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
-    "@supabase/ssr": "^0.12.3",
-    "@supabase/supabase-js": "^2.110.7",
+    "@auth0/nextjs-auth0": "^4.25.0",
+    "@imagekit/nodejs": "^7.10.0",
+    "@radix-ui/react-dialog": "^1.1.23",
+    "@radix-ui/react-select": "^2.3.7",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "jalaali-js": "^2.0.0",
-    "lucide-react": "^1.24.0",
-    "next": "16.2.10",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
+    "lucide-react": "^1.27.0",
+    "next": "16.2.12",
+    "postgres": "3.4.7",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "server-only": "^0.0.1",
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
@@ -26,8 +39,12 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.10",
+    "eslint-config-next": "16.2.12",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^4.30.0"
+  },
+  "engines": {
+    "node": ">=20.19.0"
   }
 }
