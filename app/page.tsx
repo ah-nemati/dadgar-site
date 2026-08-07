@@ -7,7 +7,6 @@ import { getFirm } from "@/lib/content/firm";
 import { getLawyers } from "@/lib/content/lawyers";
 import { getPracticeAreas } from "@/lib/content/practice-areas";
 import { PRACTICE_AREA_ICONS } from "@/lib/icons";
-import profile from "@/public/images/profile.jpeg";
 import {
   ArrowLeft,
   Award,
@@ -202,7 +201,7 @@ export default async function HomePage() {
             <div className="bg-card border border-border rounded-sm p-8 md:p-10 flex flex-col md:flex-row items-center md:items-start gap-8 text-center md:text-right">
               <div className="relative w-36 h-36 md:w-40 md:h-40 overflow-hidden rounded-full border-4 border-gold/40 bg-ink-2 shadow-2xl">
                 <Image
-                  src={profile}
+                  src="/images/profile.jpeg"
                   alt={`تصویر ${lawyers[0].name}`}
                   fill
                   priority

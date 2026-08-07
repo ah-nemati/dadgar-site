@@ -3,7 +3,6 @@ import { getLawyerBySlug, getLawyers } from "@/lib/content/lawyers";
 import { getPracticeAreas } from "@/lib/content/practice-areas";
 import { getFirm } from "@/lib/content/firm";
 import { breadcrumbJsonLd } from "@/lib/seo";
-import profile from "@/public/images/profile.jpeg";
 import { ArrowLeft, ArrowRight, GraduationCap } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -37,7 +36,10 @@ export default async function LawyerDetailPage({ params }: { params: Params }) {
   const lawyer = await getLawyerBySlug(slug);
   if (!lawyer) notFound();
 
-  const [practiceAreas, firm] = await Promise.all([getPracticeAreas(), getFirm()]);
+  const [practiceAreas, firm] = await Promise.all([
+    getPracticeAreas(),
+    getFirm(),
+  ]);
   const specialtyAreas = practiceAreas.filter((a) =>
     lawyer.specialties.includes(a.slug),
   );
@@ -48,27 +50,31 @@ export default async function LawyerDetailPage({ params }: { params: Params }) {
     { name: lawyer.name, path: `/lawyers/${lawyer.slug}` },
   ]);
   const personJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Person',
+    "@context": "https://schema.org",
+    "@type": "Person",
     name: lawyer.name,
     jobTitle: lawyer.role,
     description: lawyer.bio,
     url: new URL(`/lawyers/${lawyer.slug}`, firm.url).toString(),
-    image: new URL('/images/profile.jpeg', firm.url).toString(),
+    image: new URL("/images/profile.jpeg", firm.url).toString(),
     knowsAbout: specialtyAreas.map((area) => area.title),
-    memberOf: { '@type': 'Organization', name: 'کانون وکلای دادگستری خوزستان' },
-    worksFor: { '@type': 'LegalService', name: firm.name, url: firm.url },
+    memberOf: { "@type": "Organization", name: "کانون وکلای دادگستری خوزستان" },
+    worksFor: { "@type": "LegalService", name: firm.name, url: firm.url },
   };
 
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb).replace(/</g, '\\u003c') }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumb).replace(/</g, "\\u003c"),
+        }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd).replace(/</g, '\\u003c') }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(personJsonLd).replace(/</g, "\\u003c"),
+        }}
       />
       <section className="bg-ink">
         <div className="max-w-6xl mx-auto px-6 py-14">
@@ -82,7 +88,7 @@ export default async function LawyerDetailPage({ params }: { params: Params }) {
             <div className="relative shrink-0">
               <div className="relative w-36 h-36 md:w-40 md:h-40 overflow-hidden rounded-full border-4 border-gold/40 bg-ink-2 shadow-2xl">
                 <Image
-                  src={profile}
+                  src="/images/profile.jpeg"
                   alt={`تصویر ${lawyer.name}`}
                   fill
                   priority

@@ -1,12 +1,11 @@
 import PageHero from "@/components/PageHero";
 import { getLawyers } from "@/lib/content/lawyers";
 import { getPracticeAreas } from "@/lib/content/practice-areas";
-import profile from "@/public/images/profile.jpeg";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 export const metadata: Metadata = {
-  alternates: { canonical: '/lawyers' },
+  alternates: { canonical: "/lawyers" },
   title: "معرفی وکیل",
   description:
     "مجید سواری، وکیل پایه یک دادگستری و عضو کانون وکلای خوزستان، متخصص در دعاوی ملکی، چک و خانواده در اهواز.",
@@ -33,7 +32,7 @@ export default async function LawyersPage() {
                 className="bg-card border border-border hover:border-gold hover:-translate-y-0.5 transition-all rounded-sm p-6 text-center flex flex-col items-center"
               >
                 <Image
-                  src={profile}
+                  src="/images/profile.jpeg"
                   alt={`تصویر ${lw.name}`}
                   priority
                   sizes="(max-width: 640px) 144px, 160px"
