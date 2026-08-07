@@ -1,34 +1,43 @@
+"use client";
 
-'use client';
-
-import { useActionState, useEffect, useState, type ChangeEvent } from 'react';
-import { ImagePlus, Star } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import type { BlogFormState } from './actions';
-import type { BlogPost } from '@/types/content';
+import { useActionState, useEffect, useState, type ChangeEvent } from "react";
+import { ImagePlus, Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import type { BlogFormState } from "./actions";
+import type { BlogPost } from "@/types/content";
+import Image from "next/image";
 
 interface BlogFormProps {
-  action: (prevState: BlogFormState | undefined, formData: FormData) => Promise<BlogFormState>;
+  action: (
+    prevState: BlogFormState | undefined,
+    formData: FormData,
+  ) => Promise<BlogFormState>;
   post?: BlogPost;
   submitLabel: string;
 }
 
-const CATEGORIES = ['حقوق ملک', 'دعاوی چک', 'حقوق خانواده', 'آموزش حقوقی', 'اخبار حقوقی'];
+const CATEGORIES = [
+  "حقوق ملک",
+  "دعاوی چک",
+  "حقوق خانواده",
+  "آموزش حقوقی",
+  "اخبار حقوقی",
+];
 
 export default function BlogForm({ action, post, submitLabel }: BlogFormProps) {
   const [state, formAction, pending] = useActionState(action, undefined);
   const [slugTouched, setSlugTouched] = useState(Boolean(post));
-  const [slug, setSlug] = useState(post?.slug ?? '');
+  const [slug, setSlug] = useState(post?.slug ?? "");
   const [preview, setPreview] = useState<string | null>(post?.imageUrl ?? null);
 
   useEffect(() => {
     return () => {
-      if (preview?.startsWith('blob:')) URL.revokeObjectURL(preview);
+      if (preview?.startsWith("blob:")) URL.revokeObjectURL(preview);
     };
   }, [preview]);
 
@@ -37,8 +46,16 @@ export default function BlogForm({ action, post, submitLabel }: BlogFormProps) {
       {post && (
         <>
           <input type="hidden" name="previousSlug" value={post.slug} />
-          <input type="hidden" name="previousImageUrl" value={post.imageUrl ?? ''} />
-          <input type="hidden" name="previousImageFileId" value={post.imageFileId ?? ''} />
+          <input
+            type="hidden"
+            name="previousImageUrl"
+            value={post.imageUrl ?? ""}
+          />
+          <input
+            type="hidden"
+            name="previousImageFileId"
+            value={post.imageFileId ?? ""}
+          />
         </>
       )}
 
@@ -82,7 +99,9 @@ export default function BlogForm({ action, post, submitLabel }: BlogFormProps) {
             required
           />
           <datalist id="blog-categories">
-            {CATEGORIES.map((category) => <option key={category} value={category} />)}
+            {CATEGORIES.map((category) => (
+              <option key={category} value={category} />
+            ))}
           </datalist>
         </div>
       </div>
@@ -94,12 +113,18 @@ export default function BlogForm({ action, post, submitLabel }: BlogFormProps) {
           className="block border-2 border-dashed border-border rounded-lg overflow-hidden cursor-pointer hover:border-primary transition-colors bg-muted/30"
         >
           {preview ? (
-            <img src={preview} alt="پیش‌نمایش تصویر شاخص" className="blog-cover" />
+            <Image
+              src={preview}
+              alt="پیش‌نمایش تصویر شاخص"
+              className="blog-cover"
+            />
           ) : (
             <span className="min-h-48 flex flex-col items-center justify-center gap-3 text-muted-foreground">
               <ImagePlus size={34} aria-hidden="true" />
               <span className="text-sm">برای انتخاب تصویر کلیک کنید</span>
-              <span className="text-xs">JPG، PNG، WEBP یا GIF — حداکثر ۵ مگابایت</span>
+              <span className="text-xs">
+                JPG، PNG، WEBP یا GIF — حداکثر ۵ مگابایت
+              </span>
             </span>
           )}
         </label>
@@ -116,8 +141,14 @@ export default function BlogForm({ action, post, submitLabel }: BlogFormProps) {
           }}
         />
         <div className="space-y-2">
-          <Label htmlFor="imageAlt">متن جایگزین تصویر (برای دسترس‌پذیری و سئو)</Label>
-          <Input id="imageAlt" name="imageAlt" defaultValue={post?.imageAlt ?? ''} />
+          <Label htmlFor="imageAlt">
+            متن جایگزین تصویر (برای دسترس‌پذیری و سئو)
+          </Label>
+          <Input
+            id="imageAlt"
+            name="imageAlt"
+            defaultValue={post?.imageAlt ?? ""}
+          />
         </div>
         {post?.imageUrl && (
           <label className="flex items-center gap-2.5 text-sm text-muted-foreground">
@@ -129,22 +160,45 @@ export default function BlogForm({ action, post, submitLabel }: BlogFormProps) {
 
       <div className="space-y-2">
         <Label htmlFor="excerpt">خلاصه مطلب *</Label>
-        <Textarea id="excerpt" name="excerpt" rows={3} defaultValue={post?.excerpt} required />
+        <Textarea
+          id="excerpt"
+          name="excerpt"
+          rows={3}
+          defaultValue={post?.excerpt}
+          required
+        />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="content">متن کامل مطلب *</Label>
-        <p className="text-xs text-muted-foreground">هر پاراگراف را با یک خط خالی از پاراگراف بعدی جدا کنید.</p>
-        <Textarea id="content" name="content" rows={18} defaultValue={post?.content} required className="resize-y" />
+        <p className="text-xs text-muted-foreground">
+          هر پاراگراف را با یک خط خالی از پاراگراف بعدی جدا کنید.
+        </p>
+        <Textarea
+          id="content"
+          name="content"
+          rows={18}
+          defaultValue={post?.content}
+          required
+          className="resize-y"
+        />
       </div>
 
       <div className="flex flex-wrap gap-5 rounded-lg bg-muted/45 p-4">
         <label className="flex items-center gap-2.5 cursor-pointer">
-          <Checkbox id="published" name="published" defaultChecked={post?.published ?? false} />
+          <Checkbox
+            id="published"
+            name="published"
+            defaultChecked={post?.published ?? false}
+          />
           <span className="text-sm">انتشار عمومی مطلب</span>
         </label>
         <label className="flex items-center gap-2.5 cursor-pointer">
-          <Checkbox id="featured" name="featured" defaultChecked={post?.featured ?? false} />
+          <Checkbox
+            id="featured"
+            name="featured"
+            defaultChecked={post?.featured ?? false}
+          />
           <span className="text-sm flex items-center gap-1.5">
             <Star size={15} aria-hidden="true" />
             مطلب ویژه
@@ -154,12 +208,21 @@ export default function BlogForm({ action, post, submitLabel }: BlogFormProps) {
 
       {state?.error && (
         <Alert variant="destructive">
-          <AlertDescription className="col-start-1">{state.error}</AlertDescription>
+          <AlertDescription className="col-start-1">
+            {state.error}
+          </AlertDescription>
         </Alert>
       )}
 
       <Button type="submit" disabled={pending}>
-        {pending ? <><span className="button-spinner" aria-hidden="true" />در حال ذخیره...</> : submitLabel}
+        {pending ? (
+          <>
+            <span className="button-spinner" aria-hidden="true" />
+            در حال ذخیره...
+          </>
+        ) : (
+          submitLabel
+        )}
       </Button>
     </form>
   );
@@ -169,7 +232,7 @@ function slugify(title: string): string {
   return title
     .trim()
     .toLowerCase()
-    .replace(/['"]/g, '')
-    .replace(/[^\p{L}\p{N}]+/gu, '-')
-    .replace(/^-+|-+$/g, '');
+    .replace(/['"]/g, "")
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
+    .replace(/^-+|-+$/g, "");
 }

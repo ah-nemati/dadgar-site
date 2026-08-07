@@ -1,5 +1,5 @@
-import "server-only";
 import ImageKit from "@imagekit/nodejs";
+import "server-only";
 
 export type StorageScope = "public" | "private";
 
@@ -140,6 +140,7 @@ export async function uploadAsset(
       throw error;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { customMetadata: _customMetadata, ...withoutCustomMetadata } =
       params;
     uploaded = await imageKit().files.upload(withoutCustomMetadata);
