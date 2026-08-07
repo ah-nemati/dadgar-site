@@ -9,8 +9,10 @@ export const metadata: Metadata = {
   description: 'یادداشت‌ها و مقالات حقوقی دفتر وکالت مجید سواری درباره دعاوی ملکی، چک و خانواده در اهواز.',
 };
 
-// Public CMS pages use ISR; admin mutations explicitly invalidate these paths.
-export const revalidate = 3600;
+// On Workers Free, keep the public blog list build-time static so requests
+// are served from Static Assets instead of invoking the NextServer.
+export const dynamic = 'force-static';
+export const revalidate = false;
 
 export default async function BlogPage() {
   const posts = await getBlogPosts();

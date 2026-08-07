@@ -6,7 +6,8 @@ import { getBlogPosts } from "@/lib/content/blog";
 import { blogPostPath } from "@/lib/blog-slug";
 
 // Blog routes are read from PostgreSQL at request time.
-export const revalidate = 3600;
+export const dynamic = "force-static";
+export const revalidate = false;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const firm = await getFirm();

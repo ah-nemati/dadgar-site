@@ -3,10 +3,13 @@
   "name": "majid-savari-vakil",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-08-06",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
   "assets": {
     "directory": ".open-next/assets",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+    "run_worker_first": false
   },
   "routes": [
     {

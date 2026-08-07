@@ -5,13 +5,22 @@ import { ArrowLeft, ArrowRight, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { breadcrumbJsonLd } from "@/lib/seo";
 import { getFirm } from "@/lib/content/firm";
-import { getBlogPostBySlug } from "@/lib/content/blog";
+import { getBlogPostBySlug, getBlogPosts } from "@/lib/content/blog";
 import { blogPostPath } from "@/lib/blog-slug";
 import Image from "next/image";
 
 type Params = Promise<{ slug: string }>;
 
-export const dynamic = "force-dynamic";
+// Generate every published article during CI. This avoids running the full
+// NextServer + PostgreSQL path for public article reads on Workers Free.
+export const dynamic = "force-static";
+export const dynamicParams = false;
+export const revalidate = false;
+
+export async function generateStaticParams() {
+  const posts = await getBlogPosts();
+  return posts.map((post) => ({ slug: post.slug }));
+}
 
 export async function generateMetadata({
   params,
