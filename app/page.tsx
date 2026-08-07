@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { Suspense } from "react";
+import { HomePageSkeleton } from "@/components/skeletons/PublicPageSkeletons";
 
 interface InfoPoint {
   icon: LucideIcon;
@@ -60,7 +62,15 @@ const whyUs: InfoPoint[] = [
 
 export const revalidate = 3600;
 
-export default async function HomePage() {
+export default function HomePage() {
+  return (
+    <Suspense fallback={<HomePageSkeleton />}>
+      <HomePageContent />
+    </Suspense>
+  );
+}
+
+async function HomePageContent() {
   const firm = await getFirm();
   const practiceAreas = await getPracticeAreas();
   const lawyers = await getLawyers();
