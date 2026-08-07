@@ -2,11 +2,11 @@ import Eyebrow from "@/components/Eyebrow";
 import PatternStrip from "@/components/PatternStrip";
 import Seal from "@/components/Seal";
 import { Button } from "@/components/ui/button";
-import { getBlogPosts } from "@/lib/content/blog";
 import { blogPostPath } from "@/lib/blog-slug";
-import { getFirm } from "@/lib/content/firm";
-import { getLawyers } from "@/lib/content/lawyers";
-import { getPracticeAreas } from "@/lib/content/practice-areas";
+import { FIRM } from "@/data/firm";
+import { LAWYERS } from "@/data/lawyers";
+import { PRACTICE_AREAS } from "@/data/practice-areas";
+import { BLOG_POSTS } from "@/data/blog-posts";
 import { PRACTICE_AREA_ICONS } from "@/lib/icons";
 import {
   ArrowLeft,
@@ -20,8 +20,6 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Suspense } from "react";
-import { HomePageSkeleton } from "@/components/skeletons/PublicPageSkeletons";
 
 interface InfoPoint {
   icon: LucideIcon;
@@ -60,22 +58,15 @@ const whyUs: InfoPoint[] = [
   },
 ];
 
-export const revalidate = 3600;
+// Keep the landing page fully static on Cloudflare Workers Free.
+// Dynamic database work belongs to /blog and authenticated dashboards.
+export const dynamic = "force-static";
 
 export default function HomePage() {
-  return (
-    <Suspense fallback={<HomePageSkeleton />}>
-      <HomePageContent />
-    </Suspense>
-  );
-}
-
-async function HomePageContent() {
-  const firm = await getFirm();
-  const practiceAreas = await getPracticeAreas();
-  const lawyers = await getLawyers();
-  // Keep the public page available even during a temporary database outage.
-  const blogPosts = await getBlogPosts().catch(() => []);
+  const firm = FIRM;
+  const practiceAreas = PRACTICE_AREAS;
+  const lawyers = LAWYERS;
+  const blogPosts = BLOG_POSTS.filter((post) => post.published);
 
   return (
     <>

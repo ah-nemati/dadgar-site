@@ -45,7 +45,6 @@ function mediaMetadata(base: ReturnType<typeof baseForm>): BlogImageMetadata {
 }
 
 function revalidateBlog(slug?: string, previousSlug?: string) {
-  revalidatePath('/');
   revalidatePath('/admin');
   revalidatePath('/admin/blog');
   revalidatePath('/blog');
