@@ -116,6 +116,10 @@ export default function BlogForm({ action, post, submitLabel }: BlogFormProps) {
             <Image
               src={preview}
               alt="پیش‌نمایش تصویر شاخص"
+              width={1200}
+              height={675}
+              sizes="100vw"
+              unoptimized
               className="blog-cover"
             />
           ) : (

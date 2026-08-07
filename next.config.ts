@@ -14,9 +14,30 @@ const SECURITY_HEADERS = [
   },
 ];
 
+function imageKitHostname(): string {
+  const endpoint = process.env.IMAGEKIT_URL_ENDPOINT?.trim();
+  if (!endpoint) return 'ik.imagekit.io';
+
+  try {
+    return new URL(endpoint).hostname;
+  } catch {
+    return 'ik.imagekit.io';
+  }
+}
+
 const nextConfig: NextConfig = {
   devIndicators: false,
   poweredByHeader: false,
+
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: imageKitHostname(),
+        pathname: '/**',
+      },
+    ],
+  },
 
   experimental: {
     serverActions: {

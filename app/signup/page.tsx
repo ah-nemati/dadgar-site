@@ -1,32 +1,72 @@
-import type { Metadata } from "next";
-import { UserPlus } from "lucide-react";
-import Seal from "@/components/Seal";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { redirect } from 'next/navigation';
+import { LogIn, UserPlus } from 'lucide-react';
+import AuthShell from '@/components/AuthShell';
+import { Button } from '@/components/ui/button';
+import { dashboardPath, getCurrentAccount } from '@/lib/session';
 
 export const metadata: Metadata = {
-  title: "ساخت حساب کاربری",
+  title: 'ساخت حساب کاربری',
+  description: 'ساخت حساب امن موکل برای استفاده از پنل اختصاصی سایت.',
   robots: { index: false, follow: false },
 };
 
-export default function SignupPage() {
+export const dynamic = 'force-dynamic';
+
+function safeReturnTo(value: string | string[] | undefined): string {
+  const candidate = Array.isArray(value) ? value[0] : value;
+  if (!candidate || !candidate.startsWith('/') || candidate.startsWith('//')) {
+    return '/account';
+  }
+  return candidate;
+}
+
+export default async function SignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ returnTo?: string | string[] }>;
+}) {
+  const account = await getCurrentAccount();
+  if (account) redirect(dashboardPath(account.role));
+
+  const params = await searchParams;
+  const returnTo = safeReturnTo(params.returnTo);
+
   return (
-    <section className="bg-parchment min-h-[72vh] flex items-center">
-      <div className="max-w-md mx-auto px-6 py-16 w-full text-center">
-        <div className="flex justify-center mb-5">
-          <Seal size={58} />
+    <AuthShell
+      eyebrow="ثبت‌نام موکلین"
+      title="ساخت حساب کاربری"
+      description="حساب شما برای دسترسی به پرونده‌ها، پیام‌ها و خدمات اختصاصی دفتر استفاده می‌شود."
+    >
+      <div className="space-y-4">
+        <div className="rounded-sm border border-border bg-muted/35 p-4 text-sm leading-7 text-muted-foreground">
+          پس از ساخت حساب، پروفایل پنل شما به‌صورت خودکار ایجاد می‌شود و مدیر دفتر می‌تواند پرونده‌ها و خدمات مرتبط را به حساب شما متصل کند.
         </div>
-        <h1 className="text-2xl font-bold mb-3">ساخت حساب موکل</h1>
-        <p className="text-muted-foreground leading-8 mb-7">
-          ثبت‌نام در صفحه امن Auth0 انجام می‌شود و پس از ورود، پروفایل پنل
-          به‌صورت خودکار ساخته خواهد شد.
-        </p>
-        <Button asChild className="w-full">
-          <Link href="/auth/login?screen_hint=signup&returnTo=/account">
-            <UserPlus size={17} /> ادامه ثبت‌نام امن
+
+        <form action="/auth/login" method="get">
+          <input type="hidden" name="screen_hint" value="signup" />
+          <input type="hidden" name="returnTo" value={returnTo} />
+          <Button type="submit" className="w-full">
+            <UserPlus size={17} aria-hidden="true" />
+            ادامه و ساخت حساب
+          </Button>
+        </form>
+
+        <form action="/auth/login" method="get">
+          <input type="hidden" name="returnTo" value={returnTo} />
+          <Button type="submit" variant="outline" className="w-full">
+            <LogIn size={17} aria-hidden="true" />
+            قبلاً حساب ساخته‌ام
+          </Button>
+        </form>
+
+        <p className="pt-1 text-center text-sm text-muted-foreground">
+          <Link href="/" className="font-semibold text-accent transition-colors hover:text-primary">
+            بازگشت به سایت
           </Link>
-        </Button>
+        </p>
       </div>
-    </section>
+    </AuthShell>
   );
 }

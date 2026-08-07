@@ -13,10 +13,11 @@
     "db:seed": "node scripts/seed.mjs",
     "cf:build": "NEXT_IGNORE_INCORRECT_LOCKFILE=1 NEXT_TELEMETRY_DISABLED=1 npx --yes @opennextjs/cloudflare@1.20.2 build",
     "preview": "npm run cf:build && npx --yes @opennextjs/cloudflare@1.20.2 preview",
-    "deploy": "npx --yes @opennextjs/cloudflare@1.20.2 deploy --keep-vars",
+    "deploy": "npm run cf:build && npx --yes @opennextjs/cloudflare@1.20.2 deploy -- --keep-vars",
     "upload": "npm run cf:build && npx --yes @opennextjs/cloudflare@1.20.2 upload",
     "cf:typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
-    "check": "npm run typecheck && npm run lint"
+    "check": "npm run audit:storage && npm run audit:runtime && npm run typecheck && npm run lint",
+    "audit:runtime": "node scripts/audit-runtime.mjs"
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "4.26.0",

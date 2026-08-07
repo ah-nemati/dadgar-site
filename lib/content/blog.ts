@@ -1,5 +1,6 @@
 import { db } from '@/lib/db';
 import { formatJalaliDate, estimateReadTime } from '@/lib/format';
+import { normalizeBlogSlug } from '@/lib/blog-slug';
 import type { BlogPost } from '@/types/content';
 import { BLOG_POSTS } from '@/data/blog-posts';
 
@@ -36,6 +37,13 @@ function map(row: Row): BlogPost {
   };
 }
 
+function findFallbackPost(slug: string): BlogPost | undefined {
+  const normalized = normalizeBlogSlug(slug);
+  return BLOG_POSTS.find(
+    (post) => post.published && normalizeBlogSlug(post.slug) === normalized,
+  );
+}
+
 export async function getBlogPosts(): Promise<BlogPost[]> {
   try {
     const rows = await db<Row[]>`
@@ -52,17 +60,41 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
 }
 
 export async function getBlogPostBySlug(slug: string): Promise<BlogPost | undefined> {
+  const normalizedSlug = normalizeBlogSlug(slug);
+  if (!normalizedSlug) return undefined;
+
   try {
     const [row] = await db<Row[]>`
       select id, slug, title, category, excerpt, content, published, featured,
              image_url, image_file_id, image_alt, created_at
       from blog_posts
-      where slug = ${slug} and published = true
+      where slug = ${normalizedSlug} and published = true
       limit 1
     `;
-    return row ? map(row) : BLOG_POSTS.find((post) => post.slug === slug && post.published);
+
+    if (row) return map(row);
+
+    // Unicode normalization (or Arabic/Persian character variants) can make
+    // visually identical slugs compare differently in PostgreSQL. If the exact
+    // lookup misses, compare canonical forms before deciding the page is 404.
+    const rows = await db<Row[]>`
+      select id, slug, title, category, excerpt, content, published, featured,
+             image_url, image_file_id, image_alt, created_at
+      from blog_posts
+      where published = true
+      order by created_at desc
+    `;
+
+    const normalizedRow = rows.find(
+      (candidate) => normalizeBlogSlug(candidate.slug) === normalizedSlug,
+    );
+
+    return normalizedRow ? map(normalizedRow) : findFallbackPost(normalizedSlug);
   } catch {
-    return BLOG_POSTS.find((post) => post.slug === slug && post.published);
+    const posts = await getBlogPosts();
+    return posts.find(
+      (post) => post.published && normalizeBlogSlug(post.slug) === normalizedSlug,
+    );
   }
 }
 

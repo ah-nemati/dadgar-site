@@ -6,6 +6,7 @@ import { getAllBlogPostsForAdmin } from "@/lib/content/blog-admin";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { blogPostPath } from '@/lib/blog-slug';
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +49,9 @@ export default async function AdminBlogPage() {
                   <Image
                     src={post.imageUrl}
                     alt={post.imageAlt || post.title}
+                    width={352}
+                    height={180}
+                    sizes="(max-width: 640px) 100vw, 176px"
                     className="w-full h-40 sm:h-full object-cover"
                   />
                 ) : (
@@ -81,7 +85,7 @@ export default async function AdminBlogPage() {
                   </Button>
                   {post.published && (
                     <Button size="sm" variant="ghost" asChild>
-                      <Link href={`/blog/${post.slug}`} target="_blank">
+                      <Link href={blogPostPath(post.slug)} target="_blank">
                         مشاهده
                       </Link>
                     </Button>

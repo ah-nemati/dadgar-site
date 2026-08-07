@@ -134,10 +134,15 @@ export default function DashboardShell({
             <ExternalLink size={18} aria-hidden="true" />
             مشاهده سایت
           </Link>
-          <Link href="/auth/logout" className="dashboard-nav-link !mx-0 w-full">
-            <LogOut size={18} aria-hidden="true" />
-            خروج از حساب
-          </Link>
+          <form action="/auth/logout" method="get">
+            <button
+              type="submit"
+              className="dashboard-nav-link !mx-0 w-full text-right"
+            >
+              <LogOut size={18} aria-hidden="true" />
+              خروج از حساب
+            </button>
+          </form>
         </div>
       </aside>
 

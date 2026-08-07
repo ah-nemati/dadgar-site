@@ -2,7 +2,7 @@
 
 پرتال کامل دفتر حقوقی با معماری مستقل و قابل استقرار روی هر سرویس:
 
-- **Auth0** برای Universal Login، ثبت‌نام، Session، بازیابی رمز و مدیریت هویت
+- **Auth0** به‌عنوان موتور امن احراز هویت، با صفحات ورود/ثبت‌نام برندشده داخل خود سایت
 - **PostgreSQL** برای پروفایل‌ها، پرونده‌ها، نوبت‌ها، پیام‌ها، درخواست‌ها و وبلاگ
 - **ImageKit** برای تصاویر عمومی و اسناد خصوصی با Signed URL
 - **Next.js App Router / Server Actions** به‌عنوان Backend-for-Frontend
@@ -32,11 +32,15 @@ npm run db:seed
 npm run dev
 ```
 
-سایت در `http://localhost:3000` و PostgreSQL روی پورت `5432` در دسترس است. فایل‌ها مستقیماً در ImageKit ذخیره می‌شوند.
+سایت در `http://localhost:3000` و PostgreSQL فقط روی `127.0.0.1:5432` در دسترس است. فایل‌ها مستقیماً در ImageKit ذخیره می‌شوند. برای Production مقدار `DATABASE_URL` از Secret مربوط به Neon خوانده می‌شود.
+
+> **Cloudflare/Neon:** `lib/db.ts` عمداً اتصال PostgreSQL را بین requestهای Worker به اشتراک نمی‌گذارد. هر عملیات دیتابیس یک client تازه می‌سازد و پس از پایان query/transaction آن را می‌بندد؛ این رفتار برای جلوگیری از خطای cross-request I/O در Cloudflare Workers ضروری است.
 
 ## ۲. تنظیم Auth0 Regular Web Application
 
-> **نکته سازگاری Cloudflare:** در این نسخه هیچ `middleware.ts` یا `proxy.ts` وجود ندارد. مسیرهای Auth0 از `app/auth/[auth0]/route.ts` اجرا می‌شوند تا مشکل Node.js Middleware و هنگ درخواست در Next.js 16/Cloudflare ایجاد نشود. Sessionهای Auth0 نیز به‌صورت غیر Rolling و با عمر ثابت سه‌روزه تنظیم شده‌اند.
+> **نکته سازگاری Cloudflare:** Auth0 v4 مسیرهای `/auth/login`، `/auth/callback` و `/auth/logout` را از `middleware.ts` mount می‌کند. برای سازگاری با OpenNext، Middleware فقط روی `/auth/*` اجرا می‌شود و Sessionهای Auth0 به‌صورت non-rolling با عمر ثابت سه‌روزه نگهداری می‌شوند. فایل قدیمی `app/auth/[auth0]/route.ts` نباید وجود داشته باشد.
+
+> صفحات `/login`، `/signup` و `/forgot-password` با تم خود سایت نمایش داده می‌شوند و شروع Login/Logout از طریق full browser navigation انجام می‌شود. برای اجرای محلی، `APP_BASE_URL=http://localhost:3000` و Callback/Logout محلی باید در Auth0 ثبت شده باشند. رابط Universal Login نیز با `ui_locales=fa` به زبان فارسی درخواست می‌شود.
 
 در Auth0 یک **Regular Web Application** بسازید و Database Connection مورد استفاده را برای آن فعال کنید. اگر ثبت‌نام عمومی لازم است، گزینه غیرفعال‌کردن Sign Up در همان Connection روشن نباشد.
 
@@ -197,7 +201,7 @@ http://localhost:8787/auth/login
 npm run audit:storage
 ```
 
-این دستور تأیید می‌کند که تمام کدهای پروژه از لایه ImageKit استفاده می‌کنند. دستور `npm run audit:runtime` نیز نبودن Middleware/Proxy ناسازگار و وجود Route Handler Auth0 را کنترل می‌کند.
+این دستور تأیید می‌کند که تمام کدهای پروژه از لایه ImageKit استفاده می‌کنند. دستور `npm run audit:runtime` نیز وجود Middleware صحیح Auth0، نبود `proxy.ts` و حذف Route Handler قدیمی `app/auth/[auth0]/route.ts` را کنترل می‌کند.
 
 ## نصب بدون وابستگی ذخیره‌سازی اضافی
 

@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { auth0 } from '@/lib/auth0';
+import { roleFromAuth0Identity } from '@/lib/auth-role';
 import { db } from '@/lib/db';
 import type { CurrentAccount, UserRole } from '@/types/content';
 
@@ -23,24 +24,12 @@ export function dashboardPath(role: UserRole): '/admin' | '/portal' {
   return role === 'admin' ? '/admin' : '/portal';
 }
 
-function roleFromAuth0(user: SessionUser, email: string): UserRole | null {
-  const namespace = (process.env.AUTH0_ROLE_CLAIM_NAMESPACE || 'https://dadgar.example.com').replace(/\/$/, '');
-  const claim = user[`${namespace}/role`];
-  if (claim === 'admin' || claim === 'client') return claim;
-
-  const admins = (process.env.AUTH0_ADMIN_EMAILS || '')
-    .split(',')
-    .map((item) => item.trim().toLowerCase())
-    .filter(Boolean);
-  return admins.includes(email.toLowerCase()) ? 'admin' : null;
-}
-
 async function ensureProfile(user: SessionUser): Promise<ProfileRow> {
   const id = user.sub;
   if (!id) throw new Error('Auth0 session is missing the sub claim.');
   const email = String(user.email || '').trim().toLowerCase();
   const fullName = String(user.name || user.nickname || email.split('@')[0] || 'کاربر').trim();
-  const claimedRole = roleFromAuth0(user, email);
+  const claimedRole = roleFromAuth0Identity(user);
 
   const [existing] = await db<ProfileRow[]>`
     select id, full_name, email, phone, role
@@ -87,7 +76,7 @@ export async function getCurrentAccount(): Promise<CurrentAccount | null> {
 
 export async function requireAccount(): Promise<CurrentAccount> {
   const account = await getCurrentAccount();
-  if (!account) redirect('/auth/login?returnTo=/account');
+  if (!account) redirect('/login?returnTo=/account');
   return account;
 }
 

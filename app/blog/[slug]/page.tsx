@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { breadcrumbJsonLd } from "@/lib/seo";
 import { getFirm } from "@/lib/content/firm";
 import { getBlogPostBySlug } from "@/lib/content/blog";
+import { blogPostPath } from "@/lib/blog-slug";
 import Image from "next/image";
 
 type Params = Promise<{ slug: string }>;
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -24,7 +25,7 @@ export async function generateMetadata({
   return {
     title: post.title,
     description: post.excerpt,
-    alternates: { canonical: `/blog/${post.slug}` },
+    alternates: { canonical: blogPostPath(post.slug) },
     openGraph: post.imageUrl
       ? { images: [{ url: post.imageUrl, alt: post.imageAlt || post.title }] }
       : undefined,
@@ -44,7 +45,7 @@ export default async function BlogPostDetailPage({
   const breadcrumb = breadcrumbJsonLd([
     { name: "خانه", path: "/" },
     { name: "وبلاگ حقوقی", path: "/blog" },
-    { name: post.title, path: `/blog/${post.slug}` },
+    { name: post.title, path: blogPostPath(post.slug) },
   ]);
 
   const articleJsonLd = {
@@ -54,7 +55,7 @@ export default async function BlogPostDetailPage({
     description: post.excerpt,
     articleSection: post.category,
     inLanguage: "fa-IR",
-    mainEntityOfPage: new URL(`/blog/${post.slug}`, firm.url).toString(),
+    mainEntityOfPage: new URL(blogPostPath(post.slug), firm.url).toString(),
     image: post.imageUrl || undefined,
     author: { "@type": "Person", name: firm.shortName },
     publisher: { "@type": "Attorney", name: firm.shortName },
@@ -107,11 +108,16 @@ export default async function BlogPostDetailPage({
       <article className="bg-parchment">
         <div className="max-w-4xl mx-auto px-6 py-12 md:py-16">
           {post.imageUrl && (
-            <Image
-              src={post.imageUrl}
-              alt={post.imageAlt || post.title}
-              className="w-full max-h-[32rem] object-cover rounded-xl border border-border mb-10 shadow-sm"
-            />
+            <div className="relative mb-10 aspect-video w-full overflow-hidden rounded-xl border border-border shadow-sm">
+              <Image
+                src={post.imageUrl}
+                alt={post.imageAlt || post.title}
+                fill
+                sizes="(max-width: 896px) 100vw, 896px"
+                className="object-cover"
+                priority
+              />
+            </div>
           )}
 
           <p className="text-lg text-muted-foreground leading-9 border-r-4 border-gold pr-5 mb-10">

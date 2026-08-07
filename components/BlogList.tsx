@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Star } from "lucide-react";
 import type { BlogPost } from "@/types/content";
 import Image from "next/image";
+import { blogPostPath } from "@/lib/blog-slug";
 
 interface BlogListProps {
   posts: BlogPost[];
@@ -46,18 +46,22 @@ export default function BlogList({ posts }: BlogListProps) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((post) => (
-            <Link
+            <a
               key={post.slug}
-              href={`/blog/${post.slug}`}
+              href={blogPostPath(post.slug)}
               className="bg-card border border-border hover:border-gold hover:-translate-y-1 hover:shadow-lg transition-all rounded-lg text-right overflow-hidden flex flex-col"
             >
               {post.imageUrl ? (
-                <Image
-                  src={post.imageUrl}
-                  alt={post.imageAlt || post.title}
-                  className="blog-cover"
-                  loading="lazy"
-                />
+                <div className="blog-cover relative overflow-hidden">
+                  <Image
+                    src={post.imageUrl}
+                    alt={post.imageAlt || post.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover"
+                    loading="lazy"
+                  />
+                </div>
               ) : (
                 <div className="blog-cover bg-gradient-to-br from-ink to-ink-2 flex items-center justify-center">
                   <span className="font-display text-parchment/70 text-lg">
@@ -89,7 +93,7 @@ export default function BlogList({ posts }: BlogListProps) {
                   <span>{post.readTime}</span>
                 </div>
               </div>
-            </Link>
+            </a>
           ))}
         </div>
       )}

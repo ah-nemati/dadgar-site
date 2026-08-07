@@ -74,10 +74,10 @@ export default function Header({ firm }: { firm: Firm }) {
             </Link>
           </div>
 
-          <Link href="/account" className="header-meta-link font-semibold">
+          <a href="/account" className="header-meta-link font-semibold">
             <LockKeyhole size={14} aria-hidden="true" />
             <span>حساب کاربری</span>
-          </Link>
+          </a>
         </div>
       </div>
 
@@ -124,13 +124,13 @@ export default function Header({ firm }: { firm: Firm }) {
             </Button>
 
             <div className="md:hidden">
-              <Link
+              <a
                 href="/account"
                 className="header-icon-button"
                 aria-label="حساب کاربری"
               >
                 <CircleUserRound size={22} aria-hidden="true" />
-              </Link>
+              </a>
             </div>
 
             <button
@@ -197,14 +197,14 @@ export default function Header({ firm }: { firm: Firm }) {
                 </Link>
               ))}
               <div className="my-2 border-t border-white/10" />
-              <Link
+              <a
                 href="/account"
                 onClick={() => setMenuOpen(false)}
                 className="flex items-center gap-2 px-3 py-3 text-sm font-medium text-parchment/90"
               >
                 <CircleUserRound size={17} aria-hidden="true" />
                 حساب کاربری
-              </Link>
+              </a>
               <Button asChild className="mt-2">
                 <Link href="/contact" onClick={() => setMenuOpen(false)}>
                   درخواست مشاوره

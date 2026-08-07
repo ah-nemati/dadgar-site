@@ -34,6 +34,8 @@ export default async function LawyersPage() {
                 <Image
                   src="/images/profile.jpeg"
                   alt={`تصویر ${lw.name}`}
+                  width={160}
+                  height={160}
                   priority
                   sizes="(max-width: 640px) 144px, 160px"
                   className="object-cover object-center"

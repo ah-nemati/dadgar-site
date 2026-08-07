@@ -1,5 +1,2 @@
-import { DashboardLoadingSkeleton } from '@/components/LoadingSkeletons';
-
-export default function Loading() {
-  return <DashboardLoadingSkeleton />;
-}
+import { AdminDashboardSkeleton } from '@/components/skeletons/AdminPageSkeletons';
+export default function Loading(){ return <AdminDashboardSkeleton />; }
