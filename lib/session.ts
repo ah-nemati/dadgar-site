@@ -27,38 +27,31 @@ export function dashboardPath(role: UserRole): '/admin' | '/portal' {
 async function ensureProfile(user: SessionUser): Promise<ProfileRow> {
   const id = user.sub;
   if (!id) throw new Error('Auth0 session is missing the sub claim.');
+
   const email = String(user.email || '').trim().toLowerCase();
   const fullName = String(user.name || user.nickname || email.split('@')[0] || 'کاربر').trim();
   const claimedRole = roleFromAuth0Identity(user);
+  const initialRole: UserRole = claimedRole ?? 'client';
 
-  const [existing] = await db<ProfileRow[]>`
-    select id, full_name, email, phone, role
-    from profiles
-    where id = ${id}
-    limit 1
-  `;
-
-  if (existing) {
-    // A namespaced Auth0 claim is authoritative. When the Action has not yet
-    // been installed, preserve the database role instead of silently demoting users.
-    const role = claimedRole ?? existing.role;
-    const [updated] = await db<ProfileRow[]>`
-      update profiles
-      set email = ${email || existing.email},
-          full_name = case when full_name = '' then ${fullName} else full_name end,
-          role = ${role}
-      where id = ${id}
-      returning id, full_name, email, phone, role
-    `;
-    return updated;
-  }
-
-  const [created] = await db<ProfileRow[]>`
+  // One round-trip instead of SELECT + UPDATE/INSERT. This matters on the
+  // Cloudflare Workers Free CPU budget and also avoids opening two DB clients.
+  const [profile] = await db<ProfileRow[]>`
     insert into profiles (id, full_name, email, role)
-    values (${id}, ${fullName}, ${email || null}, ${claimedRole ?? 'client'})
+    values (${id}, ${fullName}, ${email || null}, ${initialRole})
+    on conflict (id) do update
+    set email = case
+          when excluded.email is null or excluded.email = '' then profiles.email
+          else excluded.email
+        end,
+        full_name = case
+          when profiles.full_name = '' then excluded.full_name
+          else profiles.full_name
+        end,
+        role = coalesce(${claimedRole}::text, profiles.role)
     returning id, full_name, email, phone, role
   `;
-  return created;
+
+  return profile;
 }
 
 export async function getCurrentAccount(): Promise<CurrentAccount | null> {
