@@ -1,18 +1,15 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
 
-  "name": "majid-savari-vakil",
+  "name": "dadgar-site",
   "main": ".open-next/worker.js",
 
   "compatibility_date": "2026-08-06",
 
   "compatibility_flags": ["nodejs_compat"],
 
-  // متغیرهایی که مستقیماً در Cloudflare Dashboard
-  // تنظیم شده‌اند، هنگام Deploy حذف نشوند.
   "keep_vars": true,
 
-  // Secretهای ضروری Runtime
   "secrets": {
     "required": [
       "AUTH0_DOMAIN",
@@ -29,14 +26,12 @@
     ],
   },
 
-  // خروجی Static Assets که OpenNext تولید می‌کند
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS",
     "run_worker_first": false,
   },
 
-  // دامنه‌های Production
   "routes": [
     {
       "pattern": "majidsavarivakil.ir",
@@ -48,26 +43,21 @@
     },
   ],
 
-  // متغیرهای غیرحساس Runtime
   "vars": {
     "APP_BASE_URL": "https://majidsavarivakil.ir",
-
     "NEXT_PUBLIC_SITE_URL": "https://majidsavarivakil.ir",
 
     "AUTH0_ROLE_CLAIM_NAMESPACE": "https://majidsavarivakil.ir",
-
     "AUTH0_DB_CONNECTION": "Username-Password-Authentication",
 
     "DATABASE_SSL": "true",
 
     "IMAGEKIT_PUBLIC_FOLDER": "/blog-images",
-
     "IMAGEKIT_PRIVATE_FOLDER": "/client-documents",
 
     "NEXTJS_ENV": "production",
   },
 
-  // Cloudflare Worker Logs
   "observability": {
     "enabled": true,
   },
