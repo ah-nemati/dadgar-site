@@ -1,71 +1,59 @@
 {
-  "$schema": "./node_modules/wrangler/config-schema.json",
-
-  "name": "dadgar-site",
-  "main": ".open-next/worker.js",
-
-  "compatibility_date": "2026-08-06",
-
-  "compatibility_flags": ["nodejs_compat"],
-
-  "keep_vars": true,
-
-  "secrets": {
-    "required": [
-      "AUTH0_DOMAIN",
-      "AUTH0_CLIENT_ID",
-      "AUTH0_CLIENT_SECRET",
-      "AUTH0_SECRET",
-      "AUTH0_ADMIN_EMAILS",
-      "AUTH0_M2M_CLIENT_ID",
-      "AUTH0_M2M_CLIENT_SECRET",
-      "DATABASE_URL",
-      "IMAGEKIT_PUBLIC_KEY",
-      "IMAGEKIT_PRIVATE_KEY",
-      "IMAGEKIT_URL_ENDPOINT",
-    ],
-  },
-
-  "hyperdrive": [
-    {
-      "binding": "HYPERDRIVE",
-      "id": "0dffd047731e331d4ac94a45bd3a2a2c",
-    },
-  ],
-
-  "assets": {
-    "directory": ".open-next/assets",
-    "binding": "ASSETS",
-    "run_worker_first": false,
-  },
-
-  "routes": [
-    {
-      "pattern": "majidsavarivakil.ir",
-      "custom_domain": true,
-    },
-    {
-      "pattern": "www.majidsavarivakil.ir",
-      "custom_domain": true,
-    },
-  ],
-
-  "vars": {
-    "APP_BASE_URL": "https://majidsavarivakil.ir",
-    "NEXT_PUBLIC_SITE_URL": "https://majidsavarivakil.ir",
-
-    "AUTH0_ROLE_CLAIM_NAMESPACE": "https://majidsavarivakil.ir",
-    "AUTH0_DB_CONNECTION": "Username-Password-Authentication",
-
-    "DATABASE_SSL": "true",
-
-    "IMAGEKIT_PUBLIC_FOLDER": "/blog-images",
-    "IMAGEKIT_PRIVATE_FOLDER": "/client-documents",
-
-    "NEXTJS_ENV": "production",
-  },
-
-  "observability": {
-    "enabled": true,
-  },
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "dadgar-site",
+	"main": ".open-next/worker.js",
+	"compatibility_date": "2026-08-06",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"keep_vars": true,
+	"secrets": {
+		"required": [
+			"AUTH0_DOMAIN",
+			"AUTH0_CLIENT_ID",
+			"AUTH0_CLIENT_SECRET",
+			"AUTH0_SECRET",
+			"AUTH0_ADMIN_EMAILS",
+			"AUTH0_M2M_CLIENT_ID",
+			"AUTH0_M2M_CLIENT_SECRET",
+			"DATABASE_URL",
+			"IMAGEKIT_PUBLIC_KEY",
+			"IMAGEKIT_PRIVATE_KEY",
+			"IMAGEKIT_URL_ENDPOINT",
+		],
+	},
+	"hyperdrive": [
+		{
+			"binding": "HYPERDRIVE",
+			"id": "6b9db050bac14bd6b041bdbf04fff79a",
+		},
+	],
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS",
+		"run_worker_first": false,
+	},
+	"routes": [
+		{
+			"pattern": "majidsavarivakil.ir",
+			"custom_domain": true,
+		},
+		{
+			"pattern": "www.majidsavarivakil.ir",
+			"custom_domain": true,
+		},
+	],
+	"vars": {
+		"APP_BASE_URL": "https://majidsavarivakil.ir",
+		"NEXT_PUBLIC_SITE_URL": "https://majidsavarivakil.ir",
+		"AUTH0_ROLE_CLAIM_NAMESPACE": "https://majidsavarivakil.ir",
+		"AUTH0_DB_CONNECTION": "Username-Password-Authentication",
+		"DATABASE_SSL": "true",
+		"IMAGEKIT_PUBLIC_FOLDER": "/blog-images",
+		"IMAGEKIT_PRIVATE_FOLDER": "/client-documents",
+		"NEXTJS_ENV": "production",
+	},
+	"observability": {
+		"enabled": true,
+	},
 }
