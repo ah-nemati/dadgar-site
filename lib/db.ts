@@ -1,66 +1,110 @@
-import 'server-only';
-import postgres from 'postgres';
+import "server-only";
 
-type Database = ReturnType<typeof postgres>;
+import { cache } from "react";
+import postgres from "postgres";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
-function connectionString(): string {
+type Sql = ReturnType<typeof postgres>;
+
+interface HyperdriveBinding {
+  connectionString: string;
+}
+
+interface DadgarCloudflareEnv {
+  HYPERDRIVE?: HyperdriveBinding;
+}
+
+function localConnectionString(): string {
   const value = process.env.DATABASE_URL?.trim();
-  if (!value) throw new Error('DATABASE_URL is not configured.');
+
+  if (!value) {
+    throw new Error("DATABASE_URL is not configured.");
+  }
+
   return value;
 }
 
-function createClient(): Database {
-  return postgres(connectionString(), {
+function createSql(): Sql {
+  let connectionString: string;
+  let usingHyperdrive = false;
+
+  try {
+    const context = getCloudflareContext() as unknown as {
+      env: DadgarCloudflareEnv;
+    };
+
+    const hyperdriveUrl = context.env.HYPERDRIVE?.connectionString?.trim();
+
+    if (hyperdriveUrl) {
+      connectionString = hyperdriveUrl;
+      usingHyperdrive = true;
+    } else {
+      connectionString = localConnectionString();
+    }
+  } catch {
+    // next dev / migrations / local Node.js
+    connectionString = localConnectionString();
+  }
+
+  return postgres(connectionString, {
     max: 1,
+
     idle_timeout: 5,
-    connect_timeout: 15,
+    connect_timeout: 5,
+
+    fetch_types: false,
+
     prepare: false,
-    ssl: process.env.DATABASE_SSL === 'false' ? false : 'require',
+
     transform: postgres.camel,
+
+    ...(usingHyperdrive
+      ? {}
+      : {
+          ssl: process.env.DATABASE_SSL === "false" ? false : "require",
+        }),
   });
 }
 
-async function closeClient(client: Database): Promise<void> {
-  try {
-    await client.end({ timeout: 1 });
-  } catch {
-    // Best-effort cleanup; preserve the original query result/error.
-  }
-}
+/**
+ * OpenNext recommends creating the database client in request context.
+ * React cache keeps one instance for the current server request/render.
+ */
+const getRequestSql = cache(createSql);
 
 /**
- * Cloudflare Workers must not reuse a Postgres.js socket across requests.
- * Keep the existing tagged-template API while creating a fresh client for
- * each database operation. Transactions receive one dedicated client.
+ * Compatibility proxy.
+ *
+ * Existing code can continue using:
+ *
+ *   db`select ...`
+ *   db.unsafe(...)
+ *   db.begin(...)
+ *
+ * without changing every database call in the project.
  */
-const taggedQuery = async (
-  strings: TemplateStringsArray,
-  ...values: unknown[]
-): Promise<unknown> => {
-  const client = createClient();
-  try {
-    const run = client as unknown as (
-      query: TemplateStringsArray,
-      ...parameters: unknown[]
-    ) => Promise<unknown>;
-    return await run(strings, ...values);
-  } finally {
-    await closeClient(client);
-  }
-};
+const dbTarget = (() => undefined) as unknown as Sql;
 
-export const db = taggedQuery as unknown as Database;
+export const db = new Proxy(dbTarget, {
+  apply(_target, _thisArg, args) {
+    const sql = getRequestSql();
 
-Object.defineProperty(db, 'begin', {
-  configurable: false,
-  enumerable: false,
-  writable: false,
-  value: async (callback: unknown) => {
-    const client = createClient();
-    try {
-      return await client.begin(callback as never);
-    } finally {
-      await closeClient(client);
+    return Reflect.apply(
+      sql as unknown as (...values: unknown[]) => unknown,
+      sql,
+      args,
+    );
+  },
+
+  get(_target, property) {
+    const sql = getRequestSql();
+
+    const value = Reflect.get(sql as unknown as object, property);
+
+    if (typeof value === "function") {
+      return value.bind(sql);
     }
+
+    return value;
   },
 });
