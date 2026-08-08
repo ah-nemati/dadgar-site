@@ -11,10 +11,10 @@ import Image from "next/image";
 
 type Params = Promise<{ slug: string }>;
 
-// Generate every published article during CI. This avoids running the full
-// NextServer + PostgreSQL path for public article reads on Workers Free.
+// Pre-render articles known at build time, but allow newly published slugs to
+// be generated on demand after an admin creates them.
 export const dynamic = "force-static";
-export const dynamicParams = false;
+export const dynamicParams = true;
 export const revalidate = false;
 
 export async function generateStaticParams() {

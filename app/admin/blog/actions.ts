@@ -48,6 +48,7 @@ function revalidateBlog(slug?: string, previousSlug?: string) {
   revalidatePath('/admin');
   revalidatePath('/admin/blog');
   revalidatePath('/blog');
+  revalidatePath('/sitemap.xml');
   if (slug) revalidatePath(`/blog/${slug}`);
   if (previousSlug && previousSlug !== slug) revalidatePath(`/blog/${previousSlug}`);
 }

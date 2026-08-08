@@ -14,8 +14,28 @@ import ClientPasswordResetForm from '../ClientPasswordResetForm';
 
 export const dynamic = 'force-dynamic';
 
+function decodeRouteId(value: string): string {
+  let decoded = value;
+
+  // Auth0 IDs contain characters such as `|`. Depending on the proxy/router,
+  // a dynamic segment can arrive encoded (or double-encoded). Decode it
+  // defensively before using it as the database key.
+  for (let index = 0; index < 2; index += 1) {
+    try {
+      const next = decodeURIComponent(decoded);
+      if (next === decoded) break;
+      decoded = next;
+    } catch {
+      break;
+    }
+  }
+
+  return decoded;
+}
+
 export default async function AdminClientDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+  const { id: rawId } = await params;
+  const id = decodeRouteId(rawId);
   const [client, allCases, allAppointments, allThreads] = await Promise.all([
     getClientById(id),
     getCases(),
