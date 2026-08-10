@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/NoPrefetchLink";
 import { usePathname } from "next/navigation";
 import {
   Briefcase,

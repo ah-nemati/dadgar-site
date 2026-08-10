@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import Link from '@/components/NoPrefetchLink';
 import { ArrowLeft, CheckCircle2, Info, Phone } from 'lucide-react';
 import PageHero from '@/components/PageHero';
 import { Button } from '@/components/ui/button';

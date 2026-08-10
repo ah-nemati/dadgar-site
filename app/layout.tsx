@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import PublicShell from "@/components/PublicShell";
 import { getFirm } from "@/lib/content/firm";
 import { getPracticeAreas } from "@/lib/content/practice-areas";
-import Link from "next/link";
+import Link from "@/components/NoPrefetchLink";
 
 export async function generateMetadata(): Promise<Metadata> {
   const firm = await getFirm();

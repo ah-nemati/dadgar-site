@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import Link from '@/components/NoPrefetchLink';
 import AuthShell from '@/components/AuthShell';
 import ResetPasswordForm from '@/components/ResetPasswordForm';
 import { Alert, AlertDescription } from '@/components/ui/alert';

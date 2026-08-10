@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { formatJalaliDateTime, toPersianDigits } from "@/lib/format";
 import { CONSULTATION_STATUS_LABEL } from "@/lib/status";
 import type { ConsultationStatus } from "@/types/content";
-import Link from "next/link";
+import Link from "@/components/NoPrefetchLink";
 
 export const dynamic = "force-dynamic";
 

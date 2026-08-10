@@ -1,5 +1,5 @@
 
-import Link from 'next/link';
+import Link from '@/components/NoPrefetchLink';
 import { notFound } from 'next/navigation';
 import { ArrowRight, Download, FileText } from 'lucide-react';
 import { getCaseById, getCaseDocuments, getCaseUpdates } from '@/lib/cases';

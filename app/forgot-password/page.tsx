@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '@/components/NoPrefetchLink';
 import { ArrowRight, KeyRound, Phone } from 'lucide-react';
 import AuthShell from '@/components/AuthShell';
 import { Alert, AlertDescription } from '@/components/ui/alert';

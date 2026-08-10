@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
-import Link from 'next/link';
+import Link from '@/components/NoPrefetchLink';
 import { useSearchParams } from 'next/navigation';
 import { LogIn, Mail, Phone, UserPlus, UserRound } from 'lucide-react';
 import { loginAction, signupAction } from '@/app/auth/actions';

@@ -1,5 +1,5 @@
 
-import Link from 'next/link';
+import Link from '@/components/NoPrefetchLink';
 import { Briefcase, MessageSquare, ShieldCheck } from 'lucide-react';
 import { getCurrentProfile } from '@/lib/profile';
 import { getCases } from '@/lib/cases';

@@ -1,5 +1,5 @@
 
-import Link from 'next/link';
+import Link from '@/components/NoPrefetchLink';
 import { notFound } from 'next/navigation';
 import { ArrowRight } from 'lucide-react';
 import { getSupportMessages, getSupportThread } from '@/lib/support';

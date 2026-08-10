@@ -6,7 +6,7 @@ import { breadcrumbJsonLd } from "@/lib/seo";
 import { ArrowLeft, ArrowRight, GraduationCap } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/NoPrefetchLink";
 import { notFound } from "next/navigation";
 
 type Params = Promise<{ slug: string }>;

@@ -6,6 +6,7 @@ const errors = [];
 const middlewareFile = path.join(root, 'middleware.ts');
 const proxyFile = path.join(root, 'proxy.ts');
 const removedProvider = `${'auth'}${'0'}`;
+const noPrefetchLinkFile = path.join(root, 'components', 'NoPrefetchLink.tsx');
 
 if (!fs.existsSync(middlewareFile)) {
   errors.push('Missing Edge Middleware for route protection.');
@@ -13,6 +14,9 @@ if (!fs.existsSync(middlewareFile)) {
   const body = fs.readFileSync(middlewareFile, 'utf8');
   for (const required of [
     'verifySessionToken',
+    'canonicalHostRedirect',
+    "const WWW_HOST = 'www.majidsavarivakil.ir'",
+    "const CANONICAL_HOST = 'majidsavarivakil.ir'",
     "runtime = 'experimental-edge'",
     "'/admin/:path*'",
     "'/portal/:path*'",
@@ -24,6 +28,21 @@ if (!fs.existsSync(middlewareFile)) {
 
 if (fs.existsSync(proxyFile)) {
   errors.push('Node.js proxy.ts is not supported by the configured OpenNext adapter.');
+}
+
+const nextConfigFile = path.join(root, 'next.config.ts');
+if (
+  fs.existsSync(nextConfigFile) &&
+  /majidsavarivakil\.ir\/:path\*/.test(fs.readFileSync(nextConfigFile, 'utf8'))
+) {
+  errors.push('next.config.ts still contains the broken literal :path* redirect.');
+}
+
+if (
+  !fs.existsSync(noPrefetchLinkFile) ||
+  !fs.readFileSync(noPrefetchLinkFile, 'utf8').includes('prefetch={false}')
+) {
+  errors.push('The no-prefetch Link wrapper is missing or does not disable prefetching.');
 }
 
 const passwordFile = path.join(root, 'lib', 'auth', 'password.ts');
@@ -64,9 +83,19 @@ function scan(target) {
     return;
   }
 
-  const body = fs.readFileSync(target, 'utf8').toLowerCase();
+  const source = fs.readFileSync(target, 'utf8');
+  const body = source.toLowerCase();
   if (body.includes(removedProvider)) {
     errors.push(`Removed authentication provider reference remains in ${path.relative(root, target)}.`);
+  }
+
+  if (
+    target !== noPrefetchLinkFile &&
+    /from\s+['"]next\/link['"]/.test(source)
+  ) {
+    errors.push(
+      `Direct next/link import bypasses the no-prefetch wrapper in ${path.relative(root, target)}.`,
+    );
   }
 }
 
@@ -81,4 +110,6 @@ if (errors.length > 0) {
   process.exit(1);
 }
 
-console.log('Runtime audit passed: internal sessions, route protection and provider cleanup are present.');
+console.log(
+  'Runtime audit passed: internal sessions, route protection, provider cleanup and prefetch controls are present.',
+);

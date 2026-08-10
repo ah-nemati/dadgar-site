@@ -1,5 +1,5 @@
 
-import Link from 'next/link';
+import Link from '@/components/NoPrefetchLink';
 import { Briefcase, ChevronLeft } from 'lucide-react';
 import { getCases } from '@/lib/cases';
 import { Badge } from '@/components/ui/badge';

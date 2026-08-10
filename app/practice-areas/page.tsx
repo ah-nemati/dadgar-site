@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '@/components/NoPrefetchLink';
 import type { Metadata } from 'next';
 import { ArrowLeft, MapPin, MonitorSmartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';

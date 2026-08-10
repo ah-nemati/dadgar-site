@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '@/components/NoPrefetchLink';
 import type { Metadata } from 'next';
 import { ArrowLeft } from 'lucide-react';
 import PageHero from '@/components/PageHero';

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/NoPrefetchLink";
 import { FileText, Plus, Star } from "lucide-react";
 import AdminHeader from "../AdminHeader";
 import DeletePostButton from "./DeletePostButton";

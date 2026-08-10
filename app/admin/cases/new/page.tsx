@@ -1,5 +1,5 @@
 
-import Link from 'next/link';
+import Link from '@/components/NoPrefetchLink';
 import { ArrowRight } from 'lucide-react';
 import AdminHeader from '../../AdminHeader';
 import CaseForm from '../CaseForm';

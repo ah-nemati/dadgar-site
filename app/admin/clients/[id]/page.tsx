@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '@/components/NoPrefetchLink';
 import { notFound } from 'next/navigation';
 import { ArrowRight, Briefcase, Mail, MessageSquare, Phone, Plus } from 'lucide-react';
 import AdminHeader from '../../AdminHeader';

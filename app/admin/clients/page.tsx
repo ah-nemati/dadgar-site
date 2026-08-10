@@ -1,5 +1,5 @@
 
-import Link from 'next/link';
+import Link from '@/components/NoPrefetchLink';
 import { Eye, Search, UserPlus } from 'lucide-react';
 import AdminHeader from '../AdminHeader';
 import { getUsers } from '@/lib/clients';

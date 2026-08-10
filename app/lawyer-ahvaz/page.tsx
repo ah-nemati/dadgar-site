@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
-import Link from 'next/link';
+import Link from '@/components/NoPrefetchLink';
 import { ArrowLeft, Clock, MapPin, Phone, Scale } from 'lucide-react';
 import PageHero from '@/components/PageHero';
 import { Button } from '@/components/ui/button';

@@ -1,5 +1,5 @@
 
-import Link from 'next/link';
+import Link from '@/components/NoPrefetchLink';
 import { MessageSquare } from 'lucide-react';
 import { getSupportThreads } from '@/lib/support';
 import { NewThreadForm } from '@/components/SupportForms';

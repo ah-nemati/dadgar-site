@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/NoPrefetchLink";
 import { usePathname } from "next/navigation";
 import {
   CircleUserRound,

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import Link from 'next/link';
+import Link from '@/components/NoPrefetchLink';
 import { redirect } from 'next/navigation';
 import AuthShell from '@/components/AuthShell';
 import { LoginEntryActions } from '@/components/AuthEntryActions';

@@ -6,6 +6,39 @@ import {
 } from './lib/auth/session-token';
 
 const ADMIN_ONLY_PREFIXES = ['/admin/clients', '/admin/blog'];
+const WWW_HOST = 'www.majidsavarivakil.ir';
+const CANONICAL_HOST = 'majidsavarivakil.ir';
+
+function requestHostname(request: NextRequest): string {
+  const forwardedHost = request.headers
+    .get('x-forwarded-host')
+    ?.split(',', 1)[0]
+    ?.trim();
+  const host = forwardedHost || request.headers.get('host') || request.nextUrl.hostname;
+
+  return host.split(':', 1)[0].toLowerCase();
+}
+
+function canonicalHostRedirect(request: NextRequest): NextResponse | null {
+  if (requestHostname(request) !== WWW_HOST) return null;
+
+  const canonicalUrl = new URL(request.url);
+  canonicalUrl.protocol = 'https:';
+  canonicalUrl.hostname = CANONICAL_HOST;
+  canonicalUrl.port = '';
+
+  return NextResponse.redirect(canonicalUrl, 308);
+}
+
+function isProtectedPath(pathname: string): boolean {
+  return (
+    pathname === '/account' ||
+    pathname === '/admin' ||
+    pathname.startsWith('/admin/') ||
+    pathname === '/portal' ||
+    pathname.startsWith('/portal/')
+  );
+}
 
 function dashboardFor(role: 'ADMIN' | 'LAWYER' | 'CLIENT'): string {
   return role === 'CLIENT' ? '/portal' : '/admin';
@@ -23,7 +56,12 @@ function loginRedirect(request: NextRequest, clearCookie = false): NextResponse 
 }
 
 export async function middleware(request: NextRequest) {
+  const canonicalRedirect = canonicalHostRedirect(request);
+  if (canonicalRedirect) return canonicalRedirect;
+
   const pathname = request.nextUrl.pathname;
+  if (!isProtectedPath(pathname)) return NextResponse.next();
+
   const cookie = request.cookies.get(sessionCookieName())?.value;
   const session = await verifySessionToken(cookie);
   const hasInvalidCookie = Boolean(cookie && !session);
@@ -63,6 +101,10 @@ export const runtime = 'experimental-edge';
 
 export const config = {
   matcher: [
+    {
+      source: '/:path*',
+      has: [{ type: 'host', value: 'www.majidsavarivakil.ir' }],
+    },
     '/account',
     '/admin/:path*',
     '/portal/:path*',

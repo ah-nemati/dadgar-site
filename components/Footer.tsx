@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '@/components/NoPrefetchLink';
 import { Clock, Mail, MapPin, Phone } from 'lucide-react';
 import Seal from './Seal';
 import PatternStrip from './PatternStrip';

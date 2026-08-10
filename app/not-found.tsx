@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '@/components/NoPrefetchLink';
 import { ArrowLeft } from 'lucide-react';
 import Seal from '@/components/Seal';
 import { Button } from '@/components/ui/button';

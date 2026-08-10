@@ -1,5 +1,5 @@
 
-import Link from 'next/link';
+import Link from '@/components/NoPrefetchLink';
 import { Briefcase, Plus, Search } from 'lucide-react';
 import AdminHeader from '../AdminHeader';
 import { getCases } from '@/lib/cases';
