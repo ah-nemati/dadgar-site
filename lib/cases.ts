@@ -35,15 +35,15 @@ function toCase(row: CaseRow): ClientCase {
 
 export async function getCases(): Promise<ClientCase[]> {
   const account = await requireAccount();
-  const rows = account.role === 'admin'
+  const rows = account.role !== 'CLIENT'
     ? await db<CaseRow[]>`
-        select c.*, p.full_name as client_name
-        from client_cases c join profiles p on p.id = c.client_id
+        select c.*, u.name as client_name
+        from client_cases c join users u on u.id = c.client_id
         order by c.updated_at desc
       `
     : await db<CaseRow[]>`
-        select c.*, p.full_name as client_name
-        from client_cases c join profiles p on p.id = c.client_id
+        select c.*, u.name as client_name
+        from client_cases c join users u on u.id = c.client_id
         where c.client_id = ${account.id}
         order by c.updated_at desc
       `;
@@ -52,15 +52,15 @@ export async function getCases(): Promise<ClientCase[]> {
 
 export async function getCaseById(id: number): Promise<ClientCase | null> {
   const account = await requireAccount();
-  const rows = account.role === 'admin'
+  const rows = account.role !== 'CLIENT'
     ? await db<CaseRow[]>`
-        select c.*, p.full_name as client_name
-        from client_cases c join profiles p on p.id = c.client_id
+        select c.*, u.name as client_name
+        from client_cases c join users u on u.id = c.client_id
         where c.id = ${id} limit 1
       `
     : await db<CaseRow[]>`
-        select c.*, p.full_name as client_name
-        from client_cases c join profiles p on p.id = c.client_id
+        select c.*, u.name as client_name
+        from client_cases c join users u on u.id = c.client_id
         where c.id = ${id} and c.client_id = ${account.id} limit 1
       `;
   return rows[0] ? toCase(rows[0]) : null;

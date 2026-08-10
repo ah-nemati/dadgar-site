@@ -2,13 +2,26 @@
 import Link from 'next/link';
 import { Eye, Search, UserPlus } from 'lucide-react';
 import AdminHeader from '../AdminHeader';
-import { getClients } from '@/lib/clients';
+import { getUsers } from '@/lib/clients';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatJalaliDate, toPersianDigits } from '@/lib/format';
 import ClientCreateForm from './ClientCreateForm';
+import type { UserRole, UserStatus } from '@/types/content';
 
 export const dynamic = 'force-dynamic';
+
+const ROLE_LABEL: Record<UserRole, string> = {
+  ADMIN: 'مدیر',
+  LAWYER: 'وکیل',
+  CLIENT: 'موکل',
+};
+
+const STATUS_LABEL: Record<UserStatus, string> = {
+  ACTIVE: 'فعال',
+  DISABLED: 'غیرفعال',
+  PASSWORD_RESET_REQUIRED: 'نیازمند تعیین رمز',
+};
 
 export default async function AdminClientsPage({
   searchParams,
@@ -16,7 +29,7 @@ export default async function AdminClientsPage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q = '' } = await searchParams;
-  const clients = await getClients();
+  const clients = await getUsers();
   const query = q.trim().toLowerCase();
   const filtered = query
     ? clients.filter((client) =>
@@ -30,7 +43,7 @@ export default async function AdminClientsPage({
   return (
     <div>
       <AdminHeader
-        title="مدیریت موکلین"
+        title="مدیریت کاربران"
         description={`${toPersianDigits(clients.length)} حساب کاربری در سامانه ثبت شده است.`}
       />
 
@@ -52,25 +65,27 @@ export default async function AdminClientsPage({
                 <h2 className="font-bold truncate">{client.fullName || 'بدون نام'}</h2>
                 <p className="text-xs text-muted-foreground mt-2 break-all" dir="ltr">{client.email || '—'}</p>
                 <p className="text-xs text-muted-foreground mt-1" dir="ltr">{client.phone || '—'}</p>
+                <p className="text-xs text-muted-foreground mt-2">{ROLE_LABEL[client.role]} · {STATUS_LABEL[client.status]}</p>
               </div>
               <span className="text-[11px] text-muted-foreground shrink-0">{formatJalaliDate(client.createdAt)}</span>
             </div>
             <div className="flex gap-2 mt-4">
               <Button size="sm" variant="ghost" asChild><Link href={`/admin/clients/${encodeURIComponent(client.id)}`}><Eye size={14} />جزئیات</Link></Button>
-              <Button size="sm" variant="outline" asChild><Link href={`/admin/cases/new?client=${encodeURIComponent(client.id)}`}><UserPlus size={14} />ثبت پرونده</Link></Button>
+              {client.role === 'CLIENT' && <Button size="sm" variant="outline" asChild><Link href={`/admin/cases/new?client=${encodeURIComponent(client.id)}`}><UserPlus size={14} />ثبت پرونده</Link></Button>}
             </div>
           </article>
         ))}
-        {filtered.length === 0 && <p className="dashboard-card text-center text-sm text-muted-foreground py-12">موکلی پیدا نشد.</p>}
+        {filtered.length === 0 && <p className="dashboard-card text-center text-sm text-muted-foreground py-12">کاربری پیدا نشد.</p>}
       </div>
 
       <div className="dashboard-table-wrap hidden md:block">
-        <table className="w-full text-sm min-w-[760px]">
+        <table className="w-full text-sm min-w-[900px]">
           <thead className="bg-muted/55 text-muted-foreground">
             <tr>
-              <th className="text-right p-4">نام موکل</th>
+              <th className="text-right p-4">نام کاربر</th>
               <th className="text-right p-4">ایمیل</th>
               <th className="text-right p-4">شماره تماس</th>
+              <th className="text-right p-4">نقش و وضعیت</th>
               <th className="text-right p-4">تاریخ عضویت</th>
               <th className="text-right p-4">اقدام</th>
             </tr>
@@ -81,6 +96,7 @@ export default async function AdminClientsPage({
                 <td className="p-4 font-semibold">{client.fullName || 'بدون نام'}</td>
                 <td className="p-4 text-muted-foreground" dir="ltr">{client.email || '—'}</td>
                 <td className="p-4 text-muted-foreground" dir="ltr">{client.phone || '—'}</td>
+                <td className="p-4 text-muted-foreground">{ROLE_LABEL[client.role]} · {STATUS_LABEL[client.status]}</td>
                 <td className="p-4 text-muted-foreground">{formatJalaliDate(client.createdAt)}</td>
                 <td className="p-4">
                   <div className="flex items-center gap-2">
@@ -90,19 +106,19 @@ export default async function AdminClientsPage({
                         جزئیات
                       </Link>
                     </Button>
-                    <Button size="sm" variant="outline" asChild>
+                    {client.role === 'CLIENT' && <Button size="sm" variant="outline" asChild>
                       <Link href={`/admin/cases/new?client=${encodeURIComponent(client.id)}`}>
                         <UserPlus size={14} aria-hidden="true" />
                         ثبت پرونده
                       </Link>
-                    </Button>
+                    </Button>}
                   </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        {filtered.length === 0 && <p className="text-center text-sm text-muted-foreground py-12">موکلی پیدا نشد.</p>}
+        {filtered.length === 0 && <p className="text-center text-sm text-muted-foreground py-12">کاربری پیدا نشد.</p>}
       </div>
     </div>
   );

@@ -1,52 +1,70 @@
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import {
+  sessionCookieName,
+  verifySessionToken,
+} from './lib/auth/session-token';
 
-import { auth0 } from "./lib/auth0";
-import { roleFromAuth0Identity } from "./lib/auth-role";
+const ADMIN_ONLY_PREFIXES = ['/admin/clients', '/admin/blog'];
 
-export async function middleware(request: NextRequest) {
-  try {
-    if (request.nextUrl.pathname === "/account") {
-      const session = await auth0.getSession(request);
-
-      if (!session?.user) {
-        const loginUrl = new URL("/login", request.url);
-
-        loginUrl.searchParams.set("returnTo", "/account");
-
-        return NextResponse.redirect(loginUrl);
-      }
-
-      const role = roleFromAuth0Identity(session.user);
-
-      return NextResponse.redirect(
-        new URL(role === "admin" ? "/admin" : "/portal", request.url),
-      );
-    }
-
-    return await auth0.middleware(request);
-  } catch (error) {
-    console.error("[auth0-middleware]", {
-      pathname: request.nextUrl.pathname,
-
-      name: error instanceof Error ? error.name : "UnknownError",
-
-      message: error instanceof Error ? error.message : String(error),
-
-      stack: error instanceof Error ? error.stack : undefined,
-
-      cause:
-        error instanceof Error && "cause" in error ? error.cause : undefined,
-    });
-
-    const loginUrl = new URL("/login", request.url);
-
-    loginUrl.searchParams.set("authError", "1");
-
-    return NextResponse.redirect(loginUrl);
-  }
+function dashboardFor(role: 'ADMIN' | 'LAWYER' | 'CLIENT'): string {
+  return role === 'CLIENT' ? '/portal' : '/admin';
 }
 
+function loginRedirect(request: NextRequest, clearCookie = false): NextResponse {
+  const loginUrl = new URL('/login', request.url);
+  loginUrl.searchParams.set(
+    'returnTo',
+    `${request.nextUrl.pathname}${request.nextUrl.search}`,
+  );
+  const response = NextResponse.redirect(loginUrl);
+  if (clearCookie) response.cookies.delete(sessionCookieName());
+  return response;
+}
+
+export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  const cookie = request.cookies.get(sessionCookieName())?.value;
+  const session = await verifySessionToken(cookie);
+  const hasInvalidCookie = Boolean(cookie && !session);
+
+  if (!session) return loginRedirect(request, hasInvalidCookie);
+
+  if (pathname === '/account') {
+    return NextResponse.redirect(
+      new URL(dashboardFor(session.role), request.url),
+    );
+  }
+
+  if (pathname.startsWith('/portal')) {
+    return session.role === 'CLIENT'
+      ? NextResponse.next()
+      : NextResponse.redirect(new URL('/admin', request.url));
+  }
+
+  if (pathname.startsWith('/admin')) {
+    if (session.role === 'CLIENT') {
+      return NextResponse.redirect(new URL('/portal', request.url));
+    }
+
+    if (
+      session.role !== 'ADMIN' &&
+      ADMIN_ONLY_PREFIXES.some((prefix) => pathname.startsWith(prefix))
+    ) {
+      return NextResponse.redirect(new URL('/admin', request.url));
+    }
+  }
+
+  return NextResponse.next();
+}
+
+// OpenNext 1.20 supports Edge Middleware but not Next 16's Node.js Proxy.
+export const runtime = 'experimental-edge';
+
 export const config = {
-  matcher: ["/auth/:path*", "/account"],
+  matcher: [
+    '/account',
+    '/admin/:path*',
+    '/portal/:path*',
+  ],
 };

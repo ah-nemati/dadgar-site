@@ -8,7 +8,7 @@ import {
   deleteAppointment,
   updateAppointment,
 } from '@/lib/appointments';
-import { requireAdmin, requireClient } from '@/lib/session';
+import { requireClient, requireStaff } from '@/lib/session';
 import type { AppointmentStatus } from '@/types/content';
 import { validateAppointmentDateTime } from '@/lib/business-hours';
 
@@ -53,7 +53,7 @@ export async function updateAppointmentAction(
   _prevState: AppointmentFormState | undefined,
   formData: FormData
 ): Promise<AppointmentFormState> {
-  await requireAdmin();
+  await requireStaff();
   const status = String(formData.get('status') ?? 'pending') as AppointmentStatus;
   const notes = String(formData.get('notes') ?? '').trim() || null;
 
@@ -71,7 +71,7 @@ export async function updateAppointmentAction(
 }
 
 export async function removeAppointmentAction(id: number) {
-  await requireAdmin();
+  await requireStaff();
   await deleteAppointment(id);
   revalidatePath('/admin');
   revalidatePath('/admin/appointments');

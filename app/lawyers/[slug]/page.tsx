@@ -54,6 +54,7 @@ export default async function LawyerDetailPage({ params }: { params: Params }) {
     "@type": "Person",
     name: lawyer.name,
     jobTitle: lawyer.role,
+    identifier: lawyer.licenseNumber,
     description: lawyer.bio,
     url: new URL(`/lawyers/${lawyer.slug}`, firm.url).toString(),
     image: new URL("/images/profile.jpeg", firm.url).toString(),
@@ -106,6 +107,9 @@ export default async function LawyerDetailPage({ params }: { params: Params }) {
               </h1>
               <p className="text-gold-light mb-3">{lawyer.role}</p>
               <p className="text-sm text-parchment/75">{lawyer.experience}</p>
+              <p className="mt-2 text-sm text-parchment/75">
+                شماره پروانه: <span dir="ltr">{lawyer.licenseNumber}</span>
+              </p>
               <div className="flex flex-wrap justify-center sm:justify-start gap-2 mt-5">
                 {specialtyAreas.map((a) => (
                   <Link

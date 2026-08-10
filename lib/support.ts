@@ -17,17 +17,17 @@ function mapThread(row: ThreadRow): SupportThread {
 
 export async function getSupportThreads(): Promise<SupportThread[]> {
   const account = await requireAccount();
-  const rows = account.role === 'admin'
+  const rows = account.role !== 'CLIENT'
     ? await db<ThreadRow[]>`
-        select t.*, p.full_name as client_name,
+        select t.*, u.name as client_name,
           (select m.body from support_messages m where m.thread_id = t.id order by m.created_at desc limit 1) as last_message
-        from support_threads t join profiles p on p.id = t.client_id
+        from support_threads t join users u on u.id = t.client_id
         order by t.updated_at desc
       `
     : await db<ThreadRow[]>`
-        select t.*, p.full_name as client_name,
+        select t.*, u.name as client_name,
           (select m.body from support_messages m where m.thread_id = t.id order by m.created_at desc limit 1) as last_message
-        from support_threads t join profiles p on p.id = t.client_id
+        from support_threads t join users u on u.id = t.client_id
         where t.client_id = ${account.id}
         order by t.updated_at desc
       `;
@@ -36,14 +36,14 @@ export async function getSupportThreads(): Promise<SupportThread[]> {
 
 export async function getSupportThread(id: number): Promise<SupportThread | null> {
   const account = await requireAccount();
-  const rows = account.role === 'admin'
+  const rows = account.role !== 'CLIENT'
     ? await db<ThreadRow[]>`
-        select t.*, p.full_name as client_name, null::text as last_message
-        from support_threads t join profiles p on p.id = t.client_id where t.id = ${id} limit 1
+        select t.*, u.name as client_name, null::text as last_message
+        from support_threads t join users u on u.id = t.client_id where t.id = ${id} limit 1
       `
     : await db<ThreadRow[]>`
-        select t.*, p.full_name as client_name, null::text as last_message
-        from support_threads t join profiles p on p.id = t.client_id
+        select t.*, u.name as client_name, null::text as last_message
+        from support_threads t join users u on u.id = t.client_id
         where t.id = ${id} and t.client_id = ${account.id} limit 1
       `;
   return rows[0] ? mapThread(rows[0]) : null;
@@ -52,18 +52,18 @@ export async function getSupportThread(id: number): Promise<SupportThread | null
 export async function getSupportMessages(threadId: number): Promise<SupportMessage[]> {
   if (!(await getSupportThread(threadId))) return [];
   const rows = await db<MessageRow[]>`
-    select m.id, m.thread_id, m.sender_id, p.full_name as sender_name, p.role as sender_role, m.body, m.created_at
-    from support_messages m join profiles p on p.id = m.sender_id
+    select m.id, m.thread_id, m.sender_id, u.name as sender_name, u.role as sender_role, m.body, m.created_at
+    from support_messages m join users u on u.id = m.sender_id
     where m.thread_id = ${threadId} order by m.created_at asc
   `;
   return rows.map((row) => ({ id: Number(row.id), threadId: Number(row.threadId), senderId: row.senderId,
-    senderName: row.senderRole === 'admin' ? 'پشتیبانی دفتر' : row.senderName || 'موکل', senderRole: row.senderRole,
+    senderName: row.senderRole !== 'CLIENT' ? 'پشتیبانی دفتر' : row.senderName || 'موکل', senderRole: row.senderRole,
     body: row.body, createdAt: row.createdAt.toISOString() }));
 }
 
 export async function createSupportThread(subject: string, body: string): Promise<number> {
   const account = await requireAccount();
-  if (account.role !== 'client') throw new Error('CLIENT_ONLY');
+  if (account.role !== 'CLIENT') throw new Error('CLIENT_ONLY');
   return db.begin(async (tx) => {
     const [thread] = await tx<{ id: number | string }[]>`
       insert into support_threads (client_id, subject) values (${account.id}, ${subject}) returning id
@@ -78,11 +78,11 @@ export async function replySupportThread(threadId: number, body: string): Promis
   const [thread] = await db<{ clientId: string; status: SupportThreadStatus }[]>`
     select client_id, status from support_threads where id = ${threadId} limit 1
   `;
-  if (!thread || (account.role !== 'admin' && thread.clientId !== account.id)) throw new Error('FORBIDDEN');
-  if (thread.status === 'closed' && account.role !== 'admin') throw new Error('THREAD_CLOSED');
+  if (!thread || (account.role === 'CLIENT' && thread.clientId !== account.id)) throw new Error('FORBIDDEN');
+  if (thread.status === 'closed' && account.role === 'CLIENT') throw new Error('THREAD_CLOSED');
   await db.begin(async (tx) => {
     await tx`insert into support_messages (thread_id, sender_id, body) values (${threadId}, ${account.id}, ${body})`;
-    await tx`update support_threads set status = ${account.role === 'admin' ? 'answered' : 'open'} where id = ${threadId}`;
+    await tx`update support_threads set status = ${account.role !== 'CLIENT' ? 'answered' : 'open'} where id = ${threadId}`;
   });
 }
 

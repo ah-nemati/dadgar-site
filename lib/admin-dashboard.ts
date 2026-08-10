@@ -23,7 +23,7 @@ interface StatsRow {
 export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
   const [row] = await db<StatsRow[]>`
     select
-      (select count(*) from profiles where role = 'client')::int as clients,
+      (select count(*) from users where role = 'CLIENT')::int as clients,
       (select count(*) from client_cases where status <> 'closed')::int as active_cases,
       (select count(*) from consultation_requests where status = 'new')::int as new_consultations,
       (select count(*) from support_threads where status <> 'closed')::int as open_threads,

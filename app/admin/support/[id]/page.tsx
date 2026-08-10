@@ -39,7 +39,7 @@ export default async function AdminThreadPage({ params }: { params: Promise<{ id
 
       <section className="dashboard-card p-5 md:p-6 my-6 space-y-4">
         {messages.map((message) => {
-          const fromAdmin = message.senderRole === 'admin';
+          const fromAdmin = message.senderRole !== 'CLIENT';
           return (
             <div key={message.id} className={`flex ${fromAdmin ? 'justify-end' : 'justify-start'}`}>
               <article className={`max-w-[86%] rounded-xl p-4 ${fromAdmin ? 'bg-ink text-parchment' : 'bg-muted'}`}>

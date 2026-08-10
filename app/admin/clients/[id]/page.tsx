@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowRight, Briefcase, CalendarDays, Mail, MessageSquare, Phone, Plus } from 'lucide-react';
 import AdminHeader from '../../AdminHeader';
-import { getClientById } from '@/lib/clients';
+import { getUserById } from '@/lib/clients';
 import { getCases } from '@/lib/cases';
 import { getAppointments } from '@/lib/appointments';
 import { getSupportThreads } from '@/lib/support';
@@ -11,15 +11,28 @@ import { Badge } from '@/components/ui/badge';
 import { CASE_STATUS_LABEL, CASE_STATUS_VARIANT, APPOINTMENT_STATUS_LABEL, APPOINTMENT_STATUS_VARIANT } from '@/lib/status';
 import { formatJalaliDate, formatJalaliDateTime, toPersianDigits } from '@/lib/format';
 import ClientPasswordResetForm from '../ClientPasswordResetForm';
+import UserEditForm from '../UserEditForm';
+import DeleteUserButton from '../DeleteUserButton';
+import type { UserRole, UserStatus } from '@/types/content';
 
 export const dynamic = 'force-dynamic';
+
+const ROLE_LABEL: Record<UserRole, string> = {
+  ADMIN: 'مدیر',
+  LAWYER: 'وکیل',
+  CLIENT: 'موکل',
+};
+
+const STATUS_LABEL: Record<UserStatus, string> = {
+  ACTIVE: 'فعال',
+  DISABLED: 'غیرفعال',
+  PASSWORD_RESET_REQUIRED: 'نیازمند تعیین رمز',
+};
 
 function decodeRouteId(value: string): string {
   let decoded = value;
 
-  // Auth0 IDs contain characters such as `|`. Depending on the proxy/router,
-  // a dynamic segment can arrive encoded (or double-encoded). Decode it
-  // defensively before using it as the database key.
+  // Decode defensively because route parameters can arrive encoded by a proxy.
   for (let index = 0; index < 2; index += 1) {
     try {
       const next = decodeURIComponent(decoded);
@@ -37,7 +50,7 @@ export default async function AdminClientDetailPage({ params }: { params: Promis
   const { id: rawId } = await params;
   const id = decodeRouteId(rawId);
   const [client, allCases, allAppointments, allThreads] = await Promise.all([
-    getClientById(id),
+    getUserById(id),
     getCases(),
     getAppointments(),
     getSupportThreads(),
@@ -51,13 +64,13 @@ export default async function AdminClientDetailPage({ params }: { params: Promis
   return (
     <div>
       <Link href="/admin/clients" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-5">
-        <ArrowRight size={16} /> بازگشت به موکلین
+        <ArrowRight size={16} /> بازگشت به کاربران
       </Link>
 
       <AdminHeader
-        title={client.fullName || 'موکل بدون نام'}
-        description={`عضویت از ${formatJalaliDate(client.createdAt)}`}
-        actions={<Button asChild><Link href={`/admin/cases/new?client=${encodeURIComponent(client.id)}`}><Plus size={16} /> ثبت پرونده</Link></Button>}
+        title={client.fullName || 'کاربر بدون نام'}
+        description={`${ROLE_LABEL[client.role]} · ${STATUS_LABEL[client.status]} · عضویت از ${formatJalaliDate(client.createdAt)}`}
+        actions={client.role === 'CLIENT' ? <Button asChild><Link href={`/admin/cases/new?client=${encodeURIComponent(client.id)}`}><Plus size={16} /> ثبت پرونده</Link></Button> : undefined}
       />
 
       <section className="dashboard-card p-5 mb-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -95,7 +108,8 @@ export default async function AdminClientDetailPage({ params }: { params: Promis
         </section>
       </div>
 
-      {client.id.startsWith('auth0|') && <ClientPasswordResetForm clientId={client.id} />}
+      <UserEditForm user={client} />
+      <ClientPasswordResetForm clientId={client.id} />
 
       <section className="dashboard-card p-5 mt-6">
         <h2 className="font-bold mb-5">گفت‌وگوهای پشتیبانی</h2>
@@ -109,6 +123,8 @@ export default async function AdminClientDetailPage({ params }: { params: Promis
           {threads.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">گفت‌وگویی ثبت نشده است.</p>}
         </div>
       </section>
+
+      <DeleteUserButton userId={client.id} />
     </div>
   );
 }

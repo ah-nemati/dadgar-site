@@ -20,20 +20,21 @@ env:
   NEXT_PUBLIC_SITE_URL: "https://majidsavarivakil.ir"
   APP_BASE_URL: "https://majidsavarivakil.ir"
 
-  AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
-  AUTH0_CLIENT_ID: ${{ secrets.AUTH0_CLIENT_ID }}
-  AUTH0_CLIENT_SECRET: ${{ secrets.AUTH0_CLIENT_SECRET }}
-  AUTH0_SECRET: ${{ secrets.AUTH0_SECRET }}
-
-  AUTH0_ROLE_CLAIM_NAMESPACE: "https://majidsavarivakil.ir"
-  AUTH0_ADMIN_EMAILS: ${{ secrets.AUTH0_ADMIN_EMAILS }}
-
-  AUTH0_M2M_CLIENT_ID: ${{ secrets.AUTH0_M2M_CLIENT_ID }}
-  AUTH0_M2M_CLIENT_SECRET: ${{ secrets.AUTH0_M2M_CLIENT_SECRET }}
-  AUTH0_DB_CONNECTION: "Username-Password-Authentication"
+  SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
 
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
   DATABASE_SSL: "true"
+
+  PASSWORD_RESET_WEBHOOK_URL: ${{ secrets.PASSWORD_RESET_WEBHOOK_URL }}
+  PASSWORD_RESET_WEBHOOK_SECRET: ${{ secrets.PASSWORD_RESET_WEBHOOK_SECRET }}
+
+  INITIAL_ADMIN_EMAIL: ${{ secrets.INITIAL_ADMIN_EMAIL }}
+  INITIAL_ADMIN_PASSWORD: ${{ secrets.INITIAL_ADMIN_PASSWORD }}
+  INITIAL_ADMIN_NAME: ${{ secrets.INITIAL_ADMIN_NAME }}
+  INITIAL_ADMIN_PHONE: ${{ secrets.INITIAL_ADMIN_PHONE }}
+  INITIAL_LAWYER_EMAIL: ${{ secrets.INITIAL_LAWYER_EMAIL }}
+  INITIAL_LAWYER_PASSWORD: ${{ secrets.INITIAL_LAWYER_PASSWORD }}
+  INITIAL_LAWYER_PHONE: ${{ secrets.INITIAL_LAWYER_PHONE }}
 
   IMAGEKIT_PUBLIC_KEY: ${{ secrets.IMAGEKIT_PUBLIC_KEY }}
   IMAGEKIT_PRIVATE_KEY: ${{ secrets.IMAGEKIT_PRIVATE_KEY }}
@@ -68,6 +69,12 @@ jobs:
       - name: Storage audit
         run: npm run audit:storage
 
+      - name: Apply database migrations
+        run: npm run db:migrate
+
+      - name: Seed required accounts and public content
+        run: npm run db:seed
+
       - name: Runtime audit
         run: npm run audit:runtime
 
@@ -84,14 +91,10 @@ jobs:
           const fs = require("fs");
 
           const keys = [
-            "AUTH0_DOMAIN",
-            "AUTH0_CLIENT_ID",
-            "AUTH0_CLIENT_SECRET",
-            "AUTH0_SECRET",
-            "AUTH0_ADMIN_EMAILS",
-            "AUTH0_M2M_CLIENT_ID",
-            "AUTH0_M2M_CLIENT_SECRET",
+            "SESSION_SECRET",
             "DATABASE_URL",
+            "PASSWORD_RESET_WEBHOOK_URL",
+            "PASSWORD_RESET_WEBHOOK_SECRET",
             "IMAGEKIT_PUBLIC_KEY",
             "IMAGEKIT_PRIVATE_KEY",
             "IMAGEKIT_URL_ENDPOINT"
@@ -139,7 +142,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          npx --yes wrangler@4 whoami
+          npx --yes wrangler@4.120.0 whoami
 
       - name: Deploy OpenNext Worker
         env:

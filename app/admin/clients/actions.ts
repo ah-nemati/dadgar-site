@@ -1,60 +1,328 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { db } from '@/lib/db';
-import { createAuth0User, deleteAuth0User, updateAuth0Password } from '@/lib/auth0-management';
+import { hashPassword } from '@/lib/auth/password';
+import { startSession } from '@/lib/auth/sessions';
+import {
+  isValidEmail,
+  isValidIranianPhone,
+  normalizeEmail,
+  normalizeIranianPhone,
+  validateName,
+  validatePassword,
+} from '@/lib/auth/validation';
 import { requireAdmin } from '@/lib/session';
+import { deleteAsset } from '@/lib/storage/imagekit';
+import type { UserRole, UserStatus } from '@/types/content';
+import type postgres from 'postgres';
 
-export interface CreateClientState { error?: string; success?: boolean }
-export async function createClientAccountAction(_prev: CreateClientState | undefined, formData: FormData): Promise<CreateClientState> {
+interface ManagedUserRow {
+  id: string;
+  email: string;
+  role: UserRole;
+  status: UserStatus;
+}
+
+export interface UserActionState {
+  error?: string;
+  success?: boolean;
+}
+
+function readRole(value: FormDataEntryValue | null): UserRole | null {
+  return value === 'ADMIN' || value === 'LAWYER' || value === 'CLIENT'
+    ? value
+    : null;
+}
+
+function readStatus(value: FormDataEntryValue | null): UserStatus | null {
+  return value === 'ACTIVE' ||
+    value === 'DISABLED' ||
+    value === 'PASSWORD_RESET_REQUIRED'
+    ? value
+    : null;
+}
+
+function readEducation(value: FormDataEntryValue | null): string[] {
+  return String(value ?? '')
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 10);
+}
+
+function databaseError(error: unknown): string {
+  const code =
+    typeof error === 'object' && error && 'code' in error
+      ? String(error.code)
+      : '';
+  const message = error instanceof Error ? error.message : '';
+  if (code === '23505') return 'برای این ایمیل قبلاً حساب ساخته شده است.';
+  if (message === 'LAST_ACTIVE_ADMIN') return 'حداقل یک مدیر فعال باید در سامانه باقی بماند.';
+  return 'ذخیره اطلاعات کاربر انجام نشد.';
+}
+
+async function activeAdminCanBeChanged(
+  tx: postgres.TransactionSql,
+  user: ManagedUserRow,
+  nextRole: UserRole,
+  nextStatus: UserStatus,
+): Promise<boolean> {
+  if (
+    user.role !== 'ADMIN' ||
+    user.status !== 'ACTIVE' ||
+    (nextRole === 'ADMIN' && nextStatus === 'ACTIVE')
+  ) {
+    return true;
+  }
+
+  const [row] = await tx<{ count: number }[]>`
+    select count(*)::int as count
+    from users
+    where role = 'ADMIN' and status = 'ACTIVE' and id <> ${user.id}
+  `;
+  return Number(row.count) > 0;
+}
+
+export async function createUserAccountAction(
+  _previousState: UserActionState | undefined,
+  formData: FormData,
+): Promise<UserActionState> {
   const admin = await requireAdmin();
   const fullName = String(formData.get('fullName') ?? '').trim();
-  const phone = String(formData.get('phone') ?? '').trim();
-  const email = String(formData.get('email') ?? '').trim().toLowerCase();
+  const phone = normalizeIranianPhone(formData.get('phone'));
+  const email = normalizeEmail(formData.get('email'));
   const password = String(formData.get('password') ?? '');
-  if (!fullName || !phone || !email || !password) return { error: 'نام، شماره تماس، ایمیل و رمز موقت را کامل کنید.' };
-  if (password.length < 8) return { error: 'رمز موقت باید حداقل ۸ کاراکتر باشد.' };
+  const passwordConfirm = String(formData.get('passwordConfirm') ?? '');
+  const role = readRole(formData.get('role'));
+  const licenseNumber = String(formData.get('licenseNumber') ?? '').trim();
+  const education = readEducation(formData.get('education'));
 
-  let authUserId: string | null = null;
+  const nameError = validateName(fullName);
+  if (nameError) return { error: nameError };
+  if (!isValidIranianPhone(phone)) return { error: 'شماره موبایل ایران معتبر نیست.' };
+  if (!isValidEmail(email)) return { error: 'ایمیل معتبر وارد کنید.' };
+  const passwordError = validatePassword(password);
+  if (passwordError) return { error: passwordError };
+  if (password !== passwordConfirm) return { error: 'تکرار رمز عبور یکسان نیست.' };
+  if (!role) return { error: 'نقش کاربر معتبر نیست.' };
+  if (role === 'LAWYER' && !licenseNumber) {
+    return { error: 'برای نقش وکیل، شماره پروانه را وارد کنید.' };
+  }
+
+  const id = crypto.randomUUID();
+  const passwordHash = await hashPassword(password);
+
   try {
-    const user = await createAuth0User({ email, password, fullName, phone, role: 'client' });
-    authUserId = user.user_id;
     await db.begin(async (tx) => {
       await tx`
-        insert into profiles (id, full_name, email, phone, role)
-        values (${user.user_id}, ${fullName}, ${email}, ${phone}, 'client')
-        on conflict (id) do update set full_name = excluded.full_name, email = excluded.email, phone = excluded.phone
+        insert into users (
+          id, email, password_hash, name, phone, role, status
+        ) values (
+          ${id}, ${email}, ${passwordHash}, ${fullName}, ${phone},
+          ${role}, 'ACTIVE'
+        )
       `;
+      if (role === 'LAWYER') {
+        await tx`
+          insert into lawyer_profiles (user_id, license_number, education)
+          values (${id}, ${licenseNumber}, ${education})
+        `;
+      }
       await tx`
         insert into audit_logs (actor_id, action, entity_type, entity_id, metadata)
-        values (${admin.id}, 'client.create', 'profile', ${user.user_id}, ${JSON.stringify({ email })}::jsonb)
+        values (
+          ${admin.id}, 'user.create', 'user', ${id},
+          ${JSON.stringify({ email, role })}::jsonb
+        )
       `;
     });
   } catch (error) {
-    if (authUserId) await deleteAuth0User(authUserId).catch(() => undefined);
-    const message = error instanceof Error ? error.message : '';
-    if (/409|already exists|user_exists/i.test(message)) return { error: 'برای این ایمیل قبلاً حساب ساخته شده است.' };
-    return { error: 'ساخت حساب در Auth0 انجام نشد. دسترسی‌های Management API را بررسی کنید.' };
+    return { error: databaseError(error) };
   }
+
   revalidatePath('/admin');
   revalidatePath('/admin/clients');
   return { success: true };
 }
 
-export interface ResetClientPasswordState { error?: string; success?: boolean }
-export async function resetClientPasswordAction(clientId: string, _prev: ResetClientPasswordState | undefined, formData: FormData): Promise<ResetClientPasswordState> {
+export async function updateUserAction(
+  userId: string,
+  _previousState: UserActionState | undefined,
+  formData: FormData,
+): Promise<UserActionState> {
+  const admin = await requireAdmin();
+  const fullName = String(formData.get('fullName') ?? '').trim();
+  const phone = normalizeIranianPhone(formData.get('phone'));
+  const email = normalizeEmail(formData.get('email'));
+  const role = readRole(formData.get('role'));
+  const status = readStatus(formData.get('status'));
+  const licenseNumber = String(formData.get('licenseNumber') ?? '').trim();
+  const education = readEducation(formData.get('education'));
+
+  const nameError = validateName(fullName);
+  if (nameError) return { error: nameError };
+  if (!isValidIranianPhone(phone)) return { error: 'شماره موبایل ایران معتبر نیست.' };
+  if (!isValidEmail(email)) return { error: 'ایمیل معتبر وارد کنید.' };
+  if (!role || !status) return { error: 'نقش یا وضعیت انتخاب‌شده معتبر نیست.' };
+  if (role === 'LAWYER' && !licenseNumber) {
+    return { error: 'برای نقش وکیل، شماره پروانه را وارد کنید.' };
+  }
+
+  try {
+    await db.begin(async (tx) => {
+      const [user] = await tx<ManagedUserRow[]>`
+        select id, email, role, status from users where id = ${userId} for update
+      `;
+      if (!user) throw new Error('USER_NOT_FOUND');
+      if (user.id === admin.id && (role !== user.role || status !== user.status)) {
+        throw new Error('SELF_ROLE_STATUS');
+      }
+      if (!(await activeAdminCanBeChanged(tx, user, role, status))) {
+        throw new Error('LAST_ACTIVE_ADMIN');
+      }
+
+      await tx`
+        update users
+        set name = ${fullName}, email = ${email}, phone = ${phone},
+            role = ${role}, status = ${status}
+        where id = ${userId}
+      `;
+
+      if (role === 'LAWYER') {
+        await tx`
+          insert into lawyer_profiles (user_id, license_number, education)
+          values (${userId}, ${licenseNumber}, ${education})
+          on conflict (user_id) do update
+          set license_number = excluded.license_number,
+              education = excluded.education
+        `;
+      } else {
+        await tx`delete from lawyer_profiles where user_id = ${userId}`;
+      }
+
+      if (role !== user.role || status !== user.status) {
+        await tx`delete from user_sessions where user_id = ${userId}`;
+      }
+      await tx`
+        insert into audit_logs (actor_id, action, entity_type, entity_id, metadata)
+        values (
+          ${admin.id}, 'user.update', 'user', ${userId},
+          ${JSON.stringify({ email, role, status })}::jsonb
+        )
+      `;
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '';
+    if (message === 'USER_NOT_FOUND') return { error: 'کاربر پیدا نشد.' };
+    if (message === 'SELF_ROLE_STATUS') {
+      return { error: 'نقش یا وضعیت حساب فعلی را از همین نشست نمی‌توان تغییر داد.' };
+    }
+    return { error: databaseError(error) };
+  }
+
+  revalidatePath('/admin');
+  revalidatePath('/admin/clients');
+  revalidatePath(`/admin/clients/${encodeURIComponent(userId)}`);
+  return { success: true };
+}
+
+export async function resetUserPasswordAction(
+  userId: string,
+  _previousState: UserActionState | undefined,
+  formData: FormData,
+): Promise<UserActionState> {
   const admin = await requireAdmin();
   const password = String(formData.get('password') ?? '');
   const passwordConfirm = String(formData.get('passwordConfirm') ?? '');
-  if (password.length < 8) return { error: 'رمز موقت باید حداقل ۸ کاراکتر باشد.' };
+  const passwordError = validatePassword(password);
+  if (passwordError) return { error: passwordError };
   if (password !== passwordConfirm) return { error: 'تکرار رمز موقت یکسان نیست.' };
+
+  const passwordHash = await hashPassword(password);
+  let target: ManagedUserRow | undefined;
   try {
-    const [client] = await db<{ id: string }[]>`
-      select id from profiles where id = ${clientId} and role = 'client' limit 1
-    `;
-    if (!client || !clientId.startsWith('auth0|')) return { error: 'این حساب قابلیت تعیین رمز محلی ندارد.' };
-    await updateAuth0Password(clientId, password);
-    await db`insert into audit_logs (actor_id, action, entity_type, entity_id) values (${admin.id}, 'client.password.reset', 'profile', ${clientId})`;
-  } catch { return { error: 'تغییر رمز موکل در Auth0 انجام نشد.' }; }
+    await db.begin(async (tx) => {
+      [target] = await tx<ManagedUserRow[]>`
+        select id, email, role, status from users where id = ${userId} for update
+      `;
+      if (!target) throw new Error('USER_NOT_FOUND');
+      await tx`
+        update users
+        set password_hash = ${passwordHash},
+            password_changed_at = now(),
+            status = case
+              when status = 'PASSWORD_RESET_REQUIRED' then 'ACTIVE'
+              else status
+            end
+        where id = ${userId}
+      `;
+      await tx`delete from user_sessions where user_id = ${userId}`;
+      await tx`delete from password_reset_tokens where user_id = ${userId}`;
+      await tx`
+        insert into audit_logs (actor_id, action, entity_type, entity_id)
+        values (${admin.id}, 'user.password.reset', 'user', ${userId})
+      `;
+    });
+  } catch (error) {
+    return {
+      error: error instanceof Error && error.message === 'USER_NOT_FOUND'
+        ? 'کاربر پیدا نشد.'
+        : 'تغییر رمز کاربر انجام نشد.',
+    };
+  }
+
+  if (target?.id === admin.id) await startSession({ id: admin.id, role: admin.role });
   return { success: true };
 }
+
+export async function deleteUserAction(
+  userId: string,
+  _previousState: UserActionState | undefined,
+  _formData: FormData,
+): Promise<UserActionState> {
+  void _previousState;
+  void _formData;
+  const admin = await requireAdmin();
+  if (userId === admin.id) return { error: 'حسابی که با آن وارد شده‌اید قابل حذف نیست.' };
+
+  let fileIds: Array<string | null> = [];
+  try {
+    await db.begin(async (tx) => {
+      const [user] = await tx<ManagedUserRow[]>`
+        select id, email, role, status from users where id = ${userId} for update
+      `;
+      if (!user) throw new Error('USER_NOT_FOUND');
+      if (!(await activeAdminCanBeChanged(tx, user, 'CLIENT', 'DISABLED'))) {
+        throw new Error('LAST_ACTIVE_ADMIN');
+      }
+
+      const documents = await tx<{ fileId: string | null }[]>`
+        select file_id from client_documents where client_id = ${userId}
+      `;
+      fileIds = documents.map((document) => document.fileId);
+
+      await tx`delete from users where id = ${userId}`;
+      await tx`
+        insert into audit_logs (actor_id, action, entity_type, entity_id, metadata)
+        values (
+          ${admin.id}, 'user.delete', 'user', ${userId},
+          ${JSON.stringify({ email: user.email, role: user.role })}::jsonb
+        )
+      `;
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '';
+    if (message === 'USER_NOT_FOUND') return { error: 'کاربر پیدا نشد.' };
+    return { error: databaseError(error) };
+  }
+
+  await Promise.allSettled(fileIds.map((fileId) => deleteAsset(fileId)));
+  revalidatePath('/admin');
+  revalidatePath('/admin/clients');
+  redirect('/admin/clients');
+}
+
+// Kept as a local component-facing alias to avoid changing the form filename.
+export const resetClientPasswordAction = resetUserPasswordAction;

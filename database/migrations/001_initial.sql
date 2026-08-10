@@ -11,20 +11,23 @@ begin
 end;
 $$;
 
-create table if not exists profiles (
+create table if not exists users (
   id text primary key,
-  full_name text not null default '',
-  email text,
+  email text not null,
+  password_hash text not null,
+  name text not null,
   phone text,
-  role text not null default 'client' check (role in ('admin', 'client')),
+  role text not null default 'CLIENT' check (role in ('ADMIN', 'LAWYER', 'CLIENT')),
+  status text not null default 'ACTIVE' check (status in ('ACTIVE', 'DISABLED', 'PASSWORD_RESET_REQUIRED')),
+  password_changed_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
-create index if not exists profiles_role_idx on profiles(role);
-create unique index if not exists profiles_email_lower_unique on profiles(lower(email)) where email is not null;
+create index if not exists users_role_status_idx on users(role, status);
+create unique index if not exists users_email_lower_unique on users(lower(email));
 
-drop trigger if exists profiles_set_updated_at on profiles;
-create trigger profiles_set_updated_at before update on profiles
+drop trigger if exists users_set_updated_at on users;
+create trigger users_set_updated_at before update on users
 for each row execute function set_updated_at();
 
 create table if not exists consultation_requests (
@@ -62,7 +65,7 @@ for each row execute function set_updated_at();
 
 create table if not exists client_cases (
   id bigserial primary key,
-  client_id text not null references profiles(id) on delete cascade,
+  client_id text not null references users(id) on delete cascade,
   case_number text not null unique,
   title text not null,
   court text,
@@ -108,7 +111,7 @@ create index if not exists client_documents_client_idx on client_documents(clien
 
 create table if not exists support_threads (
   id bigserial primary key,
-  client_id text not null references profiles(id) on delete cascade,
+  client_id text not null references users(id) on delete cascade,
   subject text not null,
   status text not null default 'open' check (status in ('open', 'answered', 'closed')),
   created_at timestamptz not null default now(),
@@ -124,7 +127,7 @@ for each row execute function set_updated_at();
 create table if not exists support_messages (
   id bigserial primary key,
   thread_id bigint not null references support_threads(id) on delete cascade,
-  sender_id text not null references profiles(id) on delete cascade,
+  sender_id text not null references users(id) on delete cascade,
   body text not null,
   created_at timestamptz not null default now()
 );
@@ -132,7 +135,7 @@ create index if not exists support_messages_thread_idx on support_messages(threa
 
 create table if not exists appointments (
   id bigserial primary key,
-  client_id text not null references profiles(id) on delete cascade,
+  client_id text not null references users(id) on delete cascade,
   subject text not null,
   requested_at timestamptz not null,
   status text not null default 'pending' check (status in ('pending', 'confirmed', 'cancelled', 'completed')),
@@ -149,7 +152,7 @@ for each row execute function set_updated_at();
 
 create table if not exists audit_logs (
   id bigserial primary key,
-  actor_id text references profiles(id) on delete set null,
+  actor_id text references users(id) on delete set null,
   action text not null,
   entity_type text not null,
   entity_id text,

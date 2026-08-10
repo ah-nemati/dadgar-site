@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import Seal from "@/components/Seal";
 import type { CurrentAccount } from "@/types/content";
+import { logoutAction } from "@/app/auth/actions";
 
 export type DashboardIconName =
   | "dashboard"
@@ -134,7 +135,7 @@ export default function DashboardShell({
             <ExternalLink size={18} aria-hidden="true" />
             مشاهده سایت
           </Link>
-          <form action="/auth/logout" method="get">
+          <form action={logoutAction}>
             <button
               type="submit"
               className="dashboard-nav-link !mx-0 w-full text-right"
@@ -158,7 +159,11 @@ export default function DashboardShell({
 
           <div className="mr-auto lg:mr-0 min-w-0">
             <p className="text-xs text-muted-foreground">
-              {account.role === "admin" ? "مدیر سایت" : "حساب موکل"}
+              {account.role === "ADMIN"
+                ? "مدیر سایت"
+                : account.role === "LAWYER"
+                  ? "وکیل"
+                  : "حساب موکل"}
             </p>
             <p className="text-sm font-bold truncate">
               {account.fullName || account.email}
@@ -166,7 +171,7 @@ export default function DashboardShell({
           </div>
 
           <Link
-            href={account.role === "admin" ? "/admin" : "/portal/profile"}
+            href={account.role === "CLIENT" ? "/portal/profile" : "/admin/security"}
             className="inline-flex items-center gap-2 min-w-0"
             aria-label="مشاهده پروفایل"
           >

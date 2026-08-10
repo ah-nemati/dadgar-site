@@ -47,6 +47,7 @@ next-env.d.ts
 # Cloudflare and production secrets
 .dev.vars
 .dev.vars.*
+!.dev.vars.example
 .env.production
 .env.production.local
 .wrangler/

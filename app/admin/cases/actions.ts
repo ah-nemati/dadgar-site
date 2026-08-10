@@ -12,7 +12,7 @@ import {
   updateCase,
   uploadCaseDocument,
 } from '@/lib/cases';
-import { requireAdmin } from '@/lib/session';
+import { requireStaff } from '@/lib/session';
 import type { CaseStatus } from '@/types/content';
 
 export interface CaseFormState {
@@ -57,7 +57,7 @@ export async function createCaseAction(
   _prevState: CaseFormState | undefined,
   formData: FormData
 ): Promise<CaseFormState> {
-  await requireAdmin();
+  await requireStaff();
   const input = readCase(formData);
 
   if (!input.clientId || !input.caseNumber || !input.title) {
@@ -82,7 +82,7 @@ export async function editCaseAction(
   _prevState: CaseFormState | undefined,
   formData: FormData
 ): Promise<CaseFormState> {
-  await requireAdmin();
+  await requireStaff();
   const input = readCase(formData);
 
   if (!input.clientId || !input.caseNumber || !input.title) {
@@ -109,7 +109,7 @@ export async function addCaseUpdateAction(
   _prevState: CaseFormState | undefined,
   formData: FormData
 ): Promise<CaseFormState> {
-  await requireAdmin();
+  await requireStaff();
   const title = String(formData.get('title') ?? '').trim();
   const body = String(formData.get('body') ?? '').trim();
 
@@ -133,7 +133,7 @@ export async function uploadCaseDocumentAction(
   _prevState: CaseFormState | undefined,
   formData: FormData
 ): Promise<CaseFormState> {
-  await requireAdmin();
+  await requireStaff();
   const title = String(formData.get('title') ?? '').trim();
   const file = formData.get('file');
 
@@ -155,7 +155,7 @@ export async function uploadCaseDocumentAction(
 }
 
 export async function removeCaseAction(id: number) {
-  await requireAdmin();
+  await requireStaff();
   await deleteCase(id);
   revalidatePath('/admin');
   revalidatePath('/admin/cases');
@@ -164,14 +164,14 @@ export async function removeCaseAction(id: number) {
 }
 
 export async function removeCaseUpdateAction(id: number, caseId: number) {
-  await requireAdmin();
+  await requireStaff();
   await deleteCaseUpdate(id);
   revalidatePath(`/admin/cases/${caseId}`);
   revalidatePath(`/portal/cases/${caseId}`);
 }
 
 export async function removeCaseDocumentAction(id: number, caseId: number) {
-  await requireAdmin();
+  await requireStaff();
   await deleteCaseDocument(id);
   revalidatePath(`/admin/cases/${caseId}`);
   revalidatePath(`/portal/cases/${caseId}`);

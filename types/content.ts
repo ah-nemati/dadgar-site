@@ -32,6 +32,7 @@ export interface Lawyer {
   slug: string;
   name: string;
   role: string;
+  licenseNumber: string;
   specialties: PracticeAreaSlug[];
   experience: string;
   initials: string;
@@ -60,7 +61,8 @@ export interface FaqItem {
   a: string;
 }
 
-export type UserRole = 'admin' | 'client';
+export type UserRole = 'ADMIN' | 'LAWYER' | 'CLIENT';
+export type UserStatus = 'ACTIVE' | 'DISABLED' | 'PASSWORD_RESET_REQUIRED';
 
 export interface CurrentAccount {
   id: string;
@@ -68,6 +70,7 @@ export interface CurrentAccount {
   fullName: string;
   phone: string | null;
   role: UserRole;
+  status: UserStatus;
 }
 
 export interface Profile {
@@ -76,7 +79,11 @@ export interface Profile {
   email: string | null;
   phone: string | null;
   role: UserRole;
+  status: UserStatus;
   createdAt: string;
+  updatedAt: string;
+  licenseNumber?: string | null;
+  education?: string[];
 }
 
 export type ConsultationStatus = 'new' | 'read' | 'replied';

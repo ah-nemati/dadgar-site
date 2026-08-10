@@ -13,13 +13,13 @@ function toAppointment(row: AppointmentRow): Appointment {
 
 export async function getAppointments(): Promise<Appointment[]> {
   const account = await requireAccount();
-  const rows = account.role === 'admin'
+  const rows = account.role !== 'CLIENT'
     ? await db<AppointmentRow[]>`
-        select a.*, p.full_name as client_name from appointments a join profiles p on p.id = a.client_id
+        select a.*, u.name as client_name from appointments a join users u on u.id = a.client_id
         order by a.requested_at desc
       `
     : await db<AppointmentRow[]>`
-        select a.*, p.full_name as client_name from appointments a join profiles p on p.id = a.client_id
+        select a.*, u.name as client_name from appointments a join users u on u.id = a.client_id
         where a.client_id = ${account.id} order by a.requested_at desc
       `;
   return rows.map(toAppointment);

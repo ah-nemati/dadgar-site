@@ -46,6 +46,17 @@ export default function ForgotPasswordPage() {
           </Alert>
         )}
 
+        {state?.developmentResetUrl && (
+          <Alert>
+            <AlertDescription className="col-start-1 leading-7">
+              فقط در محیط توسعه: {' '}
+              <Link className="font-semibold text-accent" href={state.developmentResetUrl}>
+                باز کردن لینک تعیین رمز
+              </Link>
+            </AlertDescription>
+          </Alert>
+        )}
+
         {state?.error && (
           <Alert variant="destructive">
             <AlertDescription className="col-start-1">

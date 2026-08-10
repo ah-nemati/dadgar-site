@@ -4,7 +4,6 @@ import path from 'node:path';
 const root = process.cwd();
 const rootsToScan = [
   'app',
-  'auth0',
   'components',
   'data',
   'database',
@@ -16,7 +15,7 @@ const rootsToScan = [
   'package.json',
   'docker-compose.yml',
   'next.config.ts',
-  'proxy.ts',
+  'middleware.ts',
   'wrangler.jsonc',
 ];
 

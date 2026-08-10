@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAdmin, requireClient } from "@/lib/session";
+import { requireClient, requireStaff } from "@/lib/session";
 import {
   createSupportThread,
   replySupportThread,
@@ -69,7 +69,7 @@ export async function setThreadStatusAction(
   id: number,
   status: SupportThreadStatus,
 ) {
-  await requireAdmin();
+  await requireStaff();
   await setSupportThreadStatus(id, status);
   revalidatePath("/admin");
   revalidatePath("/admin/support");

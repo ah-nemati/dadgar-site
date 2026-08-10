@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import AuthShell from '@/components/AuthShell';
 import { SignupEntryActions } from '@/components/AuthEntryActions';
+import { dashboardPath, getCurrentAccount } from '@/lib/session';
 
 export const metadata: Metadata = {
   title: 'ساخت حساب کاربری',
@@ -10,14 +12,17 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
-export default function SignupPage() {
+export default async function SignupPage() {
+  const account = await getCurrentAccount();
+  if (account) redirect(dashboardPath(account.role));
+
   return (
     <AuthShell
       eyebrow="ثبت‌نام موکلین"
       title="ساخت حساب کاربری"
-      description="حساب شما برای دسترسی به پرونده‌ها، پیام‌ها و خدمات اختصاصی دفتر استفاده می‌شود."
+      description="حساب موکل برای دسترسی به پرونده‌ها، پیام‌ها و خدمات اختصاصی دفتر ساخته می‌شود."
     >
       <Suspense
         fallback={

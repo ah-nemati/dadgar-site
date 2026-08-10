@@ -37,7 +37,7 @@ export default async function PortalThreadPage({ params }: { params: Promise<{ i
 
       <section className="dashboard-card p-5 md:p-6 mb-6 space-y-4">
         {messages.map((message) => {
-          const fromAdmin = message.senderRole === 'admin';
+          const fromAdmin = message.senderRole !== 'CLIENT';
           return (
             <div key={message.id} className={`flex ${fromAdmin ? 'justify-start' : 'justify-end'}`}>
               <article className={`max-w-[86%] rounded-xl p-4 ${fromAdmin ? 'bg-muted' : 'bg-ink text-parchment'}`}>

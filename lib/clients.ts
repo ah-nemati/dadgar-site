@@ -1,31 +1,77 @@
 import { db } from '@/lib/db';
-import type { Profile } from '@/types/content';
+import type { Profile, UserRole, UserStatus } from '@/types/content';
 
-interface ProfileRow {
+interface UserRow {
   id: string;
   fullName: string;
-  email: string | null;
+  email: string;
   phone: string | null;
-  role: 'admin' | 'client';
+  role: UserRole;
+  status: UserStatus;
   createdAt: Date;
+  updatedAt: Date;
+  licenseNumber: string | null;
+  education: string[] | null;
 }
 
-function toProfile(row: ProfileRow): Profile {
-  return { ...row, createdAt: row.createdAt.toISOString() };
+function toProfile(row: UserRow): Profile {
+  return {
+    ...row,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+    education: row.education ?? [],
+  };
+}
+
+const USER_COLUMNS = `
+  u.id,
+  u.name as full_name,
+  u.email,
+  u.phone,
+  u.role,
+  u.status,
+  u.created_at,
+  u.updated_at,
+  lp.license_number,
+  lp.education
+`;
+
+export async function getUsers(): Promise<Profile[]> {
+  const rows = await db.unsafe<UserRow[]>(`
+    select ${USER_COLUMNS}
+    from users u
+    left join lawyer_profiles lp on lp.user_id = u.id
+    order by u.created_at desc
+  `);
+  return rows.map(toProfile);
+}
+
+export async function getUserById(id: string): Promise<Profile | null> {
+  const rows = await db.unsafe<UserRow[]>(
+    `
+      select ${USER_COLUMNS}
+      from users u
+      left join lawyer_profiles lp on lp.user_id = u.id
+      where u.id = $1
+      limit 1
+    `,
+    [id],
+  );
+  return rows[0] ? toProfile(rows[0]) : null;
 }
 
 export async function getClients(): Promise<Profile[]> {
-  const rows = await db<ProfileRow[]>`
-    select id, full_name, email, phone, role, created_at
-    from profiles where role = 'client' order by created_at desc
-  `;
+  const rows = await db.unsafe<UserRow[]>(`
+    select ${USER_COLUMNS}
+    from users u
+    left join lawyer_profiles lp on lp.user_id = u.id
+    where u.role = 'CLIENT' and u.status = 'ACTIVE'
+    order by u.created_at desc
+  `);
   return rows.map(toProfile);
 }
 
 export async function getClientById(id: string): Promise<Profile | null> {
-  const [row] = await db<ProfileRow[]>`
-    select id, full_name, email, phone, role, created_at
-    from profiles where id = ${id} and role = 'client' limit 1
-  `;
-  return row ? toProfile(row) : null;
+  const user = await getUserById(id);
+  return user?.role === 'CLIENT' ? user : null;
 }

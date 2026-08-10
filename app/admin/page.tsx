@@ -16,11 +16,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatJalaliDate, toPersianDigits } from '@/lib/format';
 import { CASE_STATUS_LABEL, CASE_STATUS_VARIANT } from '@/lib/status';
+import { requireStaff } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboardPage() {
-  const [stats, messages, cases] = await Promise.all([
+  const [account, stats, messages, cases] = await Promise.all([
+    requireStaff(),
     getAdminDashboardStats(),
     getConsultationRequests(),
     getCases(),
@@ -33,12 +35,14 @@ export default async function AdminDashboardPage() {
     { label: 'گفت‌وگوی باز', value: stats.openThreads, icon: MessageSquare, href: '/admin/support' },
     { label: 'نوبت در انتظار', value: stats.pendingAppointments, icon: CalendarDays, href: '/admin/appointments' },
     { label: 'مطلب منتشرشده', value: stats.publishedPosts, icon: FileText, href: '/admin/blog' },
-  ];
+  ].filter((card) =>
+    account.role === 'ADMIN' || !['/admin/clients', '/admin/blog'].includes(card.href)
+  );
 
   return (
     <div>
       <AdminHeader
-        title="داشبورد مدیریت"
+        title={account.role === 'LAWYER' ? 'داشبورد وکیل' : 'داشبورد مدیریت'}
         description="نمای کلی فعالیت سایت، موکلین و مواردی که نیاز به پیگیری دارند."
         actions={<Button asChild><Link href="/admin/cases/new">ثبت پرونده جدید</Link></Button>}
       />

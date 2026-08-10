@@ -46,7 +46,7 @@ export default function AuthShell({
             <div className="relative z-10 mt-10 space-y-4 text-sm leading-7 text-parchment/75">
               <div className="flex items-start gap-3">
                 <ShieldCheck className="mt-1 shrink-0 text-gold-light" size={19} aria-hidden="true" />
-                <p>اطلاعات ورود و نشست کاربری با سازوکار امن احراز هویت مدیریت می‌شود.</p>
+                <p>رمز عبور به‌صورت هش‌شده نگهداری می‌شود و نشست کاربری قابل لغو و زمان‌دار است.</p>
               </div>
               <div className="flex items-start gap-3">
                 <LockKeyhole className="mt-1 shrink-0 text-gold-light" size={19} aria-hidden="true" />
