@@ -3,8 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { db } from '@/lib/db';
+import { randomBase64Url, sha256Hex } from '@/lib/auth/crypto';
 import { hashPassword } from '@/lib/auth/password';
-import { startSession } from '@/lib/auth/sessions';
 import {
   isValidEmail,
   isValidIranianPhone,
@@ -28,6 +28,10 @@ interface ManagedUserRow {
 export interface UserActionState {
   error?: string;
   success?: boolean;
+}
+
+export interface PasswordResetLinkState extends UserActionState {
+  resetUrl?: string;
 }
 
 function readRole(value: FormDataEntryValue | null): UserRole | null {
@@ -228,53 +232,77 @@ export async function updateUserAction(
   return { success: true };
 }
 
-export async function resetUserPasswordAction(
+export async function createUserPasswordResetLinkAction(
   userId: string,
-  _previousState: UserActionState | undefined,
-  formData: FormData,
-): Promise<UserActionState> {
+  _previousState: PasswordResetLinkState | undefined,
+  _formData: FormData,
+): Promise<PasswordResetLinkState> {
+  void _previousState;
+  void _formData;
   const admin = await requireAdmin();
-  const password = String(formData.get('password') ?? '');
-  const passwordConfirm = String(formData.get('passwordConfirm') ?? '');
-  const passwordError = validatePassword(password);
-  if (passwordError) return { error: passwordError };
-  if (password !== passwordConfirm) return { error: 'تکرار رمز موقت یکسان نیست.' };
+  const token = randomBase64Url(32);
+  const tokenHash = await sha256Hex(token);
+  const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+  const baseUrl =
+    process.env.APP_BASE_URL?.trim() ||
+    (process.env.NODE_ENV === 'production'
+      ? 'https://majidsavarivakil.ir'
+      : 'http://localhost:3000');
+  let resetUrl: URL;
+  try {
+    resetUrl = new URL('/reset-password', baseUrl);
+  } catch {
+    return { error: 'آدرس اصلی سایت در APP_BASE_URL معتبر نیست.' };
+  }
+  resetUrl.searchParams.set('token', token);
 
-  const passwordHash = await hashPassword(password);
-  let target: ManagedUserRow | undefined;
   try {
     await db.begin(async (tx) => {
-      [target] = await tx<ManagedUserRow[]>`
+      const [target] = await tx<ManagedUserRow[]>`
         select id, email, role, status from users where id = ${userId} for update
       `;
       if (!target) throw new Error('USER_NOT_FOUND');
+      if (target.id === admin.id) throw new Error('SELF_RESET_LINK');
+      if (target.status === 'DISABLED') throw new Error('USER_DISABLED');
+
       await tx`
-        update users
-        set password_hash = ${passwordHash},
-            password_changed_at = now(),
-            status = case
-              when status = 'PASSWORD_RESET_REQUIRED' then 'ACTIVE'
-              else status
-            end
+        update users set status = 'PASSWORD_RESET_REQUIRED'
         where id = ${userId}
       `;
       await tx`delete from user_sessions where user_id = ${userId}`;
-      await tx`delete from password_reset_tokens where user_id = ${userId}`;
       await tx`
-        insert into audit_logs (actor_id, action, entity_type, entity_id)
-        values (${admin.id}, 'user.password.reset', 'user', ${userId})
+        delete from password_reset_tokens
+        where user_id = ${userId} and used_at is null
+      `;
+      await tx`
+        insert into password_reset_tokens (token_hash, user_id, expires_at)
+        values (${tokenHash}, ${userId}, ${expiresAt})
+      `;
+      await tx`
+        insert into audit_logs (actor_id, action, entity_type, entity_id, metadata)
+        values (
+          ${admin.id}, 'user.password.reset_link.create', 'user', ${userId},
+          ${JSON.stringify({ expiresAt: expiresAt.toISOString() })}::jsonb
+        )
       `;
     });
   } catch (error) {
+    const message = error instanceof Error ? error.message : '';
     return {
-      error: error instanceof Error && error.message === 'USER_NOT_FOUND'
-        ? 'کاربر پیدا نشد.'
-        : 'تغییر رمز کاربر انجام نشد.',
+      error:
+        message === 'USER_NOT_FOUND'
+          ? 'کاربر پیدا نشد.'
+          : message === 'SELF_RESET_LINK'
+            ? 'برای حساب فعلی از صفحه «امنیت حساب» رمز را تغییر دهید.'
+          : message === 'USER_DISABLED'
+            ? 'حساب غیرفعال است؛ ابتدا وضعیت آن را فعال کنید.'
+            : 'ساخت لینک بازنشانی انجام نشد.',
     };
   }
 
-  if (target?.id === admin.id) await startSession({ id: admin.id, role: admin.role });
-  return { success: true };
+  revalidatePath('/admin/clients');
+  revalidatePath(`/admin/clients/${encodeURIComponent(userId)}`);
+  return { success: true, resetUrl: resetUrl.toString() };
 }
 
 export async function deleteUserAction(
@@ -323,6 +351,3 @@ export async function deleteUserAction(
   revalidatePath('/admin/clients');
   redirect('/admin/clients');
 }
-
-// Kept as a local component-facing alias to avoid changing the form filename.
-export const resetClientPasswordAction = resetUserPasswordAction;

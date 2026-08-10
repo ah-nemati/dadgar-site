@@ -1,79 +1,40 @@
-'use client';
-
-import { useActionState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, CheckCircle2, KeyRound, Mail } from 'lucide-react';
-import { requestPasswordReset } from '@/app/auth/actions';
+import { ArrowRight, KeyRound, Phone } from 'lucide-react';
 import AuthShell from '@/components/AuthShell';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { FIRM } from '@/data/firm';
 
 export default function ForgotPasswordPage() {
-  const [state, formAction, pending] = useActionState(requestPasswordReset, undefined);
-
   return (
     <AuthShell
       eyebrow="بازیابی دسترسی"
       title="بازیابی رمز عبور"
-      description="ایمیل حساب خود را وارد کنید تا لینک امن تعیین رمز جدید برای شما ارسال شود."
+      description="برای بازنشانی رمز، ابتدا هویت شما توسط مدیر سامانه بررسی می‌شود."
     >
-      <form action={formAction} className="space-y-5">
-        <div className="space-y-2">
-          <Label htmlFor="email">ایمیل حساب</Label>
-          <div className="relative">
-            <Mail size={17} className="auth-field-icon" aria-hidden="true" />
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              dir="ltr"
-              autoComplete="email"
-              defaultValue={state?.email ?? ''}
-              required
-              autoFocus
-              className="pr-11 text-right"
-              placeholder="name@example.com"
-            />
-          </div>
-        </div>
+      <div className="space-y-5">
+        <Alert variant="accent">
+          <KeyRound size={17} />
+          <AlertDescription className="leading-7">
+            با دفتر تماس بگیرید و ایمیل یا شماره موبایل ثبت‌شده در حساب را اعلام کنید. مدیر پس از تأیید هویت، یک لینک یک‌بارمصرف ۳۰ دقیقه‌ای برای شما می‌سازد.
+          </AlertDescription>
+        </Alert>
 
-        {state?.info && (
-          <Alert variant="accent">
-            <CheckCircle2 />
-            <AlertDescription>{state.info}</AlertDescription>
-          </Alert>
-        )}
+        <p className="text-sm leading-7 text-muted-foreground">
+          لینک بازیابی از طریق تماس یا پیام خصوصی در اختیار شما قرار می‌گیرد؛ برای این کار نیازی به سرویس ایمیل یا پرداخت هزینه نیست.
+        </p>
 
-        {state?.developmentResetUrl && (
-          <Alert>
-            <AlertDescription className="col-start-1 leading-7">
-              فقط در محیط توسعه: {' '}
-              <Link className="font-semibold text-accent" href={state.developmentResetUrl}>
-                باز کردن لینک تعیین رمز
-              </Link>
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {state?.error && (
-          <Alert variant="destructive">
-            <AlertDescription className="col-start-1">
-              {state.error}
-            </AlertDescription>
-          </Alert>
-        )}
-
-        <Button type="submit" disabled={pending} className="w-full">
-          {pending ? (
-            <span className="button-spinner" aria-hidden="true" />
-          ) : (
-            <KeyRound size={17} aria-hidden="true" />
-          )}
-          {pending ? 'در حال ارسال...' : 'ارسال لینک بازیابی'}
+        <Button className="w-full" asChild>
+          <a href={FIRM.phoneHref}>
+            <Phone size={17} aria-hidden="true" />
+            تماس با دفتر: {FIRM.phone}
+          </a>
         </Button>
-      </form>
+
+        <Button className="w-full" variant="outline" asChild>
+          <Link href="/contact">ارسال درخواست از صفحه تماس</Link>
+        </Button>
+      </div>
 
       <p className="mt-6 text-center text-sm">
         <Link

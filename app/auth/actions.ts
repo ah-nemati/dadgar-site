@@ -2,9 +2,8 @@
 
 import { redirect } from 'next/navigation';
 import { db } from '@/lib/db';
-import { randomBase64Url, sha256Hex } from '@/lib/auth/crypto';
+import { sha256Hex } from '@/lib/auth/crypto';
 import { hashPassword, verifyPassword } from '@/lib/auth/password';
-import { deliverPasswordReset } from '@/lib/auth/password-reset-delivery';
 import {
   clearRateLimit,
   consumeRateLimit,
@@ -170,88 +169,6 @@ export async function signupAction(
   await clearRateLimit(rateKey, 'signup');
   await startSession({ id, role: 'CLIENT' });
   redirect(returnTo);
-}
-
-export interface PasswordResetRequestState {
-  error?: string;
-  info?: string;
-  email?: string;
-  developmentResetUrl?: string;
-}
-
-export async function requestPasswordReset(
-  _previousState: PasswordResetRequestState | undefined,
-  formData: FormData,
-): Promise<PasswordResetRequestState> {
-  const email = normalizeEmail(formData.get('email'));
-  if (!isValidEmail(email)) return { error: 'ایمیل معتبر وارد کنید.', email };
-
-  const genericInfo =
-    'اگر حساب فعالی با این ایمیل وجود داشته باشد، راهنمای تعیین رمز جدید ارسال می‌شود.';
-  const rateKey = await requestRateLimitKey(email);
-  const blocked = await consumeRateLimit({
-    key: rateKey,
-    action: 'password-reset',
-    limit: 4,
-    windowSeconds: 60 * 60,
-    blockSeconds: 60 * 60,
-  });
-
-  if (blocked) return { info: genericInfo, email };
-
-  const [user] = await db<AuthUserRow[]>`
-    select id, email, password_hash, role, status, name as full_name
-    from users
-    where lower(email) = ${email} and status <> 'DISABLED'
-    limit 1
-  `;
-
-  if (!user) return { info: genericInfo, email };
-
-  const token = randomBase64Url(32);
-  const tokenHash = await sha256Hex(token);
-  const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
-  const baseUrl =
-    process.env.APP_BASE_URL?.trim() ||
-    (process.env.NODE_ENV === 'production'
-      ? 'https://majidsavarivakil.ir'
-      : 'http://localhost:3000');
-  const resetUrl = new URL('/reset-password', baseUrl);
-  resetUrl.searchParams.set('token', token);
-
-  await db.begin(async (tx) => {
-    await tx`
-      delete from password_reset_tokens
-      where user_id = ${user.id} and used_at is null
-    `;
-    await tx`
-      insert into password_reset_tokens (token_hash, user_id, expires_at)
-      values (${tokenHash}, ${user.id}, ${expiresAt})
-    `;
-  });
-
-  const delivered = await deliverPasswordReset({
-    email: user.email,
-    name: user.fullName,
-    resetUrl: resetUrl.toString(),
-    expiresInMinutes: 30,
-  });
-
-  if (!delivered && process.env.NODE_ENV === 'production') {
-    await db`
-      delete from password_reset_tokens where token_hash = ${tokenHash}
-    `;
-    console.error('[password-reset-delivery] Delivery is not configured or failed.');
-  }
-
-  return {
-    info: genericInfo,
-    email,
-    developmentResetUrl:
-      !delivered && process.env.NODE_ENV !== 'production'
-        ? resetUrl.toString()
-        : undefined,
-  };
 }
 
 export interface ResetPasswordState {

@@ -6,10 +6,10 @@
 
 - ثبت‌نام، ورود و خروج کاربران
 - تغییر رمز برای موکل، وکیل و مدیر
-- بازیابی رمز با توکن یک‌بارمصرف ۳۰ دقیقه‌ای
+- بازیابی رمز بدون سرویس ایمیل، با لینک یک‌بارمصرف ۳۰ دقیقه‌ای که مدیر می‌سازد
 - سه نقش `CLIENT`، `LAWYER` و `ADMIN`
 - وضعیت‌های `ACTIVE`، `DISABLED` و `PASSWORD_RESET_REQUIRED`
-- مدیریت مستقیم کاربران از پنل مدیر: ساخت، ویرایش، حذف، تغییر نقش، فعال/غیرفعال‌کردن و تعیین رمز
+- مدیریت مستقیم کاربران از پنل مدیر: ساخت، ویرایش، حذف، تغییر نقش، فعال/غیرفعال‌کردن و ساخت لینک بازنشانی رمز
 - محدودسازی تلاش‌های ورود، ثبت‌نام و بازیابی رمز در PostgreSQL
 - ثبت رویدادهای امنیتی اصلی در `audit_logs`
 
@@ -81,27 +81,21 @@ npm run db:migrate
 npm run db:seed
 ```
 
-Migration شماره‌ی `003` جدول هویت قبلی را درجا به `users` تبدیل می‌کند تا شناسه‌ها و کلیدهای خارجی پرونده‌ها، پیام‌ها، نوبت‌ها و لاگ‌ها حفظ شوند. چون هش رمز سرویس قبلی قابل انتقال نیست، کاربران منتقل‌شده با وضعیت `PASSWORD_RESET_REQUIRED` علامت می‌خورند و باید از جریان «فراموشی رمز» یا فرم تعیین رمز مدیر استفاده کنند.
+Migration شماره‌ی `003` جدول هویت قبلی را درجا به `users` تبدیل می‌کند تا شناسه‌ها و کلیدهای خارجی پرونده‌ها، پیام‌ها، نوبت‌ها و لاگ‌ها حفظ شوند. چون هش رمز سرویس قبلی قابل انتقال نیست، کاربران منتقل‌شده با وضعیت `PASSWORD_RESET_REQUIRED` علامت می‌خورند. مدیر از صفحه جزئیات هر کاربر برای او لینک یک‌بارمصرف می‌سازد تا رمز تازه تعیین کند.
 
 اجرای مجدد migrate و seed امن است: migrationهای ثبت‌شده دوباره اجرا نمی‌شوند و seed، رمز یک حساب فعال را overwrite نمی‌کند.
 
-## ارسال لینک بازیابی رمز
+## بازیابی رمز بدون سرویس ایمیل
 
-پروژه برای وابسته‌نبودن به یک سرویس ایمیل خاص، یک webhook استاندارد و سازگار با Cloudflare Workers دارد. `PASSWORD_RESET_WEBHOOK_URL` باید یک endpoint HTTPS تحت کنترل شما باشد و `PASSWORD_RESET_WEBHOOK_SECRET` را به‌صورت Bearer token بررسی کند.
+برای بازیابی رمز هیچ سرویس ایمیل، API پولی یا Secret جداگانه‌ای لازم نیست:
 
-درخواست ارسالی:
+1. کاربر از صفحه «فراموشی رمز» با دفتر تماس می‌گیرد یا از صفحه تماس درخواست می‌فرستد.
+2. مدیر هویت کاربر را با اطلاعات ثبت‌شده بررسی می‌کند.
+3. مدیر وارد `مدیریت کاربران` می‌شود، صفحه همان کاربر را باز می‌کند و در بخش «بازنشانی رمز کاربر» روی «ساخت لینک بازنشانی» می‌زند.
+4. لینک را خصوصی از طریق پیام‌رسان یا روش مورد اعتماد برای کاربر می‌فرستد.
+5. کاربر با همان لینک رمز تازه تعیین می‌کند.
 
-```json
-{
-  "type": "password-reset",
-  "email": "user@example.com",
-  "name": "نام کاربر",
-  "resetUrl": "https://example.com/reset-password?token=...",
-  "expiresInMinutes": 30
-}
-```
-
-Endpoint باید حداکثر طی ۱۰ ثانیه پاسخ `2xx` بدهد. این endpoint می‌تواند یک Worker جدا یا درگاه ایمیل داخلی/ایرانی باشد. در production اگر تحویل تنظیم نشده یا ناموفق باشد، توکن حذف می‌شود و هیچ لینک حساسی در پاسخ کاربر نمایش داده نمی‌شود. در development، لینک فقط برای تست در همان فرم نشان داده می‌شود.
+توکن لینک ۲۵۶ بیتی است، فقط هش SHA-256 آن در دیتابیس ذخیره می‌شود، پس از ۳۰ دقیقه منقضی می‌شود و فقط یک‌بار قابل استفاده است. ساخت لینک، حساب را تا تعیین رمز تازه در وضعیت `PASSWORD_RESET_REQUIRED` می‌گذارد و رمز قبلی دیگر امکان ورود ندارد. لینک استفاده‌نشده قبلی و همه نشست‌های فعال کاربر نیز باطل می‌شوند. توکن در لاگ امنیتی ذخیره نمی‌شود.
 
 ## استقرار روی Cloudflare Workers
 
@@ -113,8 +107,6 @@ Endpoint باید حداکثر طی ۱۰ ثانیه پاسخ `2xx` بدهد. ا�
 ```bash
 npx wrangler secret put SESSION_SECRET
 npx wrangler secret put DATABASE_URL
-npx wrangler secret put PASSWORD_RESET_WEBHOOK_URL
-npx wrangler secret put PASSWORD_RESET_WEBHOOK_SECRET
 npx wrangler secret put IMAGEKIT_PUBLIC_KEY
 npx wrangler secret put IMAGEKIT_PRIVATE_KEY
 npx wrangler secret put IMAGEKIT_URL_ENDPOINT
@@ -140,7 +132,6 @@ Workflow آماده در `.github/workflows/deploy-cloudflare.yml` ابتدا mi
 
 - `CLOUDFLARE_API_TOKEN` و `CLOUDFLARE_ACCOUNT_ID`
 - `SESSION_SECRET` و `DATABASE_URL`
-- `PASSWORD_RESET_WEBHOOK_URL` و `PASSWORD_RESET_WEBHOOK_SECRET`
 - `IMAGEKIT_PUBLIC_KEY`، `IMAGEKIT_PRIVATE_KEY` و `IMAGEKIT_URL_ENDPOINT`
 - `INITIAL_ADMIN_*` و در صورت نیاز `INITIAL_LAWYER_*`
 

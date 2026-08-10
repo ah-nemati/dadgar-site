@@ -34,7 +34,7 @@ export default async function ResetPasswordPage({
             </AlertDescription>
           </Alert>
           <Link className="text-sm font-semibold text-accent" href="/forgot-password">
-            درخواست لینک تازه
+            دریافت لینک تازه از مدیر
           </Link>
         </div>
       )}
