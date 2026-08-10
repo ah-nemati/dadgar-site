@@ -1,14 +1,13 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowRight, Briefcase, CalendarDays, Mail, MessageSquare, Phone, Plus } from 'lucide-react';
+import { ArrowRight, Briefcase, Mail, MessageSquare, Phone, Plus } from 'lucide-react';
 import AdminHeader from '../../AdminHeader';
 import { getUserById } from '@/lib/clients';
 import { getCases } from '@/lib/cases';
-import { getAppointments } from '@/lib/appointments';
 import { getSupportThreads } from '@/lib/support';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CASE_STATUS_LABEL, CASE_STATUS_VARIANT, APPOINTMENT_STATUS_LABEL, APPOINTMENT_STATUS_VARIANT } from '@/lib/status';
+import { CASE_STATUS_LABEL, CASE_STATUS_VARIANT } from '@/lib/status';
 import { formatJalaliDate, formatJalaliDateTime, toPersianDigits } from '@/lib/format';
 import ClientPasswordResetForm from '../ClientPasswordResetForm';
 import UserEditForm from '../UserEditForm';
@@ -49,16 +48,14 @@ function decodeRouteId(value: string): string {
 export default async function AdminClientDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: rawId } = await params;
   const id = decodeRouteId(rawId);
-  const [client, allCases, allAppointments, allThreads] = await Promise.all([
+  const [client, allCases, allThreads] = await Promise.all([
     getUserById(id),
     getCases(),
-    getAppointments(),
     getSupportThreads(),
   ]);
   if (!client) notFound();
 
   const cases = allCases.filter((item) => item.clientId === id);
-  const appointments = allAppointments.filter((item) => item.clientId === id);
   const threads = allThreads.filter((item) => item.clientId === id);
 
   return (
@@ -80,7 +77,7 @@ export default async function AdminClientDetailPage({ params }: { params: Promis
         <div className="rounded-lg bg-muted/45 p-4"><MessageSquare size={18} className="text-accent mb-3" /><p className="text-xs text-muted-foreground">گفت‌وگوها</p><p className="text-2xl font-bold mt-1">{toPersianDigits(threads.length)}</p></div>
       </section>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         <section className="dashboard-card p-5">
           <div className="flex items-center justify-between mb-5"><h2 className="font-bold">پرونده‌های موکل</h2><Briefcase size={19} className="text-accent" /></div>
           <div className="space-y-3">
@@ -91,19 +88,6 @@ export default async function AdminClientDetailPage({ params }: { params: Promis
               </Link>
             ))}
             {cases.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">هنوز پرونده‌ای ثبت نشده است.</p>}
-          </div>
-        </section>
-
-        <section className="dashboard-card p-5">
-          <div className="flex items-center justify-between mb-5"><h2 className="font-bold">نوبت‌های مشاوره</h2><CalendarDays size={19} className="text-accent" /></div>
-          <div className="space-y-3">
-            {appointments.map((item) => (
-              <div key={item.id} className="rounded-lg border border-border p-4">
-                <div className="flex items-center justify-between gap-3"><p className="font-semibold text-sm">{item.subject}</p><Badge variant={APPOINTMENT_STATUS_VARIANT[item.status]}>{APPOINTMENT_STATUS_LABEL[item.status]}</Badge></div>
-                <p className="text-xs text-muted-foreground mt-2">{formatJalaliDateTime(item.requestedAt)}</p>
-              </div>
-            ))}
-            {appointments.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">نوبتی ثبت نشده است.</p>}
           </div>
         </section>
       </div>

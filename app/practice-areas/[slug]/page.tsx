@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, ArrowLeft, CheckCircle2, FileStack, ListChecks } from 'lucide-react';
 import Avatar from '@/components/Avatar';
 import { Button } from '@/components/ui/button';
 import { PRACTICE_AREA_ICONS } from '@/lib/icons';
@@ -22,10 +22,10 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const area = await getPracticeAreaBySlug(slug);
   if (!area) return {};
   return {
-    title: area.title,
-    description: area.shortDesc,
+    title: `${area.title}؛ مشاوره آنلاین و حضوری اهواز`,
+    description: `${area.shortDesc} مشاوره غیرحضوری برای سراسر ایران و خدمات حضوری در اهواز.`,
     alternates: { canonical: `/practice-areas/${area.slug}` },
-    keywords: [area.title, `${area.title} اهواز`, `وکیل ${area.title}`, `وکیل ${area.title} اهواز`, 'مجید سواری'],
+    keywords: [area.title, `${area.title} اهواز`, `مشاوره آنلاین ${area.title}`, `وکیل ${area.title}`, `وکیل ${area.title} اهواز`, 'مجید سواری'],
   };
 }
 
@@ -47,20 +47,24 @@ export default async function PracticeAreaDetailPage({ params }: { params: Param
   const serviceJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'LegalService',
-    name: `${area.title} در اهواز`,
+    name: `${area.title}؛ آنلاین سراسر ایران و حضوری اهواز`,
     description: area.longDesc,
     url: new URL(`/practice-areas/${area.slug}`, firm.url).toString(),
     provider: {
-      '@type': 'Attorney',
-      name: firm.shortName,
+      '@type': 'LegalService',
+      name: firm.name,
       url: firm.url,
       telephone: firm.phoneHref.replace('tel:', ''),
     },
-    areaServed: { '@type': 'City', name: 'اهواز' },
+    areaServed: [
+      { '@type': 'Country', name: 'ایران' },
+      { '@type': 'City', name: 'اهواز' },
+    ],
     serviceType: area.title,
     availableChannel: {
       '@type': 'ServiceChannel',
       servicePhone: { '@type': 'ContactPoint', telephone: firm.phoneHref.replace('tel:', ''), contactType: 'customer service' },
+      serviceUrl: new URL('/online-legal-consultation', firm.url).toString(),
     },
   };
 
@@ -98,6 +102,50 @@ export default async function PracticeAreaDetailPage({ params }: { params: Param
                 </div>
               ))}
             </div>
+
+            <h2 className="mt-10 text-xl font-bold text-foreground">آمادگی برای بررسی اولیه</h2>
+            <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
+              <section className="rounded-sm border border-border bg-card p-5">
+                <h3 className="flex items-center gap-2 font-bold text-foreground">
+                  <FileStack className="text-gold" size={19} aria-hidden="true" />
+                  مدارک پیشنهادی
+                </h3>
+                <ul className="mt-4 space-y-3">
+                  {area.documents.map((document) => (
+                    <li key={document} className="flex items-start gap-2 text-sm leading-7 text-muted-foreground">
+                      <span className="mt-2 size-1.5 shrink-0 rounded-full bg-teal" aria-hidden="true" />
+                      <span>{document}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+              <section className="rounded-sm border border-border bg-card p-5">
+                <h3 className="flex items-center gap-2 font-bold text-foreground">
+                  <ListChecks className="text-gold" size={19} aria-hidden="true" />
+                  اطلاعاتی که آماده کنید
+                </h3>
+                <ul className="mt-4 space-y-3">
+                  {area.preparation.map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-sm leading-7 text-muted-foreground">
+                      <span className="mt-2 size-1.5 shrink-0 rounded-full bg-teal" aria-hidden="true" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            </div>
+
+            <h2 className="mt-10 text-xl font-bold text-foreground">نحوه دریافت خدمت</h2>
+            <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Link href="/online-legal-consultation" className="rounded-sm border border-border bg-card p-5 transition-colors hover:border-gold">
+                <span className="font-bold text-foreground">مشاوره آنلاین سراسر ایران</span>
+                <span className="mt-2 block text-sm leading-7 text-muted-foreground">بررسی اولیه موضوع و مدارک بدون مراجعه به اهواز</span>
+              </Link>
+              <Link href="/lawyer-ahvaz" className="rounded-sm border border-border bg-card p-5 transition-colors hover:border-gold">
+                <span className="font-bold text-foreground">مراجعه حضوری در اهواز</span>
+                <span className="mt-2 block text-sm leading-7 text-muted-foreground">بررسی حضوری اسناد و هماهنگی برای قبول وکالت</span>
+              </Link>
+            </div>
           </div>
 
           <div>
@@ -121,9 +169,12 @@ export default async function PracticeAreaDetailPage({ params }: { params: Param
               <p className="text-parchment/85 text-sm mb-5">برای مشاوره در حوزه {area.title} با ما در تماس باشید.</p>
               <Button className="w-full" asChild>
                 <Link href="/contact">
-                  درخواست مشاوره <ArrowLeft size={16} aria-hidden="true" />
+                  ارسال درخواست بررسی <ArrowLeft size={16} aria-hidden="true" />
                 </Link>
               </Button>
+              <Link href="/fees" className="mt-4 block text-sm font-semibold text-gold-light hover:text-gold">
+                مشاهده نحوه تعیین تعرفه
+              </Link>
             </div>
           </div>
         </div>

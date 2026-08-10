@@ -67,7 +67,7 @@ export default async function BlogPostDetailPage({
     mainEntityOfPage: new URL(blogPostPath(post.slug), firm.url).toString(),
     image: post.imageUrl || undefined,
     author: { "@type": "Person", name: firm.shortName },
-    publisher: { "@type": "Attorney", name: firm.shortName },
+    publisher: { "@type": "LegalService", name: firm.name },
   };
 
   return (

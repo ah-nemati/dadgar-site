@@ -17,7 +17,16 @@ export interface Firm {
   url: string;
 }
 
-export type PracticeAreaSlug = 'real-estate' | 'cheque' | 'family';
+export type PracticeAreaSlug =
+  | 'real-estate'
+  | 'cheque'
+  | 'family'
+  | 'criminal'
+  | 'contracts'
+  | 'inheritance'
+  | 'debt-collection'
+  | 'registration'
+  | 'labor';
 
 export interface PracticeArea {
   slug: PracticeAreaSlug;
@@ -26,6 +35,8 @@ export interface PracticeArea {
   shortDesc: string;
   longDesc: string;
   topics: string[];
+  documents: string[];
+  preparation: string[];
 }
 
 export interface Lawyer {

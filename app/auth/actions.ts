@@ -30,6 +30,16 @@ interface AuthUserRow {
   fullName: string;
 }
 
+const AUTH_SERVICE_UNAVAILABLE =
+  'ارتباط با سرویس حساب کاربری برقرار نشد. چند دقیقه دیگر دوباره تلاش کنید.';
+
+function reportAuthServiceError(context: string, error: unknown): void {
+  console.error(
+    context,
+    error instanceof Error ? error.message : 'Unknown authentication service error',
+  );
+}
+
 export interface LoginState {
   error?: string;
   email?: string;
@@ -47,14 +57,22 @@ export async function loginAction(
     return { error: 'ایمیل و رمز عبور معتبر را وارد کنید.', email };
   }
 
-  const rateKey = await requestRateLimitKey(email);
-  const blocked = await consumeRateLimit({
-    key: rateKey,
-    action: 'login',
-    limit: 8,
-    windowSeconds: 15 * 60,
-    blockSeconds: 15 * 60,
-  });
+  let rateKey: string;
+  let blocked: boolean;
+
+  try {
+    rateKey = await requestRateLimitKey(email);
+    blocked = await consumeRateLimit({
+      key: rateKey,
+      action: 'login',
+      limit: 8,
+      windowSeconds: 15 * 60,
+      blockSeconds: 15 * 60,
+    });
+  } catch (error) {
+    reportAuthServiceError('Login rate-limit check failed.', error);
+    return { error: AUTH_SERVICE_UNAVAILABLE, email };
+  }
 
   if (blocked) {
     return {
@@ -63,12 +81,19 @@ export async function loginAction(
     };
   }
 
-  const [user] = await db<AuthUserRow[]>`
-    select id, email, password_hash, role, status, name as full_name
-    from users
-    where lower(email) = ${email}
-    limit 1
-  `;
+  let user: AuthUserRow | undefined;
+
+  try {
+    [user] = await db<AuthUserRow[]>`
+      select id, email, password_hash, role, status, name as full_name
+      from users
+      where lower(email) = ${email}
+      limit 1
+    `;
+  } catch (error) {
+    reportAuthServiceError('Login account lookup failed.', error);
+    return { error: AUTH_SERVICE_UNAVAILABLE, email };
+  }
   const passwordMatches = await verifyPassword(password, user?.passwordHash);
 
   if (!user || !passwordMatches) {
@@ -86,12 +111,22 @@ export async function loginAction(
     };
   }
 
-  await clearRateLimit(rateKey, 'login');
-  await startSession(user);
+  try {
+    await startSession(user);
+  } catch (error) {
+    reportAuthServiceError('Login session creation failed.', error);
+    return { error: AUTH_SERVICE_UNAVAILABLE, email };
+  }
+
+  await clearRateLimit(rateKey, 'login').catch((error) => {
+    reportAuthServiceError('Login rate-limit cleanup failed.', error);
+  });
   await db`
-    insert into audit_logs (actor_id, action, entity_type, entity_id)
-    values (${user.id}, 'auth.login', 'user', ${user.id})
-  `;
+      insert into audit_logs (actor_id, action, entity_type, entity_id)
+      values (${user.id}, 'auth.login', 'user', ${user.id})
+    `.catch((error) => {
+      reportAuthServiceError('Login audit write failed.', error);
+    });
 
   redirect(returnTo);
 }
@@ -125,14 +160,22 @@ export async function signupAction(
     return { error: 'تکرار رمز عبور یکسان نیست.', values };
   }
 
-  const rateKey = await requestRateLimitKey(email);
-  const blocked = await consumeRateLimit({
-    key: rateKey,
-    action: 'signup',
-    limit: 5,
-    windowSeconds: 60 * 60,
-    blockSeconds: 60 * 60,
-  });
+  let rateKey: string;
+  let blocked: boolean;
+
+  try {
+    rateKey = await requestRateLimitKey(email);
+    blocked = await consumeRateLimit({
+      key: rateKey,
+      action: 'signup',
+      limit: 5,
+      windowSeconds: 60 * 60,
+      blockSeconds: 60 * 60,
+    });
+  } catch (error) {
+    reportAuthServiceError('Signup rate-limit check failed.', error);
+    return { error: AUTH_SERVICE_UNAVAILABLE, values };
+  }
   if (blocked) {
     return { error: 'تعداد درخواست‌ها زیاد است. کمی بعد دوباره تلاش کنید.', values };
   }
@@ -163,11 +206,20 @@ export async function signupAction(
     if (code === '23505') {
       return { error: 'برای این ایمیل قبلاً حساب ساخته شده است.', values };
     }
-    return { error: 'ساخت حساب انجام نشد. دوباره تلاش کنید.', values };
+    reportAuthServiceError('Signup account creation failed.', error);
+    return { error: AUTH_SERVICE_UNAVAILABLE, values };
   }
 
-  await clearRateLimit(rateKey, 'signup');
-  await startSession({ id, role: 'CLIENT' });
+  try {
+    await startSession({ id, role: 'CLIENT' });
+  } catch (error) {
+    reportAuthServiceError('Signup session creation failed.', error);
+    redirect('/login?registered=1');
+  }
+
+  await clearRateLimit(rateKey, 'signup').catch((error) => {
+    reportAuthServiceError('Signup rate-limit cleanup failed.', error);
+  });
   redirect(returnTo);
 }
 

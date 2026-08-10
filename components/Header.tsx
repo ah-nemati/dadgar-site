@@ -17,9 +17,10 @@ import type { Firm } from "@/types/content";
 
 const NAV_ITEMS = [
   { href: "/", label: "خانه" },
-  { href: "/about", label: "درباره ما" },
+  { href: "/lawyer-ahvaz", label: "وکیل در اهواز" },
+  { href: "/online-legal-consultation", label: "مشاوره آنلاین" },
   { href: "/practice-areas", label: "حوزه‌های تخصصی" },
-  { href: "/lawyers", label: "وکیل" },
+  { href: "/fees", label: "تعرفه‌ها" },
   { href: "/blog", label: "وبلاگ" },
   { href: "/faq", label: "سوالات متداول" },
   { href: "/contact", label: "تماس با ما" },
@@ -120,7 +121,7 @@ export default function Header({ firm }: { firm: Firm }) {
 
           <div className="flex items-center gap-2">
             <Button asChild size="sm" className="hidden lg:inline-flex">
-              <Link href="/contact">درخواست مشاوره</Link>
+              <Link href="/contact">تماس با دفتر</Link>
             </Button>
 
             <div className="md:hidden">
@@ -207,7 +208,7 @@ export default function Header({ firm }: { firm: Firm }) {
               </a>
               <Button asChild className="mt-2">
                 <Link href="/contact" onClick={() => setMenuOpen(false)}>
-                  درخواست مشاوره
+                  تماس با دفتر
                 </Link>
               </Button>
             </nav>

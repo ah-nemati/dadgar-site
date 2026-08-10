@@ -13,7 +13,6 @@ const STAFF_NAV_ITEMS: DashboardNavItem[] = [
   { href: '/admin/messages', label: 'درخواست‌های مشاوره', icon: 'inbox' },
   { href: '/admin/cases', label: 'پرونده‌ها', icon: 'cases' },
   { href: '/admin/support', label: 'گفت‌وگوها', icon: 'messages' },
-  { href: '/admin/appointments', label: 'نوبت‌ها', icon: 'calendar' },
   { href: '/admin/security', label: 'امنیت حساب', icon: 'profile' },
 ];
 

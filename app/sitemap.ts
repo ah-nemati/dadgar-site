@@ -20,6 +20,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     "",
     "/about",
+    "/online-legal-consultation",
+    "/lawyer-ahvaz",
+    "/fees",
     "/practice-areas",
     "/lawyers",
     "/blog",
@@ -28,7 +31,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ].map((path) => ({
     url: new URL(path || "/", firm.url).toString(),
     changeFrequency: path === "" ? "weekly" : "monthly",
-    priority: path === "" ? 1 : 0.8,
+    priority:
+      path === ""
+        ? 1
+        : ["/online-legal-consultation", "/lawyer-ahvaz"].includes(path)
+          ? 0.9
+          : 0.8,
   }));
 
   const practiceAreaRoutes: MetadataRoute.Sitemap = practiceAreas.map(

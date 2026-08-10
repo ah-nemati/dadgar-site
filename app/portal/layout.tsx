@@ -12,7 +12,6 @@ const NAV_ITEMS: DashboardNavItem[] = [
   { href: '/portal', label: 'داشبورد', icon: 'dashboard' },
   { href: '/portal/cases', label: 'پرونده‌های من', icon: 'cases' },
   { href: '/portal/messages', label: 'پیام‌ها', icon: 'messages' },
-  { href: '/portal/appointments', label: 'نوبت مشاوره', icon: 'calendar' },
   { href: '/portal/profile', label: 'اطلاعات حساب', icon: 'profile' },
 ];
 

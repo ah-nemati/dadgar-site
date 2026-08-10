@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/lawyers" },
   title: "معرفی وکیل",
   description:
-    "مجید سواری، وکیل پایه یک دادگستری و عضو کانون وکلای خوزستان، متخصص در دعاوی ملکی، چک و خانواده در اهواز.",
+    "معرفی مجید سواری، وکیل پایه یک دادگستری و عضو کانون وکلای خوزستان؛ ارائه خدمات آنلاین سراسر ایران و حضوری در اهواز.",
 };
 
 export default async function LawyersPage() {
@@ -20,7 +20,7 @@ export default async function LawyersPage() {
       <PageHero
         eyebrow="معرفی وکیل"
         title="وکیل پرونده شما"
-        description="وکیل پایه یک دادگستری، با تمرکز موضوعی بر دعاوی ملکی، چک و خانواده."
+        description="وکیل پایه یک دادگستری برای بررسی و پیگیری حوزه‌های اصلی حقوقی و کیفری، آنلاین سراسر ایران و حضوری اهواز."
       />
       <section className="bg-parchment">
         <div className="max-w-6xl mx-auto px-6 py-20">

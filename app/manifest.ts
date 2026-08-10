@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'دفتر وکالت مجید سواری',
     short_name: 'مجید سواری',
-    description: 'مشاوره و وکالت تخصصی در دعاوی ملکی، چک و خانواده در اهواز.',
+    description: 'مشاوره حقوقی آنلاین سراسر ایران و خدمات حضوری مجید سواری در اهواز.',
     start_url: '/',
     display: 'standalone',
     background_color: '#f8f2e6',

@@ -2,7 +2,6 @@
 import Link from 'next/link';
 import {
   Briefcase,
-  CalendarDays,
   FileText,
   Inbox,
   MessageSquare,
@@ -33,7 +32,6 @@ export default async function AdminDashboardPage() {
     { label: 'پرونده فعال', value: stats.activeCases, icon: Briefcase, href: '/admin/cases' },
     { label: 'درخواست جدید', value: stats.newConsultations, icon: Inbox, href: '/admin/messages' },
     { label: 'گفت‌وگوی باز', value: stats.openThreads, icon: MessageSquare, href: '/admin/support' },
-    { label: 'نوبت در انتظار', value: stats.pendingAppointments, icon: CalendarDays, href: '/admin/appointments' },
     { label: 'مطلب منتشرشده', value: stats.publishedPosts, icon: FileText, href: '/admin/blog' },
   ].filter((card) =>
     account.role === 'ADMIN' || !['/admin/clients', '/admin/blog'].includes(card.href)

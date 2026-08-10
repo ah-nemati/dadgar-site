@@ -15,7 +15,7 @@ export default function DeleteUserButton({ userId }: { userId: string }) {
       <div>
         <h2 className="font-bold text-destructive">حذف حساب کاربر</h2>
         <p className="mt-2 text-xs leading-6 text-muted-foreground">
-          پرونده‌ها، پیام‌ها، نوبت‌ها و نشست‌های وابسته به این حساب نیز حذف می‌شوند. این کار قابل بازگشت نیست.
+          پرونده‌ها، پیام‌ها، اسناد و نشست‌های وابسته به این حساب نیز حذف می‌شوند. این کار قابل بازگشت نیست.
         </p>
       </div>
       {state?.error && <Alert variant="destructive"><AlertDescription className="col-start-1">{state.error}</AlertDescription></Alert>}

@@ -29,17 +29,17 @@ interface InfoPoint {
 }
 
 const trustPoints: InfoPoint[] = [
-  { icon: Award, label: "تخصص در دعاوی ملکی، چک و خانواده" },
+  { icon: Award, label: "پوشش ۹ حوزه اصلی حقوقی و کیفری" },
   { icon: ShieldCheck, label: "محرمانگی کامل اطلاعات" },
-  { icon: Calendar, label: "مشاوره حضوری، تلفنی و آنلاین" },
-  { icon: MessageSquare, label: "پاسخ‌گویی در کمتر از ۲۴ ساعت" },
+  { icon: Calendar, label: "مشاوره آنلاین سراسر ایران و حضوری اهواز" },
+  { icon: MessageSquare, label: "اعلام شفاف حدود خدمت و هزینه پیش از شروع" },
 ];
 
 const whyUs: InfoPoint[] = [
   {
     icon: Award,
-    title: "تمرکز تخصصی",
-    text: "با تمرکز بر دعاوی ملکی، چک و خانواده، راهکار حقوقی متناسب با شرایط خاص شما ارائه می‌شود.",
+    title: "پوشش موضوعی گسترده",
+    text: "موضوعات حقوقی، کیفری، خانواده، املاک، چک، قرارداد، ارث، امور ثبتی، مطالبات و حقوق کار بررسی می‌شوند.",
   },
   {
     icon: ShieldCheck,
@@ -54,7 +54,7 @@ const whyUs: InfoPoint[] = [
   {
     icon: Calendar,
     title: "دسترسی آسان",
-    text: "امکان رزرو مشاوره حضوری، تلفنی یا آنلاین، متناسب با زمان و شرایط شما.",
+    text: "متقاضیان سراسر ایران می‌توانند مشاوره غیرحضوری دریافت کنند و مراجعه حضوری در دفتر اهواز انجام می‌شود.",
   },
 ];
 
@@ -82,22 +82,21 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto px-6 pt-16 pb-20 md:pt-24 md:pb-28 relative animate-fade-up">
           <Eyebrow dark>{firm.name} — دفتر خدمات حقوقی</Eyebrow>
           <h1 className="text-4xl md:text-6xl font-bold text-parchment leading-tight mb-6 max-w-3xl">
-            وقتی قانون پیچیده می‌شود، ما راه را روشن می‌کنیم
+            مشاوره حقوقی آنلاین سراسر ایران؛ خدمات حضوری در اهواز
           </h1>
           <p className="text-parchment/80 max-w-2xl text-base md:text-lg leading-8 mb-10">
-            {firm.name} با بیش از یک دهه سابقه در حقوق خانواده، تجاری، کیفری و
-            سایر حوزه‌های تخصصی، مشاوره و وکالتی دقیق، شفاف و کاملاً محرمانه
-            ارائه می‌دهد.
+            {firm.name} در موضوعات حقوقی و کیفری، از بررسی اولیه و تنظیم اوراق
+            تا قبول و پیگیری پرونده، خدمات حقوقی شفاف و محرمانه ارائه می‌دهد.
           </p>
           <div className="flex flex-wrap items-center gap-4">
             <Button size="lg" asChild>
-              <Link href="/contact">
-                درخواست مشاوره
+              <Link href="/online-legal-consultation">
+                مشاوره حقوقی آنلاین
                 <ArrowLeft size={18} aria-hidden="true" />
               </Link>
             </Button>
             <Button size="lg" variant="ghostLight" asChild>
-              <Link href="/about">آشنایی با موسسه</Link>
+              <Link href="/lawyer-ahvaz">مراجعه حضوری در اهواز</Link>
             </Button>
           </div>
         </div>
@@ -128,7 +127,7 @@ export default function HomePage() {
           <div className="max-w-2xl mb-12">
             <Eyebrow>حوزه‌های تخصصی</Eyebrow>
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              در کنار شما، در تخصصی‌ترین حوزه‌های حقوقی
+              خدمات حقوقی در حوزه‌های اصلی دعاوی
             </h2>
             <p className="text-muted-foreground leading-7">
               هر پرونده، ویژگی‌های حقوقی خاص خود را دارد. با تمرکز موضوعی روی هر
@@ -283,15 +282,15 @@ export default function HomePage() {
       <section className="bg-teal">
         <div className="max-w-4xl mx-auto px-6 py-16 text-center">
           <h2 className="text-2xl md:text-3xl font-bold text-parchment mb-4">
-            برای مشاوره حقوقی تخصصی، همین امروز با ما تماس بگیرید
+            پیش از شروع، حوزه خدمت و نحوه تعیین هزینه را بررسی کنید
           </h2>
           <p className="mb-8 text-parchment/85">
-            کارشناسان ما آماده پاسخ‌گویی به سوالات اولیه شما هستند.
+            رزرو و پرداخت اینترنتی فعلاً فعال نیست؛ هماهنگی از طریق تماس یا فرم درخواست انجام می‌شود.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Button size="lg" asChild>
-              <Link href="/contact">
-                درخواست مشاوره <ArrowLeft size={18} aria-hidden="true" />
+              <Link href="/fees">
+                مشاهده تعرفه خدمات <ArrowLeft size={18} aria-hidden="true" />
               </Link>
             </Button>
             <Button size="lg" variant="ghostLight" asChild>

@@ -6,7 +6,7 @@ import { getBlogPosts } from '@/lib/content/blog';
 export const metadata: Metadata = {
   alternates: { canonical: '/blog' },
   title: 'وبلاگ حقوقی',
-  description: 'یادداشت‌ها و مقالات حقوقی دفتر وکالت مجید سواری درباره دعاوی ملکی، چک و خانواده در اهواز.',
+  description: 'مقالات حقوقی دفتر وکالت مجید سواری درباره دعاوی حقوقی، کیفری، خانواده، املاک، چک، قراردادها، ارث و سایر موضوعات کاربردی.',
 };
 
 // On Workers Free, keep the public blog list build-time static so requests

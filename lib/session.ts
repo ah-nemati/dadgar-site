@@ -67,6 +67,24 @@ export function getCurrentAccount(): Promise<CurrentAccount | null> {
   return loadCurrentAccount();
 }
 
+/**
+ * Public authentication pages must remain reachable even if PostgreSQL or
+ * Hyperdrive is temporarily unavailable. Protected pages still use the strict
+ * getCurrentAccount/require* path and therefore never bypass database-backed
+ * session revocation or role checks.
+ */
+export async function getCurrentAccountForAuthEntry(): Promise<CurrentAccount | null> {
+  try {
+    return await getCurrentAccount();
+  } catch (error) {
+    console.error(
+      'Could not validate an existing session while rendering an auth entry page.',
+      error instanceof Error ? error.message : 'Unknown database error',
+    );
+    return null;
+  }
+}
+
 export async function requireAccount(): Promise<CurrentAccount> {
   const account = await getCurrentAccount();
   if (!account) redirect('/login?returnTo=/account');

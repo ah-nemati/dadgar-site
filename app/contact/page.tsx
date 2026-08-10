@@ -9,8 +9,8 @@ import { getPracticeAreas } from '@/lib/content/practice-areas';
 export const metadata: Metadata = {
   alternates: { canonical: '/contact' },
   title: 'تماس با ما',
-  description: 'درخواست مشاوره حقوقی از مجید سواری، وکیل پایه یک دادگستری در اهواز. فرم تماس، شماره تماس و آدرس دفتر.',
-  keywords: ['تماس با وکیل اهواز', 'مشاوره حقوقی اهواز', 'آدرس دفتر وکالت اهواز', 'رزرو وقت مشاوره حقوقی'],
+  description: 'ارسال درخواست بررسی حقوقی برای مشاوره آنلاین سراسر ایران یا مراجعه حضوری به دفتر مجید سواری در اهواز؛ فرم تماس، تلفن و نشانی دفتر.',
+  keywords: ['تماس با وکیل اهواز', 'مشاوره حقوقی آنلاین', 'مشاوره حقوقی اهواز', 'آدرس دفتر وکالت اهواز'],
 };
 
 export default async function ContactPage() {
@@ -19,7 +19,7 @@ export default async function ContactPage() {
 
   return (
     <>
-      <PageHero eyebrow="تماس با ما" title="درخواست مشاوره حقوقی" description="فرم زیر را تکمیل کنید تا کارشناسان ما در اسرع وقت با شما تماس بگیرند." />
+      <PageHero eyebrow="تماس با ما" title="درخواست بررسی حقوقی" description="موضوع و راه ارتباطی خود را ثبت کنید تا دفتر پس از بررسی اولیه برای اعلام نحوه ادامه، زمان و هزینه با شما تماس بگیرد." />
       <section className="bg-parchment">
         <div className="max-w-6xl mx-auto px-6 py-16 grid grid-cols-1 lg:grid-cols-5 gap-12">
           <div className="lg:col-span-3">

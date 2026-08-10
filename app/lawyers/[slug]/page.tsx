@@ -158,13 +158,17 @@ export default async function LawyerDetailPage({ params }: { params: Params }) {
             </div>
             <div className="bg-ink rounded-sm p-6 text-center">
               <p className="text-parchment/85 text-sm mb-5">
-                برای رزرو مشاوره با {lawyer.name}، درخواست خود را ثبت کنید.
+                برای بررسی اولیه موضوع با {lawyer.name}، درخواست خود را ثبت کنید.
               </p>
               <Button className="w-full" asChild>
                 <Link href="/contact">
-                  درخواست مشاوره <ArrowLeft size={16} aria-hidden="true" />
+                  ارسال درخواست بررسی <ArrowLeft size={16} aria-hidden="true" />
                 </Link>
               </Button>
+              <div className="mt-4 flex justify-center gap-4 text-xs font-semibold text-gold-light">
+                <Link href="/online-legal-consultation" className="hover:text-gold">مشاوره آنلاین</Link>
+                <Link href="/fees" className="hover:text-gold">تعرفه خدمات</Link>
+              </div>
             </div>
           </div>
         </div>

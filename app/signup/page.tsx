@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import AuthShell from '@/components/AuthShell';
 import { SignupEntryActions } from '@/components/AuthEntryActions';
-import { dashboardPath, getCurrentAccount } from '@/lib/session';
+import { dashboardPath, getCurrentAccountForAuthEntry } from '@/lib/session';
 
 export const metadata: Metadata = {
   title: 'ساخت حساب کاربری',
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function SignupPage() {
-  const account = await getCurrentAccount();
+  const account = await getCurrentAccountForAuthEntry();
   if (account) redirect(dashboardPath(account.role));
 
   return (

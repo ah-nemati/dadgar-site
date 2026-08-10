@@ -38,7 +38,7 @@ export default function AuthShell({
               <div className="mt-8">
                 <Eyebrow dark>فضای امن موکلین</Eyebrow>
                 <h2 className="max-w-sm text-2xl font-bold leading-[1.8] text-parchment md:text-3xl">
-                  دسترسی امن به پرونده‌ها، پیام‌ها و نوبت‌های شما
+                  دسترسی امن به پرونده‌ها، اسناد و پیام‌های خصوصی شما
                 </h2>
               </div>
             </div>

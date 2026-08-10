@@ -20,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
     referrer: "origin-when-cross-origin",
     formatDetection: { email: false, address: false, telephone: false },
     title: {
-      default: `${firm.shortName} | وکیل پایه یک دادگستری در اهواز`,
+      default: `${firm.shortName} | مشاوره حقوقی آنلاین و وکیل در اهواز`,
       template: `%s | ${firm.shortName}`,
     },
     description: firm.description,
@@ -31,9 +31,13 @@ export async function generateMetadata(): Promise<Metadata> {
       "دفتر وکالت اهواز",
       "مشاوره حقوقی اهواز",
       "مشاوره حقوقی آنلاین",
+      "وکیل آنلاین سراسر ایران",
+      "وکیل کیفری اهواز",
       "وکیل ملکی اهواز",
       "وکیل چک",
       "وکیل خانواده اهواز",
+      "وکیل قرارداد اهواز",
+      "وکیل ارث اهواز",
       "مجید سواری",
       "کانون وکلای خوزستان",
     ],
@@ -50,7 +54,7 @@ export async function generateMetadata(): Promise<Metadata> {
       },
     },
     openGraph: {
-      title: `${firm.shortName} | وکیل پایه یک دادگستری در اهواز`,
+      title: `${firm.shortName} | مشاوره حقوقی آنلاین و وکیل در اهواز`,
       description: firm.description,
       url: firm.url,
       siteName: firm.name,
@@ -59,7 +63,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: `${firm.shortName} | وکیل پایه یک دادگستری در اهواز`,
+      title: `${firm.shortName} | مشاوره حقوقی آنلاین و وکیل در اهواز`,
       description: firm.description,
     },
   };
@@ -77,7 +81,7 @@ export default async function RootLayout({
 
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Attorney",
+    "@type": "LegalService",
     name: firm.shortName,
     alternateName: firm.name,
     url: firm.url,
@@ -97,6 +101,7 @@ export default async function RootLayout({
       addressCountry: "IR",
     },
     areaServed: [
+      { "@type": "Country", name: "ایران" },
       { "@type": "City", name: "اهواز" },
       { "@type": "AdministrativeArea", name: "خوزستان" },
     ],
@@ -111,6 +116,13 @@ export default async function RootLayout({
     knowsAbout: practiceAreas.map((area) => area.title),
     memberOf: { "@type": "Organization", name: "کانون وکلای دادگستری خوزستان" },
     sameAs: ["https://www.instagram.com/savari_lawyer.ahvaz"],
+    contactPoint: {
+      "@type": "ContactPoint",
+      telephone: firm.phoneHref.replace("tel:", ""),
+      contactType: "legal consultation",
+      areaServed: "IR",
+      availableLanguage: "fa",
+    },
     potentialAction: {
       "@type": "CommunicateAction",
       target: firm.phoneHref,

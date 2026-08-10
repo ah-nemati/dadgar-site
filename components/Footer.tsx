@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { MapPin, Clock } from 'lucide-react';
+import { Clock, Mail, MapPin, Phone } from 'lucide-react';
 import Seal from './Seal';
 import PatternStrip from './PatternStrip';
 import { getFirm } from '@/lib/content/firm';
@@ -25,10 +25,10 @@ export default async function Footer() {
           <div>
             <h4 className="text-parchment font-semibold mb-4">دسترسی سریع</h4>
             <ul className="flex flex-col gap-2 text-sm">
+              <li><Link href="/online-legal-consultation" className="text-parchment/70 hover:text-gold-light transition-colors">مشاوره حقوقی آنلاین سراسر ایران</Link></li>
+              <li><Link href="/lawyer-ahvaz" className="text-parchment/70 hover:text-gold-light transition-colors">وکیل پایه یک در اهواز</Link></li>
+              <li><Link href="/fees" className="text-parchment/70 hover:text-gold-light transition-colors">تعرفه خدمات حقوقی</Link></li>
               <li><Link href="/about" className="text-parchment/70 hover:text-gold-light transition-colors">درباره ما</Link></li>
-              <li><Link href="/lawyers" className="text-parchment/70 hover:text-gold-light transition-colors">معرفی وکیل</Link></li>
-              <li><Link href="/blog" className="text-parchment/70 hover:text-gold-light transition-colors">وبلاگ حقوقی</Link></li>
-              <li><Link href="/faq" className="text-parchment/70 hover:text-gold-light transition-colors">سوالات متداول</Link></li>
               <li><Link href="/login" className="text-parchment/70 hover:text-gold-light transition-colors">ورود کاربران</Link></li>
             </ul>
           </div>
@@ -36,7 +36,7 @@ export default async function Footer() {
           <div>
             <h4 className="text-parchment font-semibold mb-4">حوزه‌های تخصصی</h4>
             <ul className="flex flex-col gap-2 text-sm">
-              {practiceAreas.slice(0, 5).map((area) => (
+              {practiceAreas.slice(0, 6).map((area) => (
                 <li key={area.slug}>
                   <Link href={`/practice-areas/${area.slug}`} className="text-parchment/70 hover:text-gold-light transition-colors">
                     {area.title}
@@ -56,6 +56,14 @@ export default async function Footer() {
               <li className="flex items-center gap-2 text-parchment/70">
                 <Clock size={16} className="shrink-0" aria-hidden="true" />
                 <span>{firm.hours}</span>
+              </li>
+              <li className="flex items-center gap-2 text-parchment/70">
+                <Phone size={16} className="shrink-0" aria-hidden="true" />
+                <Link href={firm.phoneHref} dir="ltr" className="hover:text-gold-light">{firm.phone}</Link>
+              </li>
+              <li className="flex items-center gap-2 text-parchment/70">
+                <Mail size={16} className="shrink-0" aria-hidden="true" />
+                <Link href={`mailto:${firm.email}`} dir="ltr" className="hover:text-gold-light">{firm.email}</Link>
               </li>
             </ul>
           </div>

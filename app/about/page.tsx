@@ -10,7 +10,7 @@ import { getFirm } from '@/lib/content/firm';
 export const metadata: Metadata = {
   alternates: { canonical: '/about' },
   title: 'درباره ما',
-  description: 'آشنایی با مجید سواری، وکیل پایه یک دادگستری در اهواز، و روش کاری دفتر وکالت وی.',
+  description: 'آشنایی با مجید سواری، وکیل پایه یک دادگستری، روش کاری دفتر و خدمات آنلاین سراسر ایران و حضوری در اهواز.',
   keywords: ['مجید سواری', 'وکیل پایه یک دادگستری اهواز', 'کانون وکلای خوزستان', 'درباره وکیل اهواز'],
 };
 
@@ -33,7 +33,7 @@ export default async function AboutPage() {
 
   return (
     <>
-      <PageHero eyebrow="درباره ما" title="وکیلی که در مسیر حقوقی، همراه شماست" description="آشنایی با روش کاری و حوزه‌های تخصصی دفتر وکالت مجید سواری در اهواز." />
+      <PageHero eyebrow="درباره ما" title="وکیلی که در مسیر حقوقی، همراه شماست" description="آشنایی با روش کاری و حوزه‌های خدمات دفتر وکالت مجید سواری؛ آنلاین سراسر ایران و حضوری در اهواز." />
 
       <section className="bg-parchment">
         <div className="max-w-6xl mx-auto px-6 py-20 grid grid-cols-1 lg:grid-cols-3 gap-12">
@@ -41,9 +41,9 @@ export default async function AboutPage() {
             <Eyebrow>معرفی موسسه</Eyebrow>
             <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6">داستان ما</h2>
             <p className="text-muted-foreground leading-8 mb-5">
-              {firm.name} با هدف ارائه خدمات حقوقی تخصصی، شفاف و قابل‌اعتماد فعالیت می‌کند و با تمرکز بر حوزه‌های
-              حقوق ملک، چک و خانواده، در کنار موکلان متعددی در حل مسائل حقوقی، از مشاوره‌های ساده تا پرونده‌های
-              پیچیده، حضور داشته است.
+              {firm.name} با هدف ارائه خدمات حقوقی شفاف و قابل‌اعتماد فعالیت می‌کند. خدمات دفتر، حوزه‌های اصلی
+              حقوقی و کیفری را پوشش می‌دهد و برای متقاضیان سراسر ایران به‌صورت غیرحضوری و برای مراجعه‌کنندگان
+              اهواز به‌صورت حضوری ارائه می‌شود.
             </p>
             <p className="text-muted-foreground leading-8">
               رویکرد ما ترکیبی از دقت حقوقی و همراهی انسانی است؛ معتقدیم هر پرونده، صرف‌نظر از حجم یا پیچیدگی آن،
@@ -58,8 +58,8 @@ export default async function AboutPage() {
                 <div className="text-xs mt-1 text-parchment/75">پروانه وکالت دادگستری</div>
               </li>
               <li>
-                <div className="text-2xl font-bold text-gold font-display">۳ حوزه</div>
-                <div className="text-xs mt-1 text-parchment/75">تخصص حقوقی فعال</div>
+                <div className="text-2xl font-bold text-gold font-display">۹ حوزه</div>
+                <div className="text-xs mt-1 text-parchment/75">اصلی حقوقی و کیفری</div>
               </li>
               <li>
                 <div className="text-2xl font-bold text-gold font-display">{firm.hours}</div>
