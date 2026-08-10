@@ -13,7 +13,7 @@
     "db:migrate": "node scripts/migrate.mjs",
     "db:seed": "node scripts/seed.mjs",
     "cf:build": "NEXT_IGNORE_INCORRECT_LOCKFILE=1 NEXT_TELEMETRY_DISABLED=1 opennextjs-cloudflare build",
-    "cf:deploy": "CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE=\"$DATABASE_URL\" opennextjs-cloudflare deploy -- --keep-vars",
+    "cf:deploy": "node scripts/deploy-cloudflare.mjs",
     "preview": "npm run cf:build && opennextjs-cloudflare preview",
     "deploy": "npm run cf:build && npm run cf:deploy",
     "upload": "npm run cf:build && opennextjs-cloudflare upload",
