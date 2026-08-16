@@ -326,10 +326,15 @@ export async function deleteUserAction(
         throw new Error('LAST_ACTIVE_ADMIN');
       }
 
-      const documents = await tx<{ fileId: string | null }[]>`
-        select file_id from client_documents where client_id = ${userId}
-      `;
-      fileIds = documents.map((document) => document.fileId);
+      const [documents, supportFiles] = await Promise.all([
+        tx<{ fileId: string | null }[]>`
+          select file_id from client_documents where client_id = ${userId}
+        `,
+        tx<{ fileId: string | null }[]>`
+          select sa.file_id from support_attachments sa join support_threads st on st.id = sa.thread_id where st.client_id = ${userId}
+        `,
+      ]);
+      fileIds = [...documents, ...supportFiles].map((document) => document.fileId);
 
       await tx`delete from users where id = ${userId}`;
       await tx`

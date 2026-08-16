@@ -1,3 +1,5 @@
+'use client';
+
 import * as React from 'react';
 import type { ChangeEvent } from 'react';
 import { Check } from 'lucide-react';

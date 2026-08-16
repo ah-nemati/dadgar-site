@@ -11,7 +11,8 @@ export const metadata: Metadata = {
 const NAV_ITEMS: DashboardNavItem[] = [
   { href: '/portal', label: 'داشبورد', icon: 'dashboard' },
   { href: '/portal/cases', label: 'پرونده‌های من', icon: 'cases' },
-  { href: '/portal/messages', label: 'پیام‌ها', icon: 'messages' },
+  { href: '/portal/messages', label: 'صحبت با وکیل', icon: 'messages' },
+  { href: '/portal/appointments', label: 'نوبت‌ها', icon: 'calendar' },
   { href: '/portal/profile', label: 'اطلاعات حساب', icon: 'profile' },
 ];
 

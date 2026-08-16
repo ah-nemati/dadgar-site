@@ -1,5 +1,30 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;500;600;700;800&family=Vazirmatn:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
+
+@font-face {
+  font-family: 'B Nazanin';
+  src: local('B Nazanin'), local('BNazanin'), local('B-Nazanin');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'B Nazanin';
+  src: local('B Nazanin Bold'), local('BNazanin Bold'), local('B Nazanin'), local('BNazanin');
+  font-style: normal;
+  font-weight: 600 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Dadgar Numbers';
+  src: local('Tahoma'), local('Arial');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  unicode-range: U+0030-0039, U+0660-0669, U+06F0-06F9;
+}
+
 
 @theme inline {
   --color-background: var(--background);
@@ -31,8 +56,8 @@
   --color-teal: var(--brand-teal);
   --color-sand: var(--border);
 
-  --font-display: 'Noto Kufi Arabic', sans-serif;
-  --font-body: 'Vazirmatn', sans-serif;
+  --font-display: 'Dadgar Numbers', 'B Nazanin', 'Tahoma', serif;
+  --font-body: 'Dadgar Numbers', 'B Nazanin', 'Tahoma', serif;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -54,12 +79,12 @@
   --popover: #f6fbff;
   --popover-foreground: #122943;
   --primary: #b08d45;
-  --primary-foreground: #0c3f6e;
+  --primary-foreground: #082945;
   --secondary: #0c3f6e;
   --secondary-foreground: #e3f2fd;
   --muted: #d3e9fa;
   --muted-foreground: #4c6478;
-  --accent: #0f7a8c;
+  --accent: #09596a;
   --accent-foreground: #e3f2fd;
   --destructive: #a3402f;
   --destructive-foreground: #e3f2fd;
@@ -71,14 +96,24 @@
   --brand-ink-2: #14568f;
   --brand-gold: #b08d45;
   --brand-gold-light: #d8bc7e;
-  --brand-teal: #0f7a8c;
+  --brand-teal: #09596a;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-body);
+  font-synthesis: weight style;
+  font-variant-numeric: tabular-nums;
 }
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
 
 h1, h2, h3, h4 {
   font-family: var(--font-display);
@@ -159,7 +194,6 @@ h1, h2, h3, h4 {
 }
 
 .header-icon-button {
-  display: inline-flex;
   width: 2.5rem;
   height: 2.5rem;
   align-items: center;
@@ -172,6 +206,69 @@ h1, h2, h3, h4 {
 .header-icon-button:hover {
   background: rgb(255 255 255 / 0.1);
   color: var(--brand-gold-light);
+}
+
+.header-desktop-nav-link {
+  position: relative;
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  padding-inline: clamp(0.68rem, 1.15vw, 1.05rem);
+  color: color-mix(in srgb, var(--background) 84%, transparent);
+  font-size: 1rem;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: color 0.18s ease, background-color 0.18s ease;
+}
+
+.header-desktop-nav-link::after {
+  content: '';
+  position: absolute;
+  right: 50%;
+  bottom: 0;
+  width: 0;
+  height: 2px;
+  background: var(--brand-gold-light);
+  transform: translateX(50%);
+  transition: width 0.18s ease;
+}
+
+.header-desktop-nav-link:hover,
+.header-desktop-nav-link--active {
+  background: rgb(255 255 255 / 0.035);
+  color: var(--brand-gold-light);
+}
+
+.header-desktop-nav-link:hover::after,
+.header-desktop-nav-link--active::after {
+  width: calc(100% - 1.2rem);
+}
+
+.route-progress {
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  z-index: 9999;
+  height: 3px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.14s ease;
+}
+
+.route-progress--visible {
+  opacity: 1;
+}
+
+.route-progress__bar {
+  width: 100%;
+  height: 100%;
+  transform: scaleX(0);
+  transform-origin: right center;
+  background: linear-gradient(90deg, var(--brand-gold), var(--brand-gold-light));
+  box-shadow: 0 0 10px rgb(216 188 126 / 0.75);
+  transition: transform 0.18s ease-out;
 }
 
 .profile-link {
@@ -422,3 +519,157 @@ h1, h2, h3, h4 {
   }
 }
 
+
+
+/* Public navigation: immediate pointer feedback and no 300ms-style tap delay. */
+.header-desktop-nav-link,
+.header-icon-button,
+.header-meta-link {
+  touch-action: manipulation;
+}
+
+.header-desktop-nav-link:active {
+  transform: translateY(1px);
+}
+
+/* Lightweight page-load motion. The LCP heading itself is deliberately not
+   faded or delayed; animation is limited to decoration and below-the-fold UI. */
+@keyframes sectionEnter {
+  from {
+    opacity: 0.01;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cardEnter {
+  from {
+    opacity: 0.01;
+    transform: translateY(16px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes heroSweep {
+  0% { transform: translateX(115%) skewX(-18deg); opacity: 0; }
+  14% { opacity: 0.24; }
+  70%, 100% { transform: translateX(-145%) skewX(-18deg); opacity: 0; }
+}
+
+.load-reveal {
+  animation: sectionEnter 0.62s cubic-bezier(.2,.75,.25,1) both;
+  animation-delay: 90ms;
+}
+
+.stagger-load > * {
+  animation: cardEnter 0.52s cubic-bezier(.2,.75,.25,1) both;
+}
+
+.stagger-load > *:nth-child(1) { animation-delay: 80ms; }
+.stagger-load > *:nth-child(2) { animation-delay: 130ms; }
+.stagger-load > *:nth-child(3) { animation-delay: 180ms; }
+.stagger-load > *:nth-child(4) { animation-delay: 230ms; }
+.stagger-load > *:nth-child(5) { animation-delay: 280ms; }
+.stagger-load > *:nth-child(6) { animation-delay: 330ms; }
+.stagger-load > *:nth-child(7) { animation-delay: 380ms; }
+.stagger-load > *:nth-child(8) { animation-delay: 430ms; }
+.stagger-load > *:nth-child(9) { animation-delay: 480ms; }
+
+.hero-motion {
+  isolation: isolate;
+}
+
+.hero-motion::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  bottom: 0;
+  right: -18%;
+  width: 16%;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgb(216 188 126 / 0.22), transparent);
+  animation: heroSweep 2.6s ease-out 0.2s 1 both;
+}
+
+.hero-motion > * {
+  position: relative;
+  z-index: 1;
+}
+
+.service-slider {
+  overflow: hidden;
+  border-block: 1px solid color-mix(in srgb, var(--brand-gold) 32%, var(--border));
+  background: color-mix(in srgb, var(--card) 92%, var(--brand-gold) 8%);
+}
+
+.service-slider__track {
+  display: flex;
+  width: max-content;
+  min-width: 100%;
+  align-items: center;
+  justify-content: space-around;
+  gap: 2.5rem;
+  padding: 0.85rem 1.25rem;
+  animation: serviceSlide 0.82s cubic-bezier(.2,.75,.25,1) 0.12s both;
+}
+
+.service-slider__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  white-space: nowrap;
+  color: var(--foreground);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.service-slider__item::before {
+  content: '';
+  width: 0.38rem;
+  height: 0.38rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--brand-gold);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand-gold) 14%, transparent);
+}
+
+@keyframes serviceSlide {
+  from { opacity: 0.15; transform: translateX(4%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@media (max-width: 767px) {
+  .service-slider {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .service-slider::-webkit-scrollbar { display: none; }
+
+  .service-slider__track {
+    justify-content: flex-start;
+    gap: 1.6rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .load-reveal,
+  .stagger-load > *,
+  .hero-motion::after,
+  .service-slider__track {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .service-slider {
+    overflow-x: auto;
+  }
+}

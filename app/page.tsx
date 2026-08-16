@@ -3,10 +3,10 @@ import PatternStrip from "@/components/PatternStrip";
 import Seal from "@/components/Seal";
 import { Button } from "@/components/ui/button";
 import { blogPostPath } from "@/lib/blog-slug";
-import { FIRM } from "@/data/firm";
-import { LAWYERS } from "@/data/lawyers";
-import { PRACTICE_AREAS } from "@/data/practice-areas";
-import { BLOG_POSTS } from "@/data/blog-posts";
+import { getFirm } from "@/lib/content/firm";
+import { getLawyers } from "@/lib/content/lawyers";
+import { getPracticeAreas } from "@/lib/content/practice-areas";
+import { getBlogPosts } from "@/lib/content/blog";
 import { PRACTICE_AREA_ICONS } from "@/lib/icons";
 import {
   ArrowLeft,
@@ -62,16 +62,21 @@ const whyUs: InfoPoint[] = [
 // Dynamic database work belongs to /blog and authenticated dashboards.
 export const dynamic = "force-static";
 
-export default function HomePage() {
-  const firm = FIRM;
-  const practiceAreas = PRACTICE_AREAS;
-  const lawyers = LAWYERS;
-  const blogPosts = BLOG_POSTS.filter((post) => post.published);
+export default async function HomePage() {
+  const [firm, practiceAreas, lawyers, blogPosts] = await Promise.all([
+    getFirm(),
+    getPracticeAreas(),
+    getLawyers(),
+    getBlogPosts(),
+  ]);
+  const currentTrustPoints = trustPoints.map((item, index) =>
+    index === 0 ? { ...item, label: `پوشش ${practiceAreas.length.toLocaleString("fa-IR")} حوزه اصلی حقوقی و کیفری` } : item
+  );
 
   return (
     <>
       {/* HERO */}
-      <section className="bg-ink relative overflow-hidden">
+      <section className="hero-motion bg-ink relative overflow-hidden">
         <div
           className="absolute"
           style={{ left: "-6%", top: "-10%", opacity: 0.07 }}
@@ -79,7 +84,7 @@ export default function HomePage() {
         >
           <Seal size={460} tone="cream" />
         </div>
-        <div className="max-w-6xl mx-auto px-6 pt-16 pb-20 md:pt-24 md:pb-28 relative animate-fade-up">
+        <div className="max-w-6xl mx-auto px-6 pt-16 pb-20 md:pt-24 md:pb-28 relative">
           <Eyebrow dark>{firm.name} — دفتر خدمات حقوقی</Eyebrow>
           <h1 className="text-4xl md:text-6xl font-bold text-parchment leading-tight mb-6 max-w-3xl">
             مشاوره حقوقی آنلاین سراسر ایران؛ خدمات حضوری در اهواز
@@ -103,10 +108,22 @@ export default function HomePage() {
         <PatternStrip id="pattern-hero-bottom" color="#B08D45" />
       </section>
 
+      {/* SERVICE SLIDER — CSS-only, no client JavaScript */}
+      <nav className="service-slider" aria-label="دسترسی سریع به خدمات حقوقی">
+        <div className="service-slider__track">
+          <Link className="service-slider__item" href="/online-legal-consultation">مشاوره حقوقی آنلاین</Link>
+          <Link className="service-slider__item" href="/lawyer-ahvaz">وکیل پایه یک دادگستری در اهواز</Link>
+          <Link className="service-slider__item" href="/practice-areas/real-estate">مشاوره و دعاوی ملکی</Link>
+          <Link className="service-slider__item" href="/practice-areas/criminal">وکیل و مشاوره دعاوی کیفری</Link>
+          <Link className="service-slider__item" href="/practice-areas/family">مشاوره حقوق خانواده</Link>
+          <Link className="service-slider__item" href="/practice-areas/contracts">تنظیم و بررسی قرارداد</Link>
+        </div>
+      </nav>
+
       {/* TRUST STRIP */}
       <section className="bg-card border-b border-border">
-        <div className="max-w-6xl mx-auto px-6 py-8 grid grid-cols-2 lg:grid-cols-4 gap-6">
-          {trustPoints.map((t, i) => (
+        <div className="stagger-load max-w-6xl mx-auto px-6 py-8 grid grid-cols-2 lg:grid-cols-4 gap-6">
+          {currentTrustPoints.map((t, i) => (
             <div key={i} className="flex items-center gap-3">
               <t.icon
                 size={22}
@@ -134,7 +151,7 @@ export default function HomePage() {
               حوزه، راهکاری متناسب با شرایط شما ارائه می‌شود.
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="stagger-load grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {practiceAreas.map((area) => {
               const AreaIcon = PRACTICE_AREA_ICONS[area.icon];
               return (
@@ -175,7 +192,7 @@ export default function HomePage() {
               تعهدی که پشت هر پرونده می‌ایستد
             </h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="stagger-load grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {whyUs.map((w, i) => (
               <div key={i}>
                 <w.icon
@@ -199,7 +216,7 @@ export default function HomePage() {
             وکیلی که پرونده شما را پیگیری می‌کند
           </h2>
           {lawyers[0] && (
-            <div className="bg-card border border-border rounded-sm p-8 md:p-10 flex flex-col md:flex-row items-center md:items-start gap-8 text-center md:text-right">
+            <div className="load-reveal bg-card border border-border rounded-sm p-8 md:p-10 flex flex-col md:flex-row items-center md:items-start gap-8 text-center md:text-right">
               <div className="relative w-36 h-36 md:w-40 md:h-40 overflow-hidden rounded-full border-4 border-gold/40 bg-ink-2 shadow-2xl">
                 <Image
                   src="/images/profile.jpeg"
@@ -250,7 +267,7 @@ export default function HomePage() {
                 مشاهده همه مطالب <ArrowLeft size={15} aria-hidden="true" />
               </Link>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="stagger-load grid grid-cols-1 md:grid-cols-3 gap-6">
               {blogPosts.slice(0, 3).map((post) => (
                 <Link
                   key={post.slug}

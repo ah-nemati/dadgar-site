@@ -27,22 +27,18 @@ const NAV_ITEMS = [
 ];
 
 export default function Header({ firm }: { firm: Firm }) {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuPath, setMenuPath] = useState<string | null>(null);
   const pathname = usePathname();
+  const menuOpen = menuPath === pathname;
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
-
-  // eslint-disable react-hooks/set-state-in-effect
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [pathname]);
 
   useEffect(() => {
     if (!menuOpen) return;
 
     const previousOverflow = document.body.style.overflow;
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenuOpen(false);
+      if (event.key === "Escape") setMenuPath(null);
     };
 
     document.body.style.overflow = "hidden";
@@ -56,91 +52,76 @@ export default function Header({ firm }: { firm: Firm }) {
 
   return (
     <header className="sticky top-0 z-50 bg-ink shadow-lg shadow-ink/10">
-      <div className="hidden md:block border-b border-white/10">
-        <div className="max-w-6xl mx-auto px-6 py-2 flex items-center justify-between text-sm">
+      <div className="hidden border-b border-white/10 lg:block">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-2 text-sm">
           <div className="flex items-center gap-6">
-            <Link href={firm.phoneHref} className="header-meta-link">
+            <a href={firm.phoneHref} className="header-meta-link">
               <Phone size={14} aria-hidden="true" />
               <span dir="ltr">{firm.phone}</span>
-            </Link>
+            </a>
             {firm.phone2 && (
-              <Link href={firm.phone2Href ?? ""} className="header-meta-link">
+              <a href={firm.phone2Href ?? "#"} className="header-meta-link">
                 <Phone size={14} aria-hidden="true" />
                 <span dir="ltr">{firm.phone2}</span>
-              </Link>
+              </a>
             )}
-            <Link href={`mailto:${firm.email}`} className="header-meta-link">
+            <a href={`mailto:${firm.email}`} className="header-meta-link">
               <Mail size={14} aria-hidden="true" />
               <span dir="ltr">{firm.email}</span>
-            </Link>
+            </a>
           </div>
 
-          <a href="/account" className="header-meta-link font-semibold">
+          <Link href="/account" prefetch={false} className="header-meta-link font-semibold">
             <LockKeyhole size={14} aria-hidden="true" />
             <span>حساب کاربری</span>
-          </a>
+          </Link>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-20">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="flex h-20 items-center justify-between lg:h-[4.75rem]">
           <Link
             href="/"
-            className="flex items-center gap-3 shrink-0"
+            prefetch
+            className="flex shrink-0 items-center gap-3"
             aria-label="صفحه اصلی"
           >
             <Seal size={42} />
-            <div className="text-right hidden sm:block">
-              <div className="font-display text-lg text-parchment leading-none">
+            <div className="hidden text-right sm:block">
+              <div className="font-display text-xl leading-none text-parchment">
                 {firm.name}
               </div>
-              <div className="text-xs text-gold-light mt-1">
+              <div className="mt-1 text-sm text-gold-light">
                 دفتر خدمات حقوقی
               </div>
             </div>
           </Link>
 
-          <nav
-            className="hidden xl:flex items-center gap-0.5"
-            aria-label="منوی اصلی"
-          >
-            {NAV_ITEMS.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`px-3 py-2 text-sm font-medium transition-colors ${
-                  isActive(item.href)
-                    ? "text-gold-light"
-                    : "text-parchment/80 hover:text-gold-light"
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
           <div className="flex items-center gap-2">
             <Button asChild size="sm" className="hidden lg:inline-flex">
-              <Link href="/contact">تماس با دفتر</Link>
+              <Link href="/online-legal-consultation" prefetch>
+                صحبت با وکیل
+              </Link>
             </Button>
 
-            <div className="md:hidden">
-              <a
+            <div className="lg:hidden">
+              <Link
                 href="/account"
-                className="header-icon-button"
+                prefetch={false}
+                className="header-icon-button inline-flex"
                 aria-label="حساب کاربری"
               >
                 <CircleUserRound size={22} aria-hidden="true" />
-              </a>
+              </Link>
             </div>
 
             <button
               type="button"
-              className="xl:hidden header-icon-button"
+              className="header-icon-button inline-flex lg:hidden"
               aria-label="باز کردن منو"
               aria-controls="mobile-navigation"
               aria-expanded={menuOpen}
-              onClick={() => setMenuOpen(true)}
+              onClick={() => setMenuPath(pathname)}
             >
               <Menu size={24} aria-hidden="true" />
             </button>
@@ -148,9 +129,32 @@ export default function Header({ firm }: { firm: Firm }) {
         </div>
       </div>
 
+      <div className="hidden border-t border-white/10 lg:block">
+        <div className="mx-auto max-w-6xl px-6">
+          <nav
+            className="flex min-h-12 items-stretch justify-center"
+            aria-label="منوی اصلی"
+          >
+            {NAV_ITEMS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                prefetch
+                aria-current={isActive(item.href) ? "page" : undefined}
+                className={`header-desktop-nav-link ${
+                  isActive(item.href) ? "header-desktop-nav-link--active" : ""
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+      </div>
+
       {menuOpen && (
         <div
-          className="fixed inset-0 z-[70] xl:hidden"
+          className="fixed inset-0 z-[70] lg:hidden"
           role="dialog"
           aria-modal="true"
           aria-label="منوی سایت"
@@ -159,21 +163,21 @@ export default function Header({ firm }: { firm: Firm }) {
             type="button"
             className="absolute inset-0 bg-black/55"
             aria-label="بستن منو"
-            onClick={() => setMenuOpen(false)}
+            onClick={() => setMenuPath(null)}
           />
           <div
             id="mobile-navigation"
             className="absolute inset-y-0 right-0 flex w-[min(86vw,22rem)] flex-col bg-ink shadow-2xl"
           >
             <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
-              <span className="font-display text-base text-parchment">
+              <span className="font-display text-lg text-parchment">
                 {firm.name}
               </span>
               <button
                 type="button"
-                className="header-icon-button"
+                className="header-icon-button inline-flex"
                 aria-label="بستن منو"
-                onClick={() => setMenuOpen(false)}
+                onClick={() => setMenuPath(null)}
                 autoFocus
               >
                 <X size={22} aria-hidden="true" />
@@ -187,8 +191,10 @@ export default function Header({ firm }: { firm: Firm }) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  onClick={() => setMenuOpen(false)}
-                  className={`rounded-sm px-3 py-3 text-right text-sm font-medium ${
+                  prefetch
+                  onClick={() => setMenuPath(null)}
+                  aria-current={isActive(item.href) ? "page" : undefined}
+                  className={`rounded-sm px-3 py-3 text-right text-base font-medium ${
                     isActive(item.href)
                       ? "bg-parchment text-ink"
                       : "text-parchment/85 hover:bg-white/5"
@@ -198,17 +204,22 @@ export default function Header({ firm }: { firm: Firm }) {
                 </Link>
               ))}
               <div className="my-2 border-t border-white/10" />
-              <a
+              <Link
                 href="/account"
-                onClick={() => setMenuOpen(false)}
-                className="flex items-center gap-2 px-3 py-3 text-sm font-medium text-parchment/90"
+                prefetch={false}
+                onClick={() => setMenuPath(null)}
+                className="flex items-center gap-2 px-3 py-3 text-base font-medium text-parchment/90"
               >
                 <CircleUserRound size={17} aria-hidden="true" />
                 حساب کاربری
-              </a>
+              </Link>
               <Button asChild className="mt-2">
-                <Link href="/contact" onClick={() => setMenuOpen(false)}>
-                  تماس با دفتر
+                <Link
+                  href="/online-legal-consultation"
+                  prefetch
+                  onClick={() => setMenuPath(null)}
+                >
+                  صحبت با وکیل
                 </Link>
               </Button>
             </nav>

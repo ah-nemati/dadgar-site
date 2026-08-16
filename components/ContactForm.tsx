@@ -10,6 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card } from '@/components/ui/card';
 import { submitConsultationRequest } from '@/lib/actions/consultation';
 import type { PracticeArea } from '@/types/content';
+import Link from '@/components/NoPrefetchLink';
 
 interface ContactFormProps {
   practiceAreas: PracticeArea[];
@@ -139,7 +140,7 @@ export default function ContactForm({ practiceAreas }: ContactFormProps) {
             className="mt-0.5"
           />
           <Label htmlFor="cf-consent" className="text-sm text-muted-foreground font-normal leading-6 cursor-pointer">
-            با ارسال این فرم، با حفظ کامل محرمانگی اطلاعات ارسالی موافقم و اجازه می‌دهم کارشناسان موسسه با من تماس بگیرند.
+            با ارسال این فرم، <Link href="/privacy" className="underline underline-offset-2">حریم خصوصی</Link> را می‌پذیرم و اجازه می‌دهم دفتر برای پیگیری این درخواست با من تماس بگیرد.
           </Label>
         </div>
         {errors.consent && <p className="text-xs text-destructive mt-1.5">{errors.consent}</p>}

@@ -3,9 +3,10 @@ import { ArrowRight, KeyRound, Phone } from 'lucide-react';
 import AuthShell from '@/components/AuthShell';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { FIRM } from '@/data/firm';
+import { getFirm } from '@/lib/content/firm';
 
-export default function ForgotPasswordPage() {
+export default async function ForgotPasswordPage() {
+  const firm = await getFirm();
   return (
     <AuthShell
       eyebrow="بازیابی دسترسی"
@@ -25,9 +26,9 @@ export default function ForgotPasswordPage() {
         </p>
 
         <Button className="w-full" asChild>
-          <a href={FIRM.phoneHref}>
+          <a href={firm.phoneHref}>
             <Phone size={17} aria-hidden="true" />
-            تماس با دفتر: {FIRM.phone}
+            تماس با دفتر: {firm.phone}
           </a>
         </Button>
 

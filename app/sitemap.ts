@@ -5,9 +5,8 @@ import { getLawyers } from "@/lib/content/lawyers";
 import { getBlogPosts } from "@/lib/content/blog";
 import { blogPostPath } from "@/lib/blog-slug";
 
-// Blog routes are read from PostgreSQL at request time.
-export const dynamic = "force-static";
-export const revalidate = false;
+// Keep the sitemap in sync with articles and CMS-managed public content.
+export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const firm = await getFirm();
@@ -28,6 +27,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/blog",
     "/faq",
     "/contact",
+    "/privacy",
+    "/terms",
   ].map((path) => ({
     url: new URL(path || "/", firm.url).toString(),
     changeFrequency: path === "" ? "weekly" : "monthly",
@@ -55,8 +56,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const blogRoutes: MetadataRoute.Sitemap = blogPosts.map((post) => ({
     url: new URL(blogPostPath(post.slug), firm.url).toString(),
-    changeFrequency: "yearly",
-    priority: 0.5,
+    ...(post.updatedAt || post.createdAt
+      ? { lastModified: post.updatedAt || post.createdAt }
+      : {}),
+    changeFrequency: "monthly",
+    priority: post.featured ? 0.65 : 0.55,
   }));
 
   return [

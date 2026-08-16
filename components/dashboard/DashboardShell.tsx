@@ -14,6 +14,10 @@ import {
   LogOut,
   Menu,
   MessageSquare,
+  Settings,
+  Search,
+  ListChecks,
+  ShieldCheck,
   UserRound,
   Users,
   X,
@@ -30,7 +34,11 @@ export type DashboardIconName =
   | "cases"
   | "messages"
   | "calendar"
-  | "profile";
+  | "profile"
+  | "settings"
+  | "seo"
+  | "content"
+  | "audit";
 
 export interface DashboardNavItem {
   href: string;
@@ -47,6 +55,10 @@ const ICONS = {
   messages: MessageSquare,
   calendar: CalendarDays,
   profile: UserRound,
+  settings: Settings,
+  seo: Search,
+  content: ListChecks,
+  audit: ShieldCheck,
 } satisfies Record<DashboardIconName, typeof LayoutDashboard>;
 
 function initials(account: CurrentAccount) {
@@ -104,7 +116,7 @@ export default function DashboardShell({
             </div>
           </Link>
           <button
-            className="header-icon-button lg:hidden"
+            className="header-icon-button inline-flex lg:hidden"
             onClick={() => setOpen(false)}
             aria-label="بستن منو"
           >

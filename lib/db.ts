@@ -50,7 +50,9 @@ function createSql(): Sql {
     max: 1,
 
     idle_timeout: 5,
-    connect_timeout: 5,
+    connect_timeout: usingHyperdrive
+      ? 5
+      : Math.max(1, Number(process.env.DATABASE_CONNECT_TIMEOUT || 2)),
 
     fetch_types: false,
 

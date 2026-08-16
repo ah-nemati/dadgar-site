@@ -16,7 +16,82 @@ interface Row {
   imageUrl: string | null;
   imageFileId: string | null;
   imageAlt: string | null;
+  authorName: string | null;
+  reviewerName: string | null;
+  sourceUrls: unknown;
+  seoTitle: string | null;
+  seoDescription: string | null;
   createdAt: Date;
+  updatedAt: Date;
+}
+
+function normalizeSourceUrls(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value
+      .filter((item): item is string => typeof item === 'string')
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  if (typeof value !== 'string') return [];
+  const raw = value.trim();
+  if (!raw) return [];
+
+  if (raw.startsWith('[')) {
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        return parsed
+          .filter((item): item is string => typeof item === 'string')
+          .map((item) => item.trim())
+          .filter(Boolean);
+      }
+    } catch {
+      // Fall through to PostgreSQL-array/plain-text handling.
+    }
+  }
+
+  if (raw.startsWith('{') && raw.endsWith('}')) {
+    const body = raw.slice(1, -1);
+    if (!body) return [];
+
+    const values: string[] = [];
+    let current = '';
+    let quoted = false;
+    let escaped = false;
+
+    for (const char of body) {
+      if (escaped) {
+        current += char;
+        escaped = false;
+        continue;
+      }
+      if (char === '\\' && quoted) {
+        escaped = true;
+        continue;
+      }
+      if (char === '"') {
+        quoted = !quoted;
+        continue;
+      }
+      if (char === ',' && !quoted) {
+        const item = current.trim();
+        if (item && item.toUpperCase() !== 'NULL') values.push(item);
+        current = '';
+        continue;
+      }
+      current += char;
+    }
+
+    const last = current.trim();
+    if (last && last.toUpperCase() !== 'NULL') values.push(last);
+    return values;
+  }
+
+  return raw
+    .split(/\r?\n|\s*,\s*/)
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 function map(row: Row): BlogPost {
@@ -32,6 +107,13 @@ function map(row: Row): BlogPost {
     imageUrl: row.imageUrl,
     imageFileId: row.imageFileId,
     imageAlt: row.imageAlt,
+    authorName: row.authorName,
+    reviewerName: row.reviewerName,
+    sourceUrls: normalizeSourceUrls(row.sourceUrls),
+    seoTitle: row.seoTitle,
+    seoDescription: row.seoDescription,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
     date: formatJalaliDate(row.createdAt.toISOString()),
     readTime: estimateReadTime(row.content),
   };
@@ -48,7 +130,8 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
   try {
     const rows = await db<Row[]>`
       select id, slug, title, category, excerpt, content, published, featured,
-             image_url, image_file_id, image_alt, created_at
+             image_url, image_file_id, image_alt, author_name, reviewer_name,
+             source_urls, seo_title, seo_description, created_at, updated_at
       from blog_posts
       where published = true
       order by featured desc, created_at desc
@@ -66,7 +149,8 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | undefi
   try {
     const [row] = await db<Row[]>`
       select id, slug, title, category, excerpt, content, published, featured,
-             image_url, image_file_id, image_alt, created_at
+             image_url, image_file_id, image_alt, author_name, reviewer_name,
+             source_urls, seo_title, seo_description, created_at, updated_at
       from blog_posts
       where slug = ${normalizedSlug} and published = true
       limit 1
@@ -74,12 +158,10 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | undefi
 
     if (row) return map(row);
 
-    // Unicode normalization (or Arabic/Persian character variants) can make
-    // visually identical slugs compare differently in PostgreSQL. If the exact
-    // lookup misses, compare canonical forms before deciding the page is 404.
     const rows = await db<Row[]>`
       select id, slug, title, category, excerpt, content, published, featured,
-             image_url, image_file_id, image_alt, created_at
+             image_url, image_file_id, image_alt, author_name, reviewer_name,
+             source_urls, seo_title, seo_description, created_at, updated_at
       from blog_posts
       where published = true
       order by created_at desc

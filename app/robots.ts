@@ -1,16 +1,16 @@
 import type { MetadataRoute } from 'next';
-import { getFirm } from '@/lib/content/firm';
 
-export default async function robots(): Promise<MetadataRoute.Robots> {
-  const firm = await getFirm();
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://majidsavarivakil.ir').replace(/\/$/, '');
 
+export const dynamic = 'force-static';
+
+export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/account', '/admin', '/portal', '/api/', '/login', '/signup', '/forgot-password', '/reset-password', '/auth/', '/client-login'],
+      disallow: ['/api/', '/auth/'],
     },
-    sitemap: new URL('/sitemap.xml', firm.url).toString(),
-    host: new URL(firm.url).origin,
+    sitemap: `${SITE_URL}/sitemap.xml`,
   };
 }

@@ -5,8 +5,8 @@ export interface BreadcrumbSegment {
   path: string;
 }
 
-/** Builds schema.org BreadcrumbList JSON-LD from a list of {name, path} segments. */
-export function breadcrumbJsonLd(segments: BreadcrumbSegment[]) {
+/** Builds schema.org BreadcrumbList JSON-LD with normalized absolute URLs. */
+export function breadcrumbJsonLd(segments: BreadcrumbSegment[], baseUrl = FIRM.url) {
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -14,7 +14,7 @@ export function breadcrumbJsonLd(segments: BreadcrumbSegment[]) {
       '@type': 'ListItem',
       position: i + 1,
       name: seg.name,
-      item: `${FIRM.url}${seg.path}`,
+      item: new URL(seg.path || '/', baseUrl).toString(),
     })),
   };
 }

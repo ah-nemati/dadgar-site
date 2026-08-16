@@ -162,6 +162,17 @@ export default function BlogForm({ action, post, submitLabel }: BlogFormProps) {
         )}
       </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="space-y-2">
+          <Label htmlFor="authorName">نویسنده / تهیه‌کننده محتوا</Label>
+          <Input id="authorName" name="authorName" defaultValue={post?.authorName ?? ""} placeholder="مثلاً مجید سواری" />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="reviewerName">بازبین حقوقی</Label>
+          <Input id="reviewerName" name="reviewerName" defaultValue={post?.reviewerName ?? ""} placeholder="نام وکیل یا بازبین" />
+        </div>
+      </div>
+
       <div className="space-y-2">
         <Label htmlFor="excerpt">خلاصه مطلب *</Label>
         <Textarea
@@ -170,6 +181,20 @@ export default function BlogForm({ action, post, submitLabel }: BlogFormProps) {
           rows={3}
           defaultValue={post?.excerpt}
           required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="sourceUrls">منابع رسمی و مستند</Label>
+        <p className="text-xs text-muted-foreground">هر لینک را در یک خط وارد کنید؛ ترجیحاً قوانین، سامانه‌های رسمی و منابع مرجع.</p>
+        <Textarea
+          id="sourceUrls"
+          name="sourceUrls"
+          rows={4}
+          dir="ltr"
+          className="text-left"
+          defaultValue={(post?.sourceUrls ?? []).join("\n")}
+          placeholder="https://..."
         />
       </div>
 
@@ -187,6 +212,18 @@ export default function BlogForm({ action, post, submitLabel }: BlogFormProps) {
           className="resize-y"
         />
       </div>
+
+      <section className="rounded-lg border border-border p-4 space-y-4">
+        <h3 className="font-semibold">SEO این مقاله</h3>
+        <div className="space-y-2">
+          <Label htmlFor="seoTitle">عنوان SEO (اختیاری)</Label>
+          <Input id="seoTitle" name="seoTitle" defaultValue={post?.seoTitle ?? ""} maxLength={120} placeholder="اگر خالی باشد، عنوان مقاله استفاده می‌شود" />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="seoDescription">توضیح متا (اختیاری)</Label>
+          <Textarea id="seoDescription" name="seoDescription" rows={3} maxLength={320} defaultValue={post?.seoDescription ?? ""} placeholder="اگر خالی باشد، خلاصه مقاله استفاده می‌شود" />
+        </div>
+      </section>
 
       <div className="flex flex-wrap gap-5 rounded-lg bg-muted/45 p-4">
         <label className="flex items-center gap-2.5 cursor-pointer">

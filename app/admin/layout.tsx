@@ -10,18 +10,26 @@ export const metadata: Metadata = {
 
 const STAFF_NAV_ITEMS: DashboardNavItem[] = [
   { href: '/admin', label: 'داشبورد', icon: 'dashboard' },
-  { href: '/admin/messages', label: 'درخواست‌های مشاوره', icon: 'inbox' },
+  { href: '/admin/messages', label: 'درخواست‌های اولیه', icon: 'inbox' },
+  { href: '/admin/appointments', label: 'نوبت‌ها', icon: 'calendar' },
   { href: '/admin/cases', label: 'پرونده‌ها', icon: 'cases' },
-  { href: '/admin/support', label: 'گفت‌وگوها', icon: 'messages' },
+  { href: '/admin/support', label: 'گفت‌وگو با موکلان', icon: 'messages' },
   { href: '/admin/security', label: 'امنیت حساب', icon: 'profile' },
 ];
 
 const ADMIN_NAV_ITEMS: DashboardNavItem[] = [
   STAFF_NAV_ITEMS[0],
   STAFF_NAV_ITEMS[1],
+  { href: '/admin/appointments', label: 'مدیریت نوبت‌ها', icon: 'calendar' },
   { href: '/admin/blog', label: 'مدیریت وبلاگ', icon: 'blog' },
+  { href: '/admin/content', label: 'محتوای سایت', icon: 'content' },
+  { href: '/admin/site', label: 'تنظیمات دفتر', icon: 'settings' },
+  { href: '/admin/seo', label: 'SEO و گوگل', icon: 'seo' },
   { href: '/admin/clients', label: 'مدیریت کاربران', icon: 'users' },
-  ...STAFF_NAV_ITEMS.slice(2),
+  { href: '/admin/cases', label: 'پرونده‌ها', icon: 'cases' },
+  { href: '/admin/support', label: 'گفت‌وگو با موکلان', icon: 'messages' },
+  { href: '/admin/audit', label: 'گزارش فعالیت', icon: 'audit' },
+  { href: '/admin/security', label: 'امنیت حساب', icon: 'profile' },
 ];
 
 export const dynamic = 'force-dynamic';

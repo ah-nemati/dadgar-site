@@ -5,22 +5,15 @@ import { ArrowLeft, ArrowRight, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { breadcrumbJsonLd } from "@/lib/seo";
 import { getFirm } from "@/lib/content/firm";
-import { getBlogPostBySlug, getBlogPosts } from "@/lib/content/blog";
+import { getBlogPostBySlug } from "@/lib/content/blog";
 import { blogPostPath } from "@/lib/blog-slug";
 import Image from "next/image";
 
 type Params = Promise<{ slug: string }>;
 
-// Pre-render articles known at build time, but allow newly published slugs to
-// be generated on demand after an admin creates them.
-export const dynamic = "force-static";
-export const dynamicParams = true;
-export const revalidate = false;
-
-export async function generateStaticParams() {
-  const posts = await getBlogPosts();
-  return posts.map((post) => ({ slug: post.slug }));
-}
+// Blog posts are managed from PostgreSQL. Rendering dynamically prevents newly
+// published Persian slugs from becoming 404s until the next deployment.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -28,16 +21,35 @@ export async function generateMetadata({
   params: Params;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getBlogPostBySlug(slug);
+  const [post, firm] = await Promise.all([getBlogPostBySlug(slug), getFirm()]);
   if (!post) return {};
 
+  const description = post.seoDescription || post.excerpt;
+  const authorName = post.authorName || firm.shortName;
+
   return {
-    title: post.title,
-    description: post.excerpt,
+    title: post.seoTitle || post.title,
+    description,
+    authors: [{ name: authorName }],
     alternates: { canonical: blogPostPath(post.slug) },
-    openGraph: post.imageUrl
-      ? { images: [{ url: post.imageUrl, alt: post.imageAlt || post.title }] }
-      : undefined,
+    openGraph: {
+      type: "article",
+      title: post.seoTitle || post.title,
+      description,
+      publishedTime: post.createdAt,
+      modifiedTime: post.updatedAt || post.createdAt,
+      authors: [authorName],
+      section: post.category,
+      images: post.imageUrl
+        ? [{ url: post.imageUrl, alt: post.imageAlt || post.title }]
+        : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.seoTitle || post.title,
+      description,
+      images: post.imageUrl ? [post.imageUrl] : undefined,
+    },
   };
 }
 
@@ -66,7 +78,11 @@ export default async function BlogPostDetailPage({
     inLanguage: "fa-IR",
     mainEntityOfPage: new URL(blogPostPath(post.slug), firm.url).toString(),
     image: post.imageUrl || undefined,
-    author: { "@type": "Person", name: firm.shortName },
+    datePublished: post.createdAt,
+    dateModified: post.updatedAt || post.createdAt,
+    author: { "@type": "Person", name: post.authorName || firm.shortName },
+    reviewedBy: post.reviewerName ? { "@type": "Person", name: post.reviewerName } : undefined,
+    citation: post.sourceUrls?.length ? post.sourceUrls : undefined,
     publisher: { "@type": "LegalService", name: firm.name },
   };
 
@@ -106,10 +122,16 @@ export default async function BlogPostDetailPage({
           <h1 className="text-2xl md:text-4xl font-bold text-parchment mt-3 mb-5 leading-tight">
             {post.title}
           </h1>
-          <div className="flex items-center gap-3 text-xs text-parchment/70">
+          <div className="flex flex-wrap items-center gap-3 text-xs text-parchment/70">
             <span>{post.date}</span>
             <span>·</span>
             <span>{post.readTime}</span>
+            <span>·</span>
+            <span>نویسنده: {post.authorName || firm.shortName}</span>
+            {post.reviewerName && <>
+              <span>·</span>
+              <span>بازبین حقوقی: {post.reviewerName}</span>
+            </>}
           </div>
         </div>
       </section>
@@ -140,6 +162,21 @@ export default async function BlogPostDetailPage({
               </p>
             ))}
           </div>
+
+          {(post.sourceUrls?.length ?? 0) > 0 && (
+            <section className="mt-10 pt-6 border-t border-border" aria-labelledby="article-sources">
+              <h2 id="article-sources" className="font-bold mb-4">منابع و مستندات</h2>
+              <ul className="space-y-2 text-sm">
+                {post.sourceUrls?.map((url, index) => (
+                  <li key={url}>
+                    <a href={url} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-4 break-all">
+                      منبع {index + 1}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           <div className="mt-10 pt-6 border-t border-border text-xs text-muted-foreground leading-7">
             این مطلب صرفاً جنبه اطلاع‌رسانی عمومی دارد و جایگزین مشاوره حقوقی

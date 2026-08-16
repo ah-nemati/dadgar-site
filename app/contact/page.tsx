@@ -3,6 +3,7 @@ import { Phone, Mail, MapPin, Clock } from 'lucide-react';
 import PageHero from '@/components/PageHero';
 import Seal from '@/components/Seal';
 import ContactForm from '@/components/ContactForm';
+import OfficeMap from '@/components/OfficeMap';
 import { getFirm } from '@/lib/content/firm';
 import { getPracticeAreas } from '@/lib/content/practice-areas';
 
@@ -71,6 +72,13 @@ export default async function ContactPage() {
               </ul>
             </div>
           </div>
+        </div>
+        <div className="max-w-6xl mx-auto px-6 pb-16">
+          <div className="mb-5">
+            <h2 className="text-2xl font-bold text-foreground">موقعیت دفتر روی نقشه</h2>
+            <p className="mt-2 text-sm leading-7 text-muted-foreground">برای مراجعه حضوری، نشانی و مسیر دفتر را روی نقشه بررسی کنید.</p>
+          </div>
+          <OfficeMap firm={firm} />
         </div>
       </section>
     </>

@@ -7,6 +7,7 @@ export interface AdminDashboardStats {
   openThreads: number;
   publishedPosts: number;
   draftPosts: number;
+  pendingAppointments: number;
 }
 
 interface StatsRow {
@@ -16,6 +17,7 @@ interface StatsRow {
   openThreads: number | string;
   publishedPosts: number | string;
   draftPosts: number | string;
+  pendingAppointments: number | string;
 }
 
 export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
@@ -26,7 +28,8 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
       (select count(*) from consultation_requests where status = 'new')::int as new_consultations,
       (select count(*) from support_threads where status <> 'closed')::int as open_threads,
       (select count(*) from blog_posts where published = true)::int as published_posts,
-      (select count(*) from blog_posts where published = false)::int as draft_posts
+      (select count(*) from blog_posts where published = false)::int as draft_posts,
+      (select count(*) from appointments where status = 'pending')::int as pending_appointments
   `;
   return {
     clients: Number(row.clients),
@@ -35,5 +38,6 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
     openThreads: Number(row.openThreads),
     publishedPosts: Number(row.publishedPosts),
     draftPosts: Number(row.draftPosts),
+    pendingAppointments: Number(row.pendingAppointments),
   };
 }

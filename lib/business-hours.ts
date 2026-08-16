@@ -1,10 +1,15 @@
-export const BUSINESS_TIME_ZONE = 'Asia/Tehran';
-export const BUSINESS_OPEN_HOUR = 17;
-export const BUSINESS_CLOSE_HOUR = 22;
-export const BUSINESS_SLOT_MINUTES = 30;
-export const BUSINESS_HOURS_LABEL = 'شنبه تا چهارشنبه، ساعت ۱۷ تا ۲۲';
+import {
+  DEFAULT_APPOINTMENT_SETTINGS,
+  appointmentSettingsLabel,
+  type AppointmentSettings,
+} from '@/lib/appointment-settings-shared';
 
-const WORKING_DAYS = new Set([6, 0, 1, 2, 3]); // Saturday through Wednesday
+export const BUSINESS_TIME_ZONE = 'Asia/Tehran';
+export const BUSINESS_OPEN_HOUR = DEFAULT_APPOINTMENT_SETTINGS.openHour;
+export const BUSINESS_CLOSE_HOUR = DEFAULT_APPOINTMENT_SETTINGS.closeHour;
+export const BUSINESS_SLOT_MINUTES = DEFAULT_APPOINTMENT_SETTINGS.slotMinutes;
+export const BUSINESS_HOURS_LABEL = appointmentSettingsLabel(DEFAULT_APPOINTMENT_SETTINGS);
+
 const LOCAL_DATE_TIME_RE = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/;
 
 export interface AppointmentValidationResult {
@@ -40,25 +45,30 @@ function localParts(value: string) {
 
 export function validateAppointmentDateTime(
   value: string,
-  now = Date.now()
+  now = Date.now(),
+  settings: AppointmentSettings = DEFAULT_APPOINTMENT_SETTINGS,
 ): AppointmentValidationResult {
+  if (!settings.enabled) {
+    return { ok: false, error: 'رزرو آنلاین نوبت موقتاً غیرفعال است.' };
+  }
+
   const parts = localParts(value);
   if (!parts) return { ok: false, error: 'تاریخ و ساعت انتخاب‌شده معتبر نیست.' };
 
-  if (!WORKING_DAYS.has(parts.weekDay)) {
-    return { ok: false, error: 'رزرو نوبت فقط از شنبه تا چهارشنبه امکان‌پذیر است.' };
+  if (!settings.workingDays.includes(parts.weekDay)) {
+    return { ok: false, error: 'روز انتخاب‌شده در برنامه کاری دفتر فعال نیست.' };
   }
 
   const minutes = parts.hour * 60 + parts.minute;
-  const openMinutes = BUSINESS_OPEN_HOUR * 60;
-  const closeMinutes = BUSINESS_CLOSE_HOUR * 60;
+  const openMinutes = settings.openHour * 60;
+  const closeMinutes = settings.closeHour * 60;
 
   if (minutes < openMinutes || minutes >= closeMinutes) {
-    return { ok: false, error: 'ساعت نوبت باید بین ۱۷ تا ۲۲ باشد.' };
+    return { ok: false, error: `ساعت نوبت باید بین ${settings.openHour} تا ${settings.closeHour} باشد.` };
   }
 
-  if (parts.minute % BUSINESS_SLOT_MINUTES !== 0) {
-    return { ok: false, error: 'زمان نوبت را روی بازه‌های نیم‌ساعته انتخاب کنید.' };
+  if (parts.minute % settings.slotMinutes !== 0) {
+    return { ok: false, error: `زمان نوبت را روی بازه‌های ${settings.slotMinutes} دقیقه‌ای انتخاب کنید.` };
   }
 
   // Iran currently uses UTC+03:30 year-round. datetime-local has no timezone,
@@ -69,8 +79,8 @@ export function validateAppointmentDateTime(
     return { ok: false, error: 'تاریخ و ساعت انتخاب‌شده معتبر نیست.' };
   }
 
-  if (date.getTime() < now + 60 * 60 * 1000) {
-    return { ok: false, error: 'زمان پیشنهادی باید حداقل یک ساعت بعد باشد.' };
+  if (date.getTime() < now + settings.minLeadHours * 60 * 60 * 1000) {
+    return { ok: false, error: `زمان پیشنهادی باید حداقل ${settings.minLeadHours} ساعت بعد باشد.` };
   }
 
   return { ok: true, iso: date.toISOString() };

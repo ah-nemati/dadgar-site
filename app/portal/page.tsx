@@ -20,7 +20,7 @@ export default async function PortalDashboardPage() {
 
   const cards = [
     { label: 'پرونده‌های من', value: cases.length, icon: Briefcase, href: '/portal/cases' },
-    { label: 'گفت‌وگوها', value: threads.length, icon: MessageSquare, href: '/portal/messages' },
+    { label: 'صحبت با وکیل', value: threads.length, icon: MessageSquare, href: '/portal/messages' },
   ];
 
   return (
@@ -30,7 +30,7 @@ export default async function PortalDashboardPage() {
           <h1 className="dashboard-page-title">سلام{profile?.fullName ? `، ${profile.fullName}` : ''}</h1>
           <p className="dashboard-page-description">از این بخش می‌توانید پرونده‌ها، اسناد و پیام‌های خصوصی خود را پیگیری کنید.</p>
         </div>
-        <Button asChild variant="outline"><Link href="/portal/profile">ویرایش پروفایل</Link></Button>
+        <div className="flex flex-wrap gap-2"><Button asChild><Link href="/portal/messages"><MessageSquare size={16} /> صحبت با وکیل</Link></Button><Button asChild variant="outline"><Link href="/portal/profile">ویرایش پروفایل</Link></Button></div>
       </div>
 
       <div className="dashboard-card p-4 mb-6 flex items-start gap-3 border-accent/30 bg-accent/5">

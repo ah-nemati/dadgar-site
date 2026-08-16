@@ -9,14 +9,12 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import {
-  BUSINESS_HOURS_LABEL,
-  BUSINESS_SLOT_MINUTES,
-} from "@/lib/business-hours";
+import { appointmentSettingsLabel, type AppointmentSettings } from "@/lib/appointment-settings-shared";
 import type { Appointment } from "@/types/content";
 import { CalendarPlus, CheckCircle2, Trash2 } from "lucide-react";
-import { useActionState, useTransition } from "react";
+import { useActionState, useState, useTransition } from "react";
 
 function Feedback({ state }: { state: AppointmentFormState | undefined }) {
   if (state?.error)
@@ -36,7 +34,7 @@ function Feedback({ state }: { state: AppointmentFormState | undefined }) {
   return null;
 }
 
-export function AppointmentRequestForm() {
+export function AppointmentRequestForm({ settings }: { settings: AppointmentSettings }) {
   const [state, formAction, pending] = useActionState(
     createAppointmentAction,
     undefined,
@@ -60,7 +58,7 @@ export function AppointmentRequestForm() {
           id="requestedAt"
           name="requestedAt"
           type="datetime-local"
-          step={BUSINESS_SLOT_MINUTES * 60}
+          step={settings.slotMinutes * 60}
           required
           aria-describedby="appointment-hours"
         />
@@ -68,7 +66,7 @@ export function AppointmentRequestForm() {
           id="appointment-hours"
           className="text-xs text-muted-foreground leading-6"
         >
-          ساعات قابل رزرو: {BUSINESS_HOURS_LABEL}. زمان نهایی پس از بررسی مدیر
+          ساعات قابل رزرو: {appointmentSettingsLabel(settings)}. زمان نهایی پس از بررسی مدیر
           دفتر تأیید می‌شود.
         </p>
       </div>
@@ -81,18 +79,32 @@ export function AppointmentRequestForm() {
   );
 }
 
+function toTehranDateTimeLocal(value: string): string {
+  const date = new Date(value);
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Tehran",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+  });
+  const parts = Object.fromEntries(formatter.formatToParts(date).map((part) => [part.type, part.value]));
+  return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`;
+}
+
 export function AppointmentAdminForm({
   appointment,
+  settings,
 }: {
   appointment: Appointment;
+  settings: AppointmentSettings;
 }) {
   const action = updateAppointmentAction.bind(null, appointment.id);
   const [state, formAction, pending] = useActionState(action, undefined);
   const [deleting, startTransition] = useTransition();
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   return (
     <form action={formAction} className="space-y-3">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         <div>
           <Label className="sr-only" htmlFor={`status-${appointment.id}`}>
             وضعیت
@@ -109,10 +121,23 @@ export function AppointmentAdminForm({
             <option value="cancelled">لغو شده</option>
           </select>
         </div>
-        <Input
+        <div>
+          <Label className="sr-only" htmlFor={`requestedAt-${appointment.id}`}>زمان نهایی</Label>
+          <Input
+            id={`requestedAt-${appointment.id}`}
+            name="requestedAt"
+            type="datetime-local"
+            step={settings.slotMinutes * 60}
+            defaultValue={toTehranDateTimeLocal(appointment.requestedAt)}
+            required
+          />
+        </div>
+        <Textarea
           name="notes"
+          rows={2}
           defaultValue={appointment.notes ?? ""}
-          placeholder="یادداشت مدیر / زمان نهایی"
+          placeholder="یادداشت دفتر برای موکل یا نتیجه جلسه"
+          className="lg:col-span-1 min-h-10"
         />
       </div>
       <Feedback state={state} />
@@ -120,17 +145,26 @@ export function AppointmentAdminForm({
         <Button type="submit" size="sm" disabled={pending}>
           {pending ? "در حال ذخیره..." : "ذخیره وضعیت"}
         </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          disabled={deleting}
-          onClick={() =>
-            startTransition(() => removeAppointmentAction(appointment.id))
-          }
-        >
-          <Trash2 size={14} /> حذف
-        </Button>
+        {confirmDelete ? (
+          <>
+            <Button
+              type="button"
+              size="sm"
+              variant="destructive"
+              disabled={deleting}
+              onClick={() => startTransition(() => removeAppointmentAction(appointment.id))}
+            >
+              <Trash2 size={14} /> حذف قطعی
+            </Button>
+            <Button type="button" size="sm" variant="outline" onClick={() => setConfirmDelete(false)}>
+              انصراف
+            </Button>
+          </>
+        ) : (
+          <Button type="button" size="sm" variant="ghost" disabled={deleting} onClick={() => setConfirmDelete(true)}>
+            <Trash2 size={14} /> حذف
+          </Button>
+        )}
       </div>
     </form>
   );

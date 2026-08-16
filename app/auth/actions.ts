@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation';
 import { db } from '@/lib/db';
 import { sha256Hex } from '@/lib/auth/crypto';
-import { hashPassword, verifyPassword } from '@/lib/auth/password';
+import { hashPassword, passwordNeedsRehash, verifyPassword } from '@/lib/auth/password';
 import {
   clearRateLimit,
   consumeRateLimit,
@@ -109,6 +109,15 @@ export async function loginAction(
       error: 'برای این حساب ابتدا از بخش فراموشی رمز، رمز تازه تعیین کنید.',
       email,
     };
+  }
+
+  if (passwordNeedsRehash(user.passwordHash)) {
+    try {
+      const upgradedHash = await hashPassword(password);
+      await db`update users set password_hash = ${upgradedHash} where id = ${user.id}`;
+    } catch (error) {
+      reportAuthServiceError('Password hash upgrade failed.', error);
+    }
   }
 
   try {

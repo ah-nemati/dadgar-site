@@ -18,7 +18,8 @@
     "deploy": "npm run cf:build && npm run cf:deploy",
     "upload": "npm run cf:build && opennextjs-cloudflare upload",
     "cf:typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
-    "check": "npm run audit:storage && npm run audit:runtime && npm run typecheck && npm run lint"
+    "check": "npm run audit:storage && npm run audit:runtime && npm run audit:routes && npm run typecheck && npm run lint",
+    "audit:routes": "node scripts/audit-routes.mjs"
   },
   "dependencies": {
     "@imagekit/nodejs": "^7.10.0",

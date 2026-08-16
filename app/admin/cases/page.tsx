@@ -102,7 +102,7 @@ export default async function AdminCasesPage({
               {filtered.map((item) => (
                 <tr key={item.id} className="border-t border-border hover:bg-muted/25">
                   <td className="p-4"><Badge variant={CASE_STATUS_VARIANT[item.status]}>{CASE_STATUS_LABEL[item.status]}</Badge></td>
-                  <td className="p-4 font-mono text-xs" dir="ltr">{item.caseNumber}</td>
+                  <td className="p-4 text-xs" dir="ltr">{item.caseNumber}</td>
                   <td className="p-4 font-semibold">{item.title}</td>
                   <td className="p-4 text-muted-foreground">{item.clientName}</td>
                   <td className="p-4 text-muted-foreground">{formatJalaliDate(item.updatedAt)}</td>

@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { getLawyerBySlug, getLawyers } from "@/lib/content/lawyers";
+import { getLawyerBySlug } from "@/lib/content/lawyers";
 import { getPracticeAreas } from "@/lib/content/practice-areas";
 import { getFirm } from "@/lib/content/firm";
 import { breadcrumbJsonLd } from "@/lib/seo";
@@ -11,10 +11,7 @@ import { notFound } from "next/navigation";
 
 type Params = Promise<{ slug: string }>;
 
-export async function generateStaticParams() {
-  const lawyers = await getLawyers();
-  return lawyers.map((lw) => ({ slug: lw.slug }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -25,8 +22,8 @@ export async function generateMetadata({
   const lawyer = await getLawyerBySlug(slug);
   if (!lawyer) return {};
   return {
-    title: lawyer.name,
-    description: lawyer.bio,
+    title: lawyer.seoTitle || lawyer.name,
+    description: lawyer.seoDescription || lawyer.bio,
     alternates: { canonical: `/lawyers/${lawyer.slug}` },
   };
 }

@@ -15,18 +15,18 @@ export interface Firm {
   hours: string;
   established: string;
   url: string;
+  city?: string;
+  region?: string;
+  countryCode?: string;
+  instagramUrl?: string;
+  googleMapsUrl?: string;
+  googleMapsEmbedUrl?: string;
+  latitude?: number;
+  longitude?: number;
+  postalCode?: string;
 }
 
-export type PracticeAreaSlug =
-  | 'real-estate'
-  | 'cheque'
-  | 'family'
-  | 'criminal'
-  | 'contracts'
-  | 'inheritance'
-  | 'debt-collection'
-  | 'registration'
-  | 'labor';
+export type PracticeAreaSlug = string;
 
 export interface PracticeArea {
   slug: PracticeAreaSlug;
@@ -37,6 +37,8 @@ export interface PracticeArea {
   topics: string[];
   documents: string[];
   preparation: string[];
+  seoTitle?: string | null;
+  seoDescription?: string | null;
 }
 
 export interface Lawyer {
@@ -49,6 +51,8 @@ export interface Lawyer {
   initials: string;
   bio: string;
   education: string[];
+  seoTitle?: string | null;
+  seoDescription?: string | null;
 }
 
 export interface BlogPost {
@@ -65,6 +69,13 @@ export interface BlogPost {
   imageUrl: string | null;
   imageFileId: string | null;
   imageAlt: string | null;
+  authorName?: string | null;
+  reviewerName?: string | null;
+  sourceUrls?: string[];
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface FaqItem {
@@ -98,6 +109,7 @@ export interface Profile {
 }
 
 export type ConsultationStatus = 'new' | 'read' | 'replied';
+export type ConsultationPriority = 'normal' | 'high' | 'urgent';
 
 export interface ConsultationRequest {
   id: number;
@@ -107,7 +119,10 @@ export interface ConsultationRequest {
   practiceArea: string | null;
   message: string;
   status: ConsultationStatus;
+  priority: ConsultationPriority;
+  adminNotes: string | null;
   createdAt: string;
+  updatedAt: string;
 }
 
 export type CaseStatus = 'new' | 'in_progress' | 'waiting' | 'closed';
@@ -155,11 +170,25 @@ export interface SupportThread {
   id: number;
   clientId: string;
   clientName: string;
+  clientPhone?: string | null;
+  clientEmail?: string | null;
   subject: string;
+  practiceArea?: string | null;
   status: SupportThreadStatus;
   createdAt: string;
   updatedAt: string;
   lastMessage?: string | null;
+}
+
+export interface SupportAttachment {
+  id: number;
+  messageId: number;
+  threadId: number;
+  fileName: string;
+  mimeType: string | null;
+  fileSize: number | null;
+  createdAt: string;
+  downloadUrl: string;
 }
 
 export interface SupportMessage {
@@ -170,6 +199,7 @@ export interface SupportMessage {
   senderRole: UserRole;
   body: string;
   createdAt: string;
+  attachments?: SupportAttachment[];
 }
 
 export type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
@@ -178,6 +208,8 @@ export interface Appointment {
   id: number;
   clientId: string;
   clientName: string;
+  clientPhone?: string | null;
+  clientEmail?: string | null;
   subject: string;
   requestedAt: string;
   status: AppointmentStatus;

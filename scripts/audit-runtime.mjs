@@ -8,41 +8,52 @@ const proxyFile = path.join(root, 'proxy.ts');
 const removedProvider = `${'auth'}${'0'}`;
 const noPrefetchLinkFile = path.join(root, 'components', 'NoPrefetchLink.tsx');
 
-if (!fs.existsSync(middlewareFile)) {
-  errors.push('Missing Edge Middleware for route protection.');
-} else {
-  const body = fs.readFileSync(middlewareFile, 'utf8');
-  for (const required of [
-    'verifySessionToken',
-    'canonicalHostRedirect',
-    "const WWW_HOST = 'www.majidsavarivakil.ir'",
-    "const CANONICAL_HOST = 'majidsavarivakil.ir'",
-    "runtime = 'experimental-edge'",
-    "'/admin/:path*'",
-    "'/portal/:path*'",
-    "'/account'",
-  ]) {
-    if (!body.includes(required)) errors.push(`middleware.ts is missing ${required}.`);
+// Route authorization is enforced by App Router layouts and server actions.
+// Keeping auth out of middleware/proxy avoids an extra routing layer and keeps
+// the Cloudflare/OpenNext deployment path predictable.
+if (fs.existsSync(middlewareFile)) {
+  errors.push('middleware.ts should be removed; protected routes are guarded by App Router layouts.');
+}
+if (fs.existsSync(proxyFile)) {
+  errors.push('proxy.ts should be removed for the configured OpenNext deployment.');
+}
+
+const routeGuards = [
+  ['app/admin/layout.tsx', 'requireStaff'],
+  ['app/admin/blog/layout.tsx', 'requireAdmin'],
+  ['app/admin/clients/layout.tsx', 'requireAdmin'],
+  ['app/portal/layout.tsx', 'requireClient'],
+  ['app/account/page.tsx', 'requireAccount'],
+];
+
+for (const [relative, guard] of routeGuards) {
+  const file = path.join(root, relative);
+  if (!fs.existsSync(file) || !fs.readFileSync(file, 'utf8').includes(guard)) {
+    errors.push(`${relative} is missing the ${guard} route guard.`);
   }
 }
 
-if (fs.existsSync(proxyFile)) {
-  errors.push('Node.js proxy.ts is not supported by the configured OpenNext adapter.');
-}
-
 const nextConfigFile = path.join(root, 'next.config.ts');
-if (
-  fs.existsSync(nextConfigFile) &&
-  /majidsavarivakil\.ir\/:path\*/.test(fs.readFileSync(nextConfigFile, 'utf8'))
-) {
-  errors.push('next.config.ts still contains the broken literal :path* redirect.');
+if (!fs.existsSync(nextConfigFile)) {
+  errors.push('next.config.ts is missing.');
+} else {
+  const body = fs.readFileSync(nextConfigFile, 'utf8');
+  for (const required of [
+    "type: 'host'",
+    "value: 'www.majidsavarivakil.ir'",
+    "destination: 'https://majidsavarivakil.ir/:path*'",
+  ]) {
+    if (!body.includes(required)) errors.push(`next.config.ts is missing canonical redirect setting: ${required}.`);
+  }
 }
 
-if (
-  !fs.existsSync(noPrefetchLinkFile) ||
-  !fs.readFileSync(noPrefetchLinkFile, 'utf8').includes('prefetch={false}')
-) {
-  errors.push('The no-prefetch Link wrapper is missing or does not disable prefetching.');
+if (!fs.existsSync(noPrefetchLinkFile)) {
+  errors.push('The shared Link wrapper is missing.');
+} else {
+  const body = fs.readFileSync(noPrefetchLinkFile, 'utf8');
+  if (!body.includes('NON_PREFETCH_PREFIXES') || !body.includes('prefetch=')) {
+    errors.push('The shared Link wrapper no longer applies selective prefetch behavior.');
+  }
 }
 
 const passwordFile = path.join(root, 'lib', 'auth', 'password.ts');
@@ -94,7 +105,7 @@ function scan(target) {
     /from\s+['"]next\/link['"]/.test(source)
   ) {
     errors.push(
-      `Direct next/link import bypasses the no-prefetch wrapper in ${path.relative(root, target)}.`,
+      `Direct next/link import bypasses the shared Link wrapper in ${path.relative(root, target)}.`,
     );
   }
 }
@@ -111,5 +122,5 @@ if (errors.length > 0) {
 }
 
 console.log(
-  'Runtime audit passed: internal sessions, route protection, provider cleanup and prefetch controls are present.',
+  'Runtime audit passed: App Router guards, canonical host redirect, internal sessions and selective prefetch controls are present.',
 );

@@ -16,4 +16,8 @@ export const FIRM: Firm = {
   hours: "شنبه تا چهارشنبه — ساعت ۱۷ الی ۲۲",
   established: "وکیل پایه یک دادگستری و عضو کانون وکلای خوزستان",
   url: "https://majidsavarivakil.ir/",
+  city: "اهواز",
+  region: "خوزستان",
+  countryCode: "IR",
+  instagramUrl: "https://www.instagram.com/savari_lawyer.ahvaz",
 };

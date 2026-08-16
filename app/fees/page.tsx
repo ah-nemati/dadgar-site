@@ -3,8 +3,8 @@ import Link from '@/components/NoPrefetchLink';
 import { ArrowLeft, CheckCircle2, Info, Phone } from 'lucide-react';
 import PageHero from '@/components/PageHero';
 import { Button } from '@/components/ui/button';
-import { FIRM } from '@/data/firm';
-import { SERVICE_FEES } from '@/data/service-fees';
+import { getFirm } from '@/lib/content/firm';
+import { getServiceFees } from '@/lib/content/fees';
 import { breadcrumbJsonLd } from '@/lib/seo';
 
 export const metadata: Metadata = {
@@ -20,7 +20,8 @@ export const metadata: Metadata = {
   ],
 };
 
-export default function FeesPage() {
+export default async function FeesPage() {
+  const [firm, serviceFees] = await Promise.all([getFirm(), getServiceFees()]);
   const breadcrumb = breadcrumbJsonLd([
     { name: 'خانه', path: '/' },
     { name: 'تعرفه خدمات حقوقی', path: '/fees' },
@@ -30,12 +31,12 @@ export default function FeesPage() {
     '@type': 'Service',
     name: 'تعرفه خدمات حقوقی دفتر وکالت مجید سواری',
     description: metadata.description,
-    url: new URL('/fees', FIRM.url).toString(),
+    url: new URL('/fees', firm.url).toString(),
     provider: {
       '@type': 'LegalService',
-      name: FIRM.name,
-      telephone: FIRM.phoneHref.replace('tel:', ''),
-      url: FIRM.url,
+      name: firm.name,
+      telephone: firm.phoneHref.replace('tel:', ''),
+      url: firm.url,
     },
     areaServed: [
       { '@type': 'Country', name: 'ایران' },
@@ -77,7 +78,7 @@ export default function FeesPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {SERVICE_FEES.map((item) => (
+            {serviceFees.map((item) => (
               <article key={item.title} className="flex flex-col rounded-sm border border-border bg-card p-6">
                 <h2 className="text-lg font-bold text-foreground">{item.title}</h2>
                 <p className="mt-3 inline-flex w-fit rounded-sm bg-ink px-3 py-1.5 text-sm font-semibold text-gold-light">
@@ -106,7 +107,7 @@ export default function FeesPage() {
           </p>
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Button size="lg" asChild>
-              <Link href={FIRM.phoneHref}>
+              <Link href={firm.phoneHref}>
                 <Phone size={18} aria-hidden="true" />
                 تماس با دفتر
               </Link>

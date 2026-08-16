@@ -15,7 +15,82 @@ interface Row {
   imageUrl: string | null;
   imageFileId: string | null;
   imageAlt: string | null;
+  authorName: string | null;
+  reviewerName: string | null;
+  sourceUrls: unknown;
+  seoTitle: string | null;
+  seoDescription: string | null;
   createdAt: Date;
+  updatedAt: Date;
+}
+
+function normalizeSourceUrls(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value
+      .filter((item): item is string => typeof item === 'string')
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  if (typeof value !== 'string') return [];
+  const raw = value.trim();
+  if (!raw) return [];
+
+  if (raw.startsWith('[')) {
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        return parsed
+          .filter((item): item is string => typeof item === 'string')
+          .map((item) => item.trim())
+          .filter(Boolean);
+      }
+    } catch {
+      // Fall through to PostgreSQL-array/plain-text handling.
+    }
+  }
+
+  if (raw.startsWith('{') && raw.endsWith('}')) {
+    const body = raw.slice(1, -1);
+    if (!body) return [];
+
+    const values: string[] = [];
+    let current = '';
+    let quoted = false;
+    let escaped = false;
+
+    for (const char of body) {
+      if (escaped) {
+        current += char;
+        escaped = false;
+        continue;
+      }
+      if (char === '\\' && quoted) {
+        escaped = true;
+        continue;
+      }
+      if (char === '"') {
+        quoted = !quoted;
+        continue;
+      }
+      if (char === ',' && !quoted) {
+        const item = current.trim();
+        if (item && item.toUpperCase() !== 'NULL') values.push(item);
+        current = '';
+        continue;
+      }
+      current += char;
+    }
+
+    const last = current.trim();
+    if (last && last.toUpperCase() !== 'NULL') values.push(last);
+    return values;
+  }
+
+  return raw
+    .split(/\r?\n|\s*,\s*/)
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 function map(row: Row): BlogPost {
@@ -31,6 +106,13 @@ function map(row: Row): BlogPost {
     imageUrl: row.imageUrl,
     imageFileId: row.imageFileId,
     imageAlt: row.imageAlt,
+    authorName: row.authorName,
+    reviewerName: row.reviewerName,
+    sourceUrls: normalizeSourceUrls(row.sourceUrls),
+    seoTitle: row.seoTitle,
+    seoDescription: row.seoDescription,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
     date: formatJalaliDate(row.createdAt.toISOString()),
     readTime: estimateReadTime(row.content),
   };
@@ -39,7 +121,8 @@ function map(row: Row): BlogPost {
 export async function getAllBlogPostsForAdmin(): Promise<BlogPost[]> {
   const rows = await db<Row[]>`
     select id, slug, title, category, excerpt, content, published, featured,
-           image_url, image_file_id, image_alt, created_at
+           image_url, image_file_id, image_alt, author_name, reviewer_name,
+           source_urls, seo_title, seo_description, created_at, updated_at
     from blog_posts
     order by featured desc, created_at desc
   `;
@@ -49,7 +132,8 @@ export async function getAllBlogPostsForAdmin(): Promise<BlogPost[]> {
 export async function getBlogPostByIdForAdmin(id: number): Promise<BlogPost | undefined> {
   const [row] = await db<Row[]>`
     select id, slug, title, category, excerpt, content, published, featured,
-           image_url, image_file_id, image_alt, created_at
+           image_url, image_file_id, image_alt, author_name, reviewer_name,
+           source_urls, seo_title, seo_description, created_at, updated_at
     from blog_posts
     where id = ${id}
     limit 1
@@ -68,6 +152,11 @@ export interface BlogPostInput {
   imageUrl: string | null;
   imageFileId: string | null;
   imageAlt: string | null;
+  authorName: string | null;
+  reviewerName: string | null;
+  sourceUrls: string[];
+  seoTitle: string | null;
+  seoDescription: string | null;
 }
 
 export interface BlogImageMetadata {
@@ -131,13 +220,17 @@ export async function createBlogPost(input: BlogPostInput): Promise<BlogPost> {
   const [row] = await db<Row[]>`
     insert into blog_posts (
       slug, title, category, excerpt, content, published, featured,
-      image_url, image_file_id, image_alt
+      image_url, image_file_id, image_alt, author_name, reviewer_name, source_urls,
+      seo_title, seo_description
     ) values (
       ${input.slug}, ${input.title}, ${input.category}, ${input.excerpt}, ${input.content},
-      ${input.published}, ${input.featured}, ${input.imageUrl}, ${input.imageFileId}, ${input.imageAlt}
+      ${input.published}, ${input.featured}, ${input.imageUrl}, ${input.imageFileId}, ${input.imageAlt},
+      ${input.authorName}, ${input.reviewerName}, ${input.sourceUrls},
+      ${input.seoTitle}, ${input.seoDescription}
     )
     returning id, slug, title, category, excerpt, content, published, featured,
-              image_url, image_file_id, image_alt, created_at
+              image_url, image_file_id, image_alt, author_name, reviewer_name,
+              source_urls, seo_title, seo_description, created_at, updated_at
   `;
   return map(row);
 }
@@ -154,10 +247,16 @@ export async function updateBlogPost(id: number, input: BlogPostInput): Promise<
       featured = ${input.featured},
       image_url = ${input.imageUrl},
       image_file_id = ${input.imageFileId},
-      image_alt = ${input.imageAlt}
+      image_alt = ${input.imageAlt},
+      author_name = ${input.authorName},
+      reviewer_name = ${input.reviewerName},
+      source_urls = ${input.sourceUrls},
+      seo_title = ${input.seoTitle},
+      seo_description = ${input.seoDescription}
     where id = ${id}
     returning id, slug, title, category, excerpt, content, published, featured,
-              image_url, image_file_id, image_alt, created_at
+              image_url, image_file_id, image_alt, author_name, reviewer_name,
+              source_urls, seo_title, seo_description, created_at, updated_at
   `;
   return map(row);
 }
