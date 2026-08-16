@@ -124,11 +124,15 @@ function createSql(): Sql {
   const ssl = usingHyperdrive ? undefined : localSslOption();
 
   return postgres(connectionString, {
-    max: 1,
+    // Cloudflare recommends a small per-request pool when using Hyperdrive.
+    // Direct/local connections stay at one connection.
+    max: usingHyperdrive ? 5 : 1,
     idle_timeout: 20,
     connect_timeout: connectTimeout,
     fetch_types: false,
-    prepare: false,
+    // Current Hyperdrive/Postgres.js supports prepared statements and benefits
+    // from them. Keep the conservative setting for direct/local connections.
+    prepare: usingHyperdrive,
     transform: postgres.camel,
     ...(ssl === undefined ? {} : { ssl }),
   });

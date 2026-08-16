@@ -7,10 +7,10 @@ import {
 
 const ALGORITHM = "pbkdf2-sha256";
 
-const ITERATIONS = 600_000;
+const ITERATIONS = 100_000;
 
 const MIN_ITERATIONS = 50_000;
-const MAX_ITERATIONS = 1_000_000;
+const MAX_ITERATIONS = 100_000;
 
 const SALT_BYTES = 16;
 const HASH_BYTES = 32;
@@ -91,8 +91,21 @@ export async function verifyPassword(
   }
 }
 
-export function passwordNeedsRehash(encodedHash: string | null | undefined): boolean {
+export function passwordNeedsRehash(
+  encodedHash: string | null | undefined,
+): boolean {
   const parts = encodedHash?.split("$") ?? [];
+
+  if (parts.length !== 4 || parts[0] !== ALGORITHM) {
+    return true;
+  }
+
   const iterations = Number(parts[1]);
-  return parts.length !== 4 || parts[0] !== ALGORITHM || !Number.isInteger(iterations) || iterations < ITERATIONS;
+
+  return (
+    !Number.isInteger(iterations) ||
+    iterations < MIN_ITERATIONS ||
+    iterations > MAX_ITERATIONS ||
+    iterations !== ITERATIONS
+  );
 }

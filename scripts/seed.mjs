@@ -1,3 +1,4 @@
+import { scrypt } from 'node:crypto';
 import postgres from 'postgres';
 import { loadEnvFile } from 'node:process';
 
@@ -16,7 +17,10 @@ const sql = postgres(connectionString, {
   prepare: false,
 });
 
-const ITERATIONS = 600_000;
+const SCRYPT_N = 16_384;
+const SCRYPT_R = 8;
+const SCRYPT_P = 1;
+const SCRYPT_MAXMEM = 32 * 1024 * 1024;
 
 function validateBootstrapPassword(name, value) {
   if (!value) return '';
@@ -32,22 +36,29 @@ function validateBootstrapPassword(name, value) {
   return value;
 }
 
+function deriveScrypt(password, salt) {
+  return new Promise((resolve, reject) => {
+    scrypt(
+      password,
+      salt,
+      32,
+      { N: SCRYPT_N, r: SCRYPT_R, p: SCRYPT_P, maxmem: SCRYPT_MAXMEM },
+      (error, derivedKey) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve(derivedKey);
+      },
+    );
+  });
+}
+
 async function hashPassword(password) {
   const salt = crypto.getRandomValues(new Uint8Array(16));
-  const key = await crypto.subtle.importKey(
-    'raw',
-    new TextEncoder().encode(password),
-    'PBKDF2',
-    false,
-    ['deriveBits'],
-  );
-  const bits = await crypto.subtle.deriveBits(
-    { name: 'PBKDF2', hash: 'SHA-256', salt, iterations: ITERATIONS },
-    key,
-    256,
-  );
+  const hash = await deriveScrypt(password, salt);
   const encode = (value) => Buffer.from(value).toString('base64url');
-  return `pbkdf2-sha256$${ITERATIONS}$${encode(salt)}$${encode(bits)}`;
+  return `scrypt-v1$${SCRYPT_N}$${SCRYPT_R}$${SCRYPT_P}$${encode(salt)}$${encode(hash)}`;
 }
 
 async function upsertBootstrapUser({

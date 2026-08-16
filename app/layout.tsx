@@ -12,6 +12,10 @@ import Link from "@/components/NoPrefetchLink";
 import { officeMapLink } from "@/components/OfficeMap";
 import RouteProgress from "@/components/RouteProgress";
 
+// Production currently uses the read-only OpenNext static-assets cache.
+// Render routes at request time so CMS/auth pages never require runtime cache writes.
+export const dynamic = 'force-dynamic';
+
 export const viewport: Viewport = {
   themeColor: "#e0f2fe",
   colorScheme: "light",
@@ -159,7 +163,7 @@ export default async function RootLayout({
   };
 
   return (
-    <html lang="fa" dir="rtl">
+    <html lang="fa" dir="rtl" data-scroll-behavior="smooth">
       <head>
         <script
           type="application/ld+json"

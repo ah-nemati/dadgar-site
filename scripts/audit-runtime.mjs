@@ -60,8 +60,13 @@ const passwordFile = path.join(root, 'lib', 'auth', 'password.ts');
 const sessionFile = path.join(root, 'lib', 'auth', 'session-token.ts');
 const migrationFile = path.join(root, 'database', 'migrations', '003_internal_auth.sql');
 
-if (!fs.existsSync(passwordFile) || !fs.readFileSync(passwordFile, 'utf8').includes('600_000')) {
-  errors.push('The password hashing module is missing the configured PBKDF2 work factor.');
+if (!fs.existsSync(passwordFile)) {
+  errors.push('The password hashing module is missing.');
+} else {
+  const passwordBody = fs.readFileSync(passwordFile, 'utf8');
+  if (!passwordBody.includes("CURRENT_ALGORITHM = 'scrypt-v1'") || !passwordBody.includes('LEGACY_PBKDF2_NATIVE_MAX = 100_000')) {
+    errors.push('The password hashing module is missing the Worker-compatible scrypt scheme or PBKDF2 migration guard.');
+  }
 }
 if (!fs.existsSync(sessionFile) || !fs.readFileSync(sessionFile, 'utf8').includes('hashSessionToken')) {
   errors.push('The signed and hashed session-token module is missing.');

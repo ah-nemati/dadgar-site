@@ -37,6 +37,11 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
 
   images: {
+    // The deployed Worker currently has no Cloudflare `IMAGES` binding.
+    // Serving originals avoids the broken /_next/image runtime path. Local
+    // static assets are already small and ImageKit-hosted uploads are delivered
+    // by ImageKit's CDN.
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',

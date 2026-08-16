@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { unstable_cache, updateTag } from 'next/cache';
+import { cache } from 'react';
 import { db } from '@/lib/db';
 import { recordAudit } from '@/lib/audit';
 
@@ -8,39 +8,38 @@ interface OverrideRow {
   data: unknown;
 }
 
-const CONTENT_CACHE_TAG = 'content-overrides';
 const CONTENT_DB_BACKOFF_MS = 15_000;
 let contentDbBackoffUntil = 0;
 
-const readContentOverride = unstable_cache(
-  async (key: string): Promise<unknown | null> => {
-    const [row] = await db<OverrideRow[]>`
-      select data from content_overrides where key = ${key} limit 1
-    `;
-    return row?.data ?? null;
-  },
-  ['content-overrides-v2'],
-  {
-    // Cloudflare/OpenNext is intentionally configured without a revalidation
-    // queue. Keep this cache indefinitely and invalidate it only after CMS
-    // mutations via updateTag()/revalidatePath(). A numeric TTL would trigger
-    // time-based ISR/data-cache revalidation and require a real OpenNext queue.
-    revalidate: false,
-    tags: [CONTENT_CACHE_TAG],
-  },
-);
+/**
+ * Request-scoped deduplication only.
+ *
+ * Do not use next/cache here while OpenNext is configured with the read-only
+ * Workers Static Assets incremental cache. `unstable_cache` needs to write a
+ * `fetch` cache entry on a miss, which is exactly what the read-only adapter
+ * rejects in production. React `cache()` only deduplicates repeated reads
+ * inside the current server request/render and does not require any OpenNext
+ * incremental-cache write, queue, R2 or tag cache.
+ */
+const readContentOverride = cache(async (key: string): Promise<unknown | null> => {
+  const [row] = await db<OverrideRow[]>`
+    select data from content_overrides where key = ${key} limit 1
+  `;
+  return row?.data ?? null;
+});
 
 export async function getContentOverride<T>(key: string, fallback: T): Promise<T> {
-  // If the optional CMS database is temporarily unreachable, do not make every
-  // public navigation wait for the connection timeout. Static defaults keep
-  // public pages usable while the server retries after a short backoff.
   if (Date.now() < contentDbBackoffUntil) return fallback;
 
   try {
     const data = await readContentOverride(key);
     return data === null ? fallback : (data as T);
-  } catch {
+  } catch (error) {
     contentDbBackoffUntil = Date.now() + CONTENT_DB_BACKOFF_MS;
+    console.error(
+      `CMS override read failed for key=${key}. Falling back to bundled content.`,
+      error instanceof Error ? error.message : 'Unknown database error',
+    );
     return fallback;
   }
 }
@@ -55,9 +54,8 @@ export async function setContentOverride<T>(key: string, data: T, actorId: strin
           updated_at = now()
   `;
 
-  // All CMS-backed public data is intentionally grouped under one tag so an
-  // admin edit becomes visible on the very next request without waiting for TTL.
+  // No persistent Next.js data cache is used here, so there is no tag to
+  // invalidate. Subsequent requests read the current database value directly.
   contentDbBackoffUntil = 0;
-  updateTag(CONTENT_CACHE_TAG);
   await recordAudit(actorId, 'content.update', 'content_override', key);
 }

@@ -333,5 +333,5 @@ export async function resetPasswordAction(
 
 export async function logoutAction(): Promise<void> {
   await endCurrentSession();
-  redirect('/login?loggedOut=1');
+  redirect('/login');
 }

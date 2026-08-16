@@ -22,7 +22,7 @@ import PracticeAreaSwiper from "@/components/home/PracticeAreaSwiper";
 import BlogSwiper from "@/components/home/BlogSwiper";
 import Link from "@/components/NoPrefetchLink";
 
-export const dynamic = "force-static";
+export const dynamic = 'force-dynamic';
 
 const process = [
   {

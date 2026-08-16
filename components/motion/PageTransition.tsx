@@ -1,19 +1,15 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { motion, useReducedMotion } from 'motion/react';
 
-export default function PageTransition({ children, pageKey }: { children: ReactNode; pageKey: string }) {
-  const reduceMotion = useReducedMotion();
-
-  return (
-    <motion.div
-      key={pageKey}
-      initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: reduceMotion ? 0 : 0.28, ease: [0.22, 1, 0.36, 1] }}
-    >
-      {children}
-    </motion.div>
-  );
+/**
+ * Stable route boundary.
+ *
+ * Route-level Framer Motion wrappers can race React/Next route replacement on
+ * Server Action redirects (notably logout), which can surface as a browser
+ * `removeChild` NotFoundError. Keep route replacement DOM-stable and use Motion
+ * inside individual sections/cards instead.
+ */
+export default function PageTransition({ children }: { children: ReactNode; pageKey?: string }) {
+  return <>{children}</>;
 }

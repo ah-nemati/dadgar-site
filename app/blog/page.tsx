@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 // On Workers Free, keep the public blog list build-time static so requests
 // are served from Static Assets instead of invoking the NextServer.
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 export const revalidate = false;
 
 export default async function BlogPage() {

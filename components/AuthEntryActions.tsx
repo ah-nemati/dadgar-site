@@ -25,21 +25,18 @@ export function LoginEntryActions() {
   const returnTo = rawReturnTo ? returnPath(rawReturnTo) : '';
   const [state, formAction, pending] = useActionState(loginAction, undefined);
   const resetComplete = searchParams.get('reset') === 'success';
-  const loggedOut = searchParams.get('loggedOut') === '1';
   const registered = searchParams.get('registered') === '1';
 
   return (
     <form action={formAction} className="space-y-5">
       <input type="hidden" name="returnTo" value={returnTo} />
 
-      {(resetComplete || loggedOut || registered) && (
+      {(resetComplete || registered) && (
         <Alert variant="accent">
           <AlertDescription className="col-start-1">
             {resetComplete
               ? 'رمز عبور تازه ثبت شد. اکنون وارد حساب شوید.'
-              : registered
-                ? 'حساب ساخته شد. برای ورود، ایمیل و رمز خود را وارد کنید.'
-                : 'با موفقیت از حساب خارج شدید.'}
+              : 'حساب ساخته شد. برای ورود، ایمیل و رمز خود را وارد کنید.'}
           </AlertDescription>
         </Alert>
       )}
