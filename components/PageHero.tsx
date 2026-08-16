@@ -11,7 +11,7 @@ export default function PageHero({ eyebrow, title, description }: PageHeroProps)
   return (
     <section className="page-hero">
       <div className="page-hero__mark" aria-hidden="true"><Seal size={260} tone="cream" /></div>
-      <div className="page-hero__inner mx-auto max-w-7xl px-6">
+      <div className="page-hero__inner mx-auto max-w-7xl px-4 sm:px-6">
         <div className="relative z-10">
           <Eyebrow dark>{eyebrow}</Eyebrow>
           <h1 className="page-hero__title">{title}</h1>

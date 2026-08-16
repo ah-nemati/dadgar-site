@@ -74,7 +74,7 @@ export default function ContactForm({ practiceAreas }: ContactFormProps) {
 
   if (status === 'success') {
     return (
-      <Card className="p-10 text-center items-center">
+      <Card className="items-center p-5 text-center sm:p-8 md:p-10">
         <div className="w-14 h-14 rounded-full bg-accent flex items-center justify-center mx-auto mb-1">
           <CheckCircle2 size={28} className="text-accent-foreground" aria-hidden="true" />
         </div>
@@ -88,7 +88,7 @@ export default function ContactForm({ practiceAreas }: ContactFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="bg-card border border-border rounded-sm p-6 md:p-8">
+    <form onSubmit={handleSubmit} noValidate className="legal-card p-6 md:p-8">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
         <div className="space-y-2">
           <Label htmlFor="cf-name">نام و نام خانوادگی *</Label>
@@ -113,7 +113,7 @@ export default function ContactForm({ practiceAreas }: ContactFormProps) {
             id="cf-area"
             value={form.area}
             onChange={(event: ChangeEvent<HTMLSelectElement>) => update('area', event.target.value)}
-            className="flex h-11 w-full rounded-sm border border-input bg-card px-4 py-2.5 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/20"
+            className="flex h-12 w-full rounded-lg border border-input bg-card px-4 py-2.5 text-sm text-foreground outline-none transition-all hover:border-[#cbbfae] focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/10"
           >
             <option value="">انتخاب کنید</option>
             {practiceAreas.map((area) => (
@@ -146,7 +146,7 @@ export default function ContactForm({ practiceAreas }: ContactFormProps) {
         {errors.consent && <p className="text-xs text-destructive mt-1.5">{errors.consent}</p>}
       </div>
 
-      <Button type="submit" disabled={status === 'submitting'}>
+      <Button type="submit" disabled={status === 'submitting'} className="w-full sm:w-auto">
         {status === 'submitting' ? (
           <>
             <Loader2 size={18} className="animate-spin" aria-hidden="true" /> در حال ارسال...

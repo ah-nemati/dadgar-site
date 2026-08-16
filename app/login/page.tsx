@@ -36,7 +36,7 @@ export default async function LoginPage() {
         <LoginEntryActions />
       </Suspense>
 
-      <div className="mt-5 flex items-center justify-between gap-4 text-sm">
+      <div className="mt-5 flex flex-col gap-3 text-sm min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between">
         <Link href="/forgot-password" className="font-semibold text-accent transition-colors hover:text-primary">
           رمز عبور را فراموش کرده‌ام
         </Link>

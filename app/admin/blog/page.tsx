@@ -50,7 +50,7 @@ export default async function AdminBlogPage({
         }
       />
 
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-5">
+      <div className="grid grid-cols-1 gap-3 mb-5 sm:grid-cols-2 xl:grid-cols-4">
         <Stat label="همه مطالب" value={posts.length} icon={FileText} />
         <Stat label="منتشرشده" value={published} icon={FileCheck2} />
         <Stat label="پیش‌نویس" value={drafts} icon={FilePenLine} />
@@ -71,7 +71,7 @@ export default async function AdminBlogPage({
           <option value="">همه دسته‌ها</option>
           {categories.map((item) => <option key={item} value={item}>{item}</option>)}
         </select>
-        <Button type="submit" variant="secondary">اعمال فیلتر</Button>
+        <Button type="submit" variant="secondary" className="w-full md:w-auto">اعمال فیلتر</Button>
       </form>
 
       {filtered.length === 0 ? (

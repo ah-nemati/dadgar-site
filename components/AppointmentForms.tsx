@@ -181,7 +181,7 @@ function PersianAppointmentPicker({
       </div>
 
       <div>
-        <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <Label>۱. روز موردنظر را انتخاب کنید</Label>
           <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground">
             <span className="flex items-center gap-1"><i className="size-2 rounded-full bg-sky-500" /> قابل رزرو</span>
@@ -221,7 +221,7 @@ function PersianAppointmentPicker({
         {!selectedDate ? (
           <div className="mt-3 rounded-xl border border-dashed border-sky-200 bg-white p-5 text-center text-sm text-muted-foreground">ابتدا یک روز قابل رزرو را انتخاب کنید.</div>
         ) : (
-          <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+          <div className="mt-3 grid grid-cols-2 gap-2 min-[420px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-6">
             {timeOptions.map((slot) => {
               const disabled = slot.blocked || slot.tooSoon || slot.tooLate;
               const active = value === slot.value;
@@ -327,15 +327,15 @@ export function AppointmentAdminForm({ appointment, settings }: { appointment: A
         <Textarea name="notes" rows={2} defaultValue={appointment.notes ?? ""} placeholder="یادداشت دفتر برای موکل یا نتیجه جلسه" className="min-h-10 lg:col-span-1" />
       </div>
       <Feedback state={state} />
-      <div className="flex gap-2">
-        <Button type="submit" size="sm" disabled={pending}>{pending ? "در حال ذخیره..." : "ذخیره وضعیت"}</Button>
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+        <Button type="submit" size="sm" disabled={pending} className="w-full sm:w-auto">{pending ? "در حال ذخیره..." : "ذخیره وضعیت"}</Button>
         {confirmDelete ? (
           <>
-            <Button type="button" size="sm" variant="destructive" disabled={deleting} onClick={() => startTransition(() => removeAppointmentAction(appointment.id))}><Trash2 size={14} /> حذف قطعی</Button>
-            <Button type="button" size="sm" variant="outline" onClick={() => setConfirmDelete(false)}>انصراف</Button>
+            <Button type="button" size="sm" variant="destructive" disabled={deleting} className="w-full sm:w-auto" onClick={() => startTransition(() => removeAppointmentAction(appointment.id))}><Trash2 size={14} /> حذف قطعی</Button>
+            <Button type="button" size="sm" variant="outline" className="w-full sm:w-auto" onClick={() => setConfirmDelete(false)}>انصراف</Button>
           </>
         ) : (
-          <Button type="button" size="sm" variant="ghost" disabled={deleting} onClick={() => setConfirmDelete(true)}><Trash2 size={14} /> حذف</Button>
+          <Button type="button" size="sm" variant="ghost" disabled={deleting} className="w-full sm:w-auto" onClick={() => setConfirmDelete(true)}><Trash2 size={14} /> حذف</Button>
         )}
       </div>
     </form>

@@ -24,8 +24,8 @@ export default async function BlogPage() {
         title="یادداشت‌ها و مقالات حقوقی"
         description="مطالبی برای آشنایی عمومی با مفاهیم و فرآیندهای حقوقی. این مطالب جایگزین مشاوره تخصصی نیست."
       />
-      <section className="bg-parchment">
-        <div className="max-w-6xl mx-auto px-6 py-16">
+      <section className="editorial-section">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <BlogList posts={posts} />
         </div>
       </section>

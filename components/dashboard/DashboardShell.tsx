@@ -100,7 +100,7 @@ export default function DashboardShell({
     <div className="dashboard-shell">
       {open && (
         <button
-          className="dashboard-backdrop lg:hidden"
+          className="dashboard-backdrop xl:hidden"
           onClick={() => setOpen(false)}
           aria-label="بستن منو"
         />
@@ -116,7 +116,7 @@ export default function DashboardShell({
             </div>
           </Link>
           <button
-            className="inline-flex size-9 items-center justify-center rounded-full border border-white/10 text-parchment/70 hover:bg-white/10 lg:hidden"
+            className="inline-flex size-9 items-center justify-center rounded-full border border-white/10 text-parchment/70 hover:bg-white/10 xl:hidden"
             onClick={() => setOpen(false)}
             aria-label="بستن منو"
           >
@@ -157,7 +157,7 @@ export default function DashboardShell({
             </span>
           </Link>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-2">
             <Link href="/" className="flex min-h-10 items-center justify-center gap-2 rounded-lg border border-white/10 text-xs font-bold text-parchment/65 hover:bg-white/5 hover:text-parchment">
               <ExternalLink size={15} aria-hidden="true" /> سایت
             </Link>
@@ -173,7 +173,7 @@ export default function DashboardShell({
       <div className="dashboard-main">
         <header className="dashboard-topbar">
           <button
-            className="inline-flex size-10 items-center justify-center rounded-full border border-border bg-card text-foreground lg:hidden"
+            className="inline-flex size-10 items-center justify-center rounded-full border border-border bg-card text-foreground xl:hidden"
             onClick={() => setOpen(true)}
             aria-label="باز کردن منوی پنل"
           >
@@ -185,7 +185,7 @@ export default function DashboardShell({
             <p className="mt-0.5 truncate text-sm font-extrabold text-foreground">{activeItem?.label ?? "داشبورد"}</p>
           </div>
 
-          <div className="hidden items-center gap-3 sm:flex">
+          <div className="hidden min-w-0 items-center gap-3 sm:flex">
             <div className="text-left">
               <p className="max-w-48 truncate text-xs font-bold text-foreground">{account.fullName || account.email}</p>
               <p className="mt-1 text-[10px] text-muted-foreground">{roleLabel}</p>

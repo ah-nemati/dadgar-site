@@ -61,7 +61,7 @@ export default async function HomePage() {
   return (
     <>
       <section className="legal-hero">
-        <div className="legal-hero__grid mx-auto max-w-7xl px-6">
+        <div className="legal-hero__grid mx-auto max-w-7xl px-4 sm:px-6">
           <div className="relative z-10">
             <Eyebrow dark>{firm.name} · دفتر وکالت و خدمات حقوقی</Eyebrow>
             <h1 className="legal-hero__title">
@@ -71,7 +71,7 @@ export default async function HomePage() {
               مشاوره حقوقی آنلاین برای سراسر ایران و خدمات حضوری در اهواز؛ از بررسی اولیه و تنظیم اوراق تا قبول و پیگیری پرونده‌های حقوقی و کیفری.
             </p>
 
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="hero-actions mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Button size="lg" asChild>
                 <Link href="/online-legal-consultation">
                   شروع مشاوره حقوقی <ArrowLeft size={17} aria-hidden="true" />
@@ -132,7 +132,7 @@ export default async function HomePage() {
       </div>
 
       <section className="editorial-section">
-        <div className="mx-auto max-w-7xl px-6">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="grid gap-8 lg:grid-cols-[.78fr_1.22fr] lg:items-end">
             <div className="section-kicker mb-0">
               <Eyebrow>از کجا شروع کنم؟</Eyebrow>
@@ -150,7 +150,7 @@ export default async function HomePage() {
       </section>
 
       <section className="editorial-section editorial-section--soft">
-        <div className="mx-auto max-w-7xl px-6">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div className="section-kicker mb-0">
               <Eyebrow>حوزه‌های خدمات</Eyebrow>
@@ -169,7 +169,7 @@ export default async function HomePage() {
       </section>
 
       <section className="editorial-section">
-        <div className="mx-auto max-w-7xl px-6">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="grid gap-12 lg:grid-cols-[.8fr_1.2fr] lg:items-start">
             <div className="section-kicker lg:sticky lg:top-32">
               <Eyebrow>فرآیند همکاری</Eyebrow>
@@ -197,7 +197,7 @@ export default async function HomePage() {
 
       {lawyer && (
         <section className="editorial-section pt-0">
-          <div className="mx-auto max-w-7xl px-6">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="lawyer-feature grid overflow-hidden lg:grid-cols-[.78fr_1.22fr]">
               <div className="relative min-h-[25rem] lg:min-h-[31rem]">
                 <Image
@@ -226,7 +226,7 @@ export default async function HomePage() {
 
       {blogPosts.length > 0 && (
         <section className="editorial-section editorial-section--soft">
-          <div className="mx-auto max-w-7xl px-6">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
               <div className="section-kicker mb-0">
                 <Eyebrow>مجله حقوقی</Eyebrow>
@@ -244,8 +244,8 @@ export default async function HomePage() {
       )}
 
       <section className="editorial-section">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="cta-panel grid gap-8 p-7 sm:p-10 lg:grid-cols-[1fr_auto] lg:items-center lg:p-12">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="cta-panel grid gap-8 p-5 min-[420px]:p-7 sm:p-10 lg:grid-cols-[1fr_auto] lg:items-center lg:p-12">
             <div>
               <p className="text-xs font-bold text-gold-light">قدم بعدی</p>
               <h2 className="mt-2 max-w-2xl text-2xl font-extrabold leading-relaxed text-sky-900 md:text-3xl">موضوع حقوقی خود را توضیح دهید تا مسیر مناسب بررسی مشخص شود.</h2>

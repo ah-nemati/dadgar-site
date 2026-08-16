@@ -36,7 +36,7 @@ export default function Header({ firm }: { firm: Firm }) {
   return (
     <header className="site-header">
       <div className="site-header__utility hidden xl:block">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-2.5">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 py-2.5">
           <div className="flex items-center gap-6">
             <a href={firm.phoneHref} className="header-meta-link"><Phone size={13} /><span dir="ltr">{firm.phone}</span></a>
             <a href={`mailto:${firm.email}`} className="header-meta-link"><Mail size={13} /><span dir="ltr">{firm.email}</span></a>
@@ -49,17 +49,17 @@ export default function Header({ firm }: { firm: Firm }) {
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="site-header__main flex items-center gap-4 lg:grid lg:grid-cols-[auto_1fr_auto]">
+      <div className="mx-auto max-w-7xl px-3 sm:px-5 lg:px-6">
+        <div className="site-header__main flex items-center gap-2 sm:gap-4">
           <Link href="/" prefetch className="site-brand shrink-0" aria-label="صفحه اصلی">
             <Seal size={42} />
-            <div className="hidden sm:block">
+            <div className="site-brand__copy">
               <div className="site-brand__name">{firm.name}</div>
               <div className="site-brand__meta">وکیل پایه یک دادگستری</div>
             </div>
           </Link>
 
-          <nav className="header-desktop-nav hidden lg:flex" aria-label="منوی اصلی">
+          <nav className="header-desktop-nav" aria-label="منوی اصلی">
             {DESKTOP_NAV.map((item) => {
               const active = isActive(item.href);
               return (
@@ -71,15 +71,15 @@ export default function Header({ firm }: { firm: Firm }) {
             })}
           </nav>
 
-          <div className="mr-auto flex items-center gap-2 lg:mr-0">
-            <Button asChild size="sm" className="hidden lg:inline-flex">
+          <div className="header-actions mr-auto flex shrink-0 items-center gap-2">
+            <Button asChild size="sm" className="header-desktop-cta">
               <Link href="/online-legal-consultation" prefetch>صحبت با وکیل <ArrowLeft size={15} /></Link>
             </Button>
-            <AccountEntryLink className="header-icon-button inline-flex xl:hidden" aria-label="حساب کاربری">
+            <AccountEntryLink className="header-icon-button header-account-button inline-flex" aria-label="حساب کاربری">
               <CircleUserRound size={20} />
             </AccountEntryLink>
 
-            <div className="lg:hidden">
+            <div className="header-menu-trigger">
               <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
                 <SheetTrigger asChild>
                   <button type="button" className="header-icon-button inline-flex" aria-label="باز کردن منو"><Menu size={21} /></button>

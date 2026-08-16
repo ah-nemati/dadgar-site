@@ -36,7 +36,7 @@ export default async function LawyerDetailPage({ params }: { params: Params }) {
 
       <section className="page-hero overflow-hidden">
         <div className="page-hero__seal" aria-hidden="true">§</div>
-        <div className="mx-auto max-w-7xl px-6 py-10 md:py-14">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10 md:py-14">
           <Link href="/lawyers" className="mb-7 inline-flex items-center gap-2 text-sm font-bold text-sky-800/70 hover:text-sky-600"><ArrowRight size={16} /> معرفی وکیل</Link>
           <div className="grid gap-8 lg:grid-cols-[15rem_1fr] lg:items-end">
             <div className="relative mx-auto aspect-[4/5] w-full max-w-[15rem] overflow-hidden rounded-[1.4rem] border border-white/10 bg-ink-2 shadow-2xl lg:mx-0"><Image src="/images/profile.jpeg" alt={`تصویر ${lawyer.name}`} fill priority sizes="240px" className="object-cover object-center" /><div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-transparent to-transparent" /><span className="absolute bottom-4 right-4 rounded-full border border-white/15 bg-black/20 px-3 py-1 text-xs font-bold text-sky-600">پروانه {lawyer.licenseNumber}</span></div>
@@ -52,7 +52,7 @@ export default async function LawyerDetailPage({ params }: { params: Params }) {
       </section>
 
       <section className="editorial-section">
-        <div className="mx-auto grid max-w-7xl gap-10 px-6 lg:grid-cols-[1fr_20rem] lg:items-start">
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_20rem] lg:items-start">
           <div className="space-y-10">
             <section><Eyebrow>پروفایل حرفه‌ای</Eyebrow><h2 className="section-title">تمرکز بر تحلیل مسئله، اسناد و مسیر قابل اجرا</h2><p className="mt-5 max-w-4xl text-base leading-9 text-muted-foreground">{lawyer.bio}</p></section>
             <section><Eyebrow>حوزه‌های فعالیت</Eyebrow><div className="mt-5 grid gap-4 sm:grid-cols-2">{specialtyAreas.map((area) => <Link key={area.slug} href={`/practice-areas/${area.slug}`} className="legal-card group p-5"><Scale size={20} className="text-accent" /><h3 className="mt-4 text-lg font-extrabold">{area.title}</h3><p className="mt-2 line-clamp-2 text-sm leading-7 text-muted-foreground">{area.shortDesc}</p><span className="mt-4 inline-flex items-center gap-2 text-xs font-extrabold text-primary">مشاهده حوزه <ArrowLeft size={13} className="transition-transform group-hover:-translate-x-1" /></span></Link>)}</div></section>

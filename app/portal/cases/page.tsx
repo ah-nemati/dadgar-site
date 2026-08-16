@@ -29,13 +29,13 @@ export default async function PortalCasesPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {cases.map((item) => (
             <Link href={`/portal/cases/${item.id}`} key={item.id} className="dashboard-card p-5 hover:border-primary transition-colors group">
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start justify-between gap-3">
                 <div>
                   <Badge variant={CASE_STATUS_VARIANT[item.status]}>{CASE_STATUS_LABEL[item.status]}</Badge>
                   <h2 className="font-bold mt-4 leading-7">{item.title}</h2>
                   <p className="text-xs text-muted-foreground mt-2">شماره پرونده: <span dir="ltr">{item.caseNumber}</span></p>
                 </div>
-                <ChevronLeft className="text-muted-foreground group-hover:text-primary transition-colors" />
+                <ChevronLeft className="shrink-0 text-muted-foreground group-hover:text-primary transition-colors" />
               </div>
               {item.nextAction && (
                 <div className="mt-5 rounded-lg bg-muted/50 p-3 text-sm">

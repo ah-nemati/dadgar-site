@@ -29,7 +29,7 @@ export default async function PortalMessagesPage() {
           <div className="space-y-3">
             {threads.map((thread) => (
               <Link href={`/portal/messages/${thread.id}`} key={thread.id} className="block border border-border rounded-lg p-4 hover:border-primary transition-colors">
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex flex-col gap-3 min-[420px]:flex-row min-[420px]:items-start min-[420px]:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-semibold text-sm truncate">{thread.subject}</p>

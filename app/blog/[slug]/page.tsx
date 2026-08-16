@@ -102,7 +102,7 @@ export default async function BlogPostDetailPage({
       />
 
       <section className="page-hero">
-        <div className="relative mx-auto max-w-4xl px-6 py-14 md:py-16">
+        <div className="relative mx-auto max-w-4xl px-4 sm:px-6 py-14 md:py-16">
           <Link
             href="/blog"
             className="inline-flex items-center gap-2 text-sm mb-8 text-sky-800/70 hover:text-sky-600 transition-colors"
@@ -137,7 +137,7 @@ export default async function BlogPostDetailPage({
       </section>
 
       <article>
-        <div className="mx-auto max-w-4xl px-6 py-12 md:py-16">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 py-12 md:py-16">
           {post.imageUrl && (
             <div className="relative mb-10 aspect-video w-full overflow-hidden rounded-xl border border-border shadow-sm">
               <Image

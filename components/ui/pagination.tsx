@@ -7,7 +7,7 @@ function Pagination({ className, ...props }: React.ComponentProps<'nav'>) {
 }
 
 function PaginationContent({ className, ...props }: React.ComponentProps<'ul'>) {
-  return <ul className={cn('flex items-center gap-1.5', className)} {...props} />;
+  return <ul className={cn('max-w-full flex items-center gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden', className)} {...props} />;
 }
 
 function PaginationItem({ ...props }: React.ComponentProps<'li'>) {
@@ -20,7 +20,7 @@ function PaginationButton({ active, className, ...props }: React.ComponentProps<
       type="button"
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'inline-flex size-10 items-center justify-center rounded-xl border text-sm font-bold transition-all disabled:pointer-events-none disabled:opacity-40',
+        'inline-flex size-9 shrink-0 items-center sm:size-10 justify-center rounded-xl border text-sm font-bold transition-all disabled:pointer-events-none disabled:opacity-40',
         active
           ? 'border-primary bg-primary text-primary-foreground shadow-[0_8px_22px_rgba(14,165,233,.22)]'
           : 'border-border bg-card text-foreground hover:border-primary/35 hover:bg-secondary',
@@ -38,7 +38,7 @@ function PaginationNext(props: React.ComponentProps<typeof PaginationButton>) {
   return <PaginationButton aria-label="صفحه بعدی" {...props}><ChevronLeft size={17} /></PaginationButton>;
 }
 function PaginationEllipsis() {
-  return <span className="inline-flex size-10 items-center justify-center text-muted-foreground"><MoreHorizontal size={18} /></span>;
+  return <span className="inline-flex size-9 shrink-0 items-center justify-center text-muted-foreground sm:size-10"><MoreHorizontal size={18} /></span>;
 }
 
 export { Pagination, PaginationContent, PaginationItem, PaginationButton, PaginationPrevious, PaginationNext, PaginationEllipsis };

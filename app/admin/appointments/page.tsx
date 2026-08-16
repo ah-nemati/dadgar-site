@@ -76,7 +76,7 @@ export default async function AdminAppointmentsPage({ searchParams }: { searchPa
         <details className="dashboard-card p-5 mb-6 group" open={Boolean(query.settingsSaved || query.settingsError)}>
           <summary className="font-bold flex items-center gap-2 cursor-pointer list-none select-none">
             <Settings2 size={18} /> تنظیمات رزرو آنلاین
-            <span className="mr-auto text-xs font-normal text-muted-foreground group-open:hidden">برای تغییر روزها و ساعات کلیک کنید</span>
+            <span className="mr-auto hidden text-xs font-normal text-muted-foreground sm:inline group-open:hidden">برای تغییر روزها و ساعات کلیک کنید</span>
           </summary>
           <div className="pt-5">
             {query.settingsSaved && <Alert className="mb-4">تنظیمات نوبت‌دهی ذخیره شد.</Alert>}
@@ -112,13 +112,13 @@ export default async function AdminAppointmentsPage({ searchParams }: { searchPa
                 />
                 <p className="mt-2 text-xs leading-6 text-muted-foreground">هر تاریخ را در یک خط وارد کنید. این روزها در تقویم موکل با برچسب «تعطیل» دیده می‌شوند و قابل انتخاب نیستند.</p>
               </div>
-              <Button type="submit">ذخیره تنظیمات رزرو</Button>
+              <Button type="submit" className="w-full sm:w-auto">ذخیره تنظیمات رزرو</Button>
             </form>
           </div>
         </details>
       )}
 
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-5">
+      <div className="grid grid-cols-1 gap-3 mb-5 sm:grid-cols-2 xl:grid-cols-4">
         <Stat label="در انتظار تأیید" value={pending} icon={Clock3} />
         <Stat label="تأییدشده آینده" value={confirmedUpcoming} icon={CalendarCheck2} />
         <Stat label="نوبت‌های امروز" value={todayCount} icon={CalendarDays} />
@@ -143,7 +143,7 @@ export default async function AdminAppointmentsPage({ searchParams }: { searchPa
           <option value="past">سوابق</option>
           <option value="all">همه</option>
         </select>
-        <Button type="submit" variant="secondary">اعمال فیلتر</Button>
+        <Button type="submit" variant="secondary" className="w-full md:w-auto">اعمال فیلتر</Button>
       </form>
 
       <div className="space-y-4">

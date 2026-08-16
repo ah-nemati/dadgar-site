@@ -36,7 +36,7 @@ export default async function AboutPage() {
       <PageHero eyebrow="درباره دفتر" title="دقت حقوقی، ارتباط روشن و پیگیری منظم" description="آشنایی با رویکرد کاری دفتر وکالت مجید سواری؛ مشاوره آنلاین سراسر ایران و خدمات حضوری در اهواز." />
 
       <section className="editorial-section">
-        <div className="mx-auto grid max-w-7xl gap-10 px-6 lg:grid-cols-[1.2fr_.8fr] lg:items-start">
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[1.2fr_.8fr] lg:items-start">
           <div>
             <Eyebrow>رویکرد کاری</Eyebrow>
             <h2 className="section-title">هر پرونده باید قبل از اقدام، درست فهمیده شود</h2>
@@ -56,7 +56,7 @@ export default async function AboutPage() {
       </section>
 
       <section className="editorial-section editorial-section--soft">
-        <div className="mx-auto max-w-7xl px-6">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="section-kicker"><Eyebrow>اصول همکاری</Eyebrow><h2 className="section-title">چه چیزهایی در تجربه موکل باید ثابت بماند؟</h2></div>
           <div className="stagger-load grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {values.map(({ icon: Icon, title, text }) => (
@@ -67,7 +67,7 @@ export default async function AboutPage() {
       </section>
 
       <section className="editorial-section">
-        <div className="mx-auto max-w-7xl px-6">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="section-kicker"><Eyebrow>فرآیند</Eyebrow><h2 className="section-title">از بررسی اولیه تا پیگیری</h2></div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {steps.map((step) => <article key={step.n} className="border-t border-gold/45 pt-5"><p className="text-3xl font-extrabold text-sky-500">{step.n}</p><h3 className="mt-4 font-extrabold text-foreground">{step.title}</h3><p className="mt-2 text-sm leading-7 text-muted-foreground">{step.text}</p></article>)}
@@ -76,7 +76,7 @@ export default async function AboutPage() {
       </section>
 
       <section className="editorial-section pt-0">
-        <div className="mx-auto max-w-7xl px-6"><div className="cta-panel flex flex-col gap-6 p-8 md:flex-row md:items-center md:justify-between md:p-10"><div><p className="text-xs font-bold text-sky-600">آشنایی بیشتر</p><h2 className="mt-2 text-2xl font-extrabold text-parchment">سوابق و حوزه‌های فعالیت وکیل را ببینید</h2></div><Button asChild><Link href="/lawyers">مشاهده پروفایل وکیل <ArrowLeft size={16} /></Link></Button></div></div>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6"><div className="cta-panel flex flex-col gap-6 p-5 sm:p-8 md:flex-row md:items-center md:justify-between md:p-10"><div><p className="text-xs font-bold text-sky-600">آشنایی بیشتر</p><h2 className="mt-2 text-2xl font-extrabold text-parchment">سوابق و حوزه‌های فعالیت وکیل را ببینید</h2></div><Button asChild><Link href="/lawyers">مشاهده پروفایل وکیل <ArrowLeft size={16} /></Link></Button></div></div>
       </section>
     </>
   );

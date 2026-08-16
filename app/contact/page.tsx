@@ -29,7 +29,7 @@ export default async function ContactPage() {
       <PageHero eyebrow="تماس با دفتر" title="موضوع را توضیح دهید؛ مسیر ارتباط را انتخاب کنید" description="برای بررسی اولیه می‌توانید فرم را تکمیل کنید، مستقیم تماس بگیرید یا برای مراجعه حضوری موقعیت دفتر را روی نقشه ببینید." />
 
       <section className="editorial-section">
-        <div className="mx-auto max-w-7xl px-6">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="grid gap-10 lg:grid-cols-[1.25fr_.75fr] lg:items-start">
             <div>
               <div className="mb-7">
@@ -69,7 +69,7 @@ export default async function ContactPage() {
       </section>
 
       <section className="editorial-section editorial-section--soft pt-0">
-        <div className="mx-auto max-w-7xl px-6">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="mb-6">
             <Eyebrow>موقعیت دفتر</Eyebrow>
             <h2 className="text-2xl font-extrabold text-foreground md:text-3xl">آدرس دفتر روی نقشه</h2>

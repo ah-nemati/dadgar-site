@@ -45,7 +45,7 @@ export default async function AdminContentPage({ searchParams }: { searchParams:
         <div className="space-y-4">
           {areas.map((area) => (
             <details key={area.slug} className="rounded-lg border border-border bg-card" open={false}>
-              <summary className="cursor-pointer list-none p-5 flex items-center justify-between gap-4"><span className="font-bold">{area.title}</span><span className="text-xs text-muted-foreground" dir="ltr">/{area.slug}</span></summary>
+              <summary className="cursor-pointer list-none p-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"><span className="font-bold">{area.title}</span><span className="text-xs text-muted-foreground" dir="ltr">/{area.slug}</span></summary>
               <div className="border-t border-border p-5">
                 <form action={updatePracticeAreaAction.bind(null, area.slug)} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -61,7 +61,7 @@ export default async function AdminContentPage({ searchParams }: { searchParams:
                     <Area label="مدارک — هر مورد یک خط" name="documents" defaultValue={area.documents.join('\n')} rows={8} />
                     <Area label="آمادگی — هر مورد یک خط" name="preparation" defaultValue={area.preparation.join('\n')} rows={8} />
                   </div>
-                  <div className="flex flex-wrap justify-between gap-3"><Button type="submit">ذخیره حوزه</Button><Button type="submit" formAction={deletePracticeAreaAction.bind(null, area.slug)} variant="destructive"><Trash2 size={16}/> حذف</Button></div>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-between"><Button type="submit">ذخیره حوزه</Button><Button type="submit" formAction={deletePracticeAreaAction.bind(null, area.slug)} variant="destructive"><Trash2 size={16}/> حذف</Button></div>
                 </form>
               </div>
             </details>
@@ -74,7 +74,7 @@ export default async function AdminContentPage({ searchParams }: { searchParams:
         <div className="space-y-4">
           {lawyers.map((lawyer) => (
             <details key={lawyer.slug} className="rounded-lg border border-border bg-card">
-              <summary className="cursor-pointer list-none p-5 flex justify-between gap-4"><span className="font-bold">{lawyer.name}</span><span className="text-xs text-muted-foreground">{lawyer.role}</span></summary>
+              <summary className="cursor-pointer list-none p-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"><span className="font-bold">{lawyer.name}</span><span className="text-xs text-muted-foreground">{lawyer.role}</span></summary>
               <div className="border-t border-border p-5">
                 <form action={updateLawyerAction.bind(null, lawyer.slug)} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4"><Field label="نام" name="name" defaultValue={lawyer.name} required/><Field label="نامک" name="slug" defaultValue={lawyer.slug} dir="ltr" required/><Field label="حروف آواتار" name="initials" defaultValue={lawyer.initials}/></div>
@@ -82,7 +82,7 @@ export default async function AdminContentPage({ searchParams }: { searchParams:
                   <Area label="معرفی" name="bio" defaultValue={lawyer.bio} rows={5}/>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4"><Field label="عنوان SEO" name="seoTitle" defaultValue={lawyer.seoTitle ?? ''}/><Area label="توضیح متا" name="seoDescription" defaultValue={lawyer.seoDescription ?? ''} rows={3}/></div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4"><Area label="تحصیلات — هر مورد یک خط" name="education" defaultValue={lawyer.education.join('\n')} rows={5}/><Area label="نامک حوزه‌های تخصصی — هر مورد یک خط" name="specialties" defaultValue={lawyer.specialties.join('\n')} rows={5}/></div>
-                  <div className="flex justify-between gap-3"><Button type="submit">ذخیره پروفایل</Button><Button type="submit" formAction={deleteLawyerAction.bind(null, lawyer.slug)} variant="destructive"><Trash2 size={16}/> حذف</Button></div>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:justify-between"><Button type="submit">ذخیره پروفایل</Button><Button type="submit" formAction={deleteLawyerAction.bind(null, lawyer.slug)} variant="destructive"><Trash2 size={16}/> حذف</Button></div>
                 </form>
               </div>
             </details>
@@ -93,14 +93,14 @@ export default async function AdminContentPage({ searchParams }: { searchParams:
 
       <Section title="سوالات متداول" icon={BookOpen} count={faqs.length}>
         <div className="space-y-4">
-          {faqs.map((item, index) => <form key={`${item.q}-${index}`} action={updateFaqAction.bind(null, index)} className="rounded-lg border border-border bg-card p-5 space-y-4"><Field label={`سوال ${index + 1}`} name="q" defaultValue={item.q} required/><Area label="پاسخ" name="a" defaultValue={item.a} rows={4}/><div className="flex justify-between"><Button type="submit">ذخیره</Button><Button type="submit" formAction={deleteFaqAction.bind(null, index)} variant="destructive"><Trash2 size={16}/> حذف</Button></div></form>)}
+          {faqs.map((item, index) => <form key={`${item.q}-${index}`} action={updateFaqAction.bind(null, index)} className="rounded-lg border border-border bg-card p-5 space-y-4"><Field label={`سوال ${index + 1}`} name="q" defaultValue={item.q} required/><Area label="پاسخ" name="a" defaultValue={item.a} rows={4}/><div className="flex flex-col gap-2 sm:flex-row sm:justify-between"><Button type="submit">ذخیره</Button><Button type="submit" formAction={deleteFaqAction.bind(null, index)} variant="destructive"><Trash2 size={16}/> حذف</Button></div></form>)}
           <form action={createFaqAction} className="rounded-lg border border-dashed border-primary/40 p-5 space-y-4"><h3 className="font-bold flex items-center gap-2"><CirclePlus size={17}/> افزودن سوال</h3><Field label="سوال" name="q" defaultValue="" required/><Area label="پاسخ" name="a" defaultValue="" rows={4}/><Button type="submit">افزودن</Button></form>
         </div>
       </Section>
 
       <Section title="تعرفه‌ها و خدمات" icon={Scale} count={fees.length}>
         <div className="space-y-4">
-          {fees.map((item, index) => <form key={`${item.title}-${index}`} action={updateFeeAction.bind(null, index)} className="rounded-lg border border-border bg-card p-5 space-y-4"><div className="grid grid-cols-1 md:grid-cols-2 gap-4"><Field label="عنوان خدمت" name="title" defaultValue={item.title} required/><Field label="عبارت هزینه" name="feeLabel" defaultValue={item.feeLabel} required/></div><Area label="توضیح" name="description" defaultValue={item.description} rows={3}/><Area label="موارد شامل خدمت — هر مورد یک خط" name="includes" defaultValue={item.includes.join('\n')} rows={5}/><div className="flex justify-between"><Button type="submit">ذخیره</Button><Button type="submit" formAction={deleteFeeAction.bind(null, index)} variant="destructive"><Trash2 size={16}/> حذف</Button></div></form>)}
+          {fees.map((item, index) => <form key={`${item.title}-${index}`} action={updateFeeAction.bind(null, index)} className="rounded-lg border border-border bg-card p-5 space-y-4"><div className="grid grid-cols-1 md:grid-cols-2 gap-4"><Field label="عنوان خدمت" name="title" defaultValue={item.title} required/><Field label="عبارت هزینه" name="feeLabel" defaultValue={item.feeLabel} required/></div><Area label="توضیح" name="description" defaultValue={item.description} rows={3}/><Area label="موارد شامل خدمت — هر مورد یک خط" name="includes" defaultValue={item.includes.join('\n')} rows={5}/><div className="flex flex-col gap-2 sm:flex-row sm:justify-between"><Button type="submit">ذخیره</Button><Button type="submit" formAction={deleteFeeAction.bind(null, index)} variant="destructive"><Trash2 size={16}/> حذف</Button></div></form>)}
           <form action={createFeeAction} className="rounded-lg border border-dashed border-primary/40 p-5 space-y-4"><h3 className="font-bold flex items-center gap-2"><CirclePlus size={17}/> افزودن خدمت</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-4"><Field label="عنوان" name="title" defaultValue="" required/><Field label="عبارت هزینه" name="feeLabel" defaultValue="" required/></div><Area label="توضیح" name="description" defaultValue="" rows={3}/><Area label="موارد شامل خدمت" name="includes" defaultValue="" rows={4}/><Button type="submit">افزودن</Button></form>
         </div>
       </Section>

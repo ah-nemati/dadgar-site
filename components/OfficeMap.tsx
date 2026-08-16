@@ -26,7 +26,7 @@ export default function OfficeMap({ firm, compact = false }: { firm: Firm; compa
 
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[0_16px_45px_rgba(24,42,47,.08)]">
-      <div className={`relative w-full ${compact ? 'h-64' : 'h-[360px] md:h-[420px]'}`}>
+      <div className={`relative w-full ${compact ? 'h-56 sm:h-64' : 'h-[300px] sm:h-[360px] md:h-[420px]'}`}>
         <iframe
           title={`نقشه دفتر ${firm.shortName}`}
           src={officeMapEmbed(firm)}
@@ -41,7 +41,7 @@ export default function OfficeMap({ firm, compact = false }: { firm: Firm; compa
           aria-hidden="true"
         >
           <div className="flex flex-col items-center drop-shadow-lg">
-            <span className="mb-1 whitespace-nowrap rounded-full bg-sky-500 px-3 py-1.5 text-xs font-bold text-white shadow-md">
+            <span className="mb-1 max-w-[76vw] truncate rounded-full bg-sky-500 px-3 py-1.5 text-xs font-bold text-white shadow-md">
               دفتر وکالت {firm.shortName}
             </span>
             <span className="flex size-11 items-center justify-center rounded-full border-4 border-white bg-primary text-primary-foreground shadow-xl">
@@ -68,7 +68,7 @@ export default function OfficeMap({ firm, compact = false }: { firm: Firm; compa
           href={officeMapLink(firm)}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex shrink-0 items-center gap-2 text-sm font-extrabold text-accent hover:underline"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-sky-200 bg-sky-50 px-4 py-2.5 text-sm font-extrabold text-accent hover:bg-sky-100 sm:w-auto sm:shrink-0"
         >
           مسیریابی تا دفتر <ExternalLink size={14} />
         </a>

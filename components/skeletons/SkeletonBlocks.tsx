@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 export function PublicHeroSkeleton({ compact = false }: { compact?: boolean }) {
   return (
     <section className="bg-sky-100">
-      <div className={`mx-auto max-w-6xl px-6 ${compact ? 'py-12' : 'py-16 md:py-20'}`}>
+      <div className={`mx-auto max-w-6xl px-4 sm:px-6 ${compact ? 'py-12' : 'py-16 md:py-20'}`}>
         <Skeleton tone="dark" className="mb-5 h-4 w-28" />
         <Skeleton tone="dark" className="mb-5 h-10 w-[34rem] max-w-full md:h-12" />
         <Skeleton tone="dark" className="h-4 w-[42rem] max-w-full" />

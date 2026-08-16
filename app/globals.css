@@ -1565,3 +1565,464 @@ body {
   .appointment-time-slot,
   .dashboard-logout-button { transition: none; }
 }
+
+/* -------------------------------------------------------------------------- */
+/* Responsive hardening — phone → tablet → laptop → desktop                   */
+/* -------------------------------------------------------------------------- */
+
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+body,
+main,
+section,
+article,
+aside,
+header,
+footer,
+form,
+fieldset,
+.dashboard-main,
+.dashboard-content,
+.dashboard-card,
+.legal-card {
+  min-width: 0;
+}
+
+img,
+picture,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+iframe {
+  max-width: 100%;
+}
+
+.break-anywhere,
+.prose-legal,
+.dashboard-card,
+.dashboard-page-description {
+  overflow-wrap: anywhere;
+}
+
+/* Header uses a real fit breakpoint instead of forcing seven links into 1024px. */
+.site-header__main {
+  width: 100%;
+  min-height: 4.75rem;
+}
+
+.header-desktop-nav {
+  display: none;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.header-desktop-cta {
+  display: none !important;
+}
+
+.header-menu-trigger {
+  display: block;
+}
+
+.header-actions {
+  min-width: max-content;
+}
+
+.site-brand__copy {
+  min-width: 0;
+}
+
+@media (max-width: 419px) {
+  .site-header__main { min-height: 4.35rem; }
+  .site-brand { gap: .55rem; }
+  .site-brand svg { width: 36px; height: 36px; }
+  .site-brand__copy { display: none; }
+  .header-icon-button { width: 2.45rem; height: 2.45rem; }
+}
+
+@media (min-width: 1024px) {
+  .site-header__main {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: .5rem;
+  }
+
+  .header-desktop-nav {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .header-desktop-nav-link {
+    min-height: 2.55rem;
+    padding-inline: .42rem;
+    font-size: .74rem;
+  }
+
+  .header-menu-trigger {
+    display: none;
+  }
+}
+
+@media (min-width: 1180px) {
+  .site-header__main { gap: .65rem; }
+  .header-desktop-nav-link {
+    min-height: 2.65rem;
+    padding-inline: .58rem;
+    font-size: .79rem;
+  }
+  .header-desktop-cta {
+    display: inline-flex !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  .site-header__main { gap: 1rem; }
+  .header-desktop-nav { gap: .08rem; }
+  .header-desktop-nav-link {
+    padding-inline: .72rem;
+    font-size: .84rem;
+  }
+  .header-account-button { display: none !important; }
+}
+
+@media (min-width: 1440px) {
+  .header-desktop-nav-link {
+    padding-inline: .88rem;
+    font-size: .9rem;
+  }
+}
+
+/* Public content */
+.legal-hero__grid,
+.page-hero__inner,
+.editorial-section > div,
+.site-footer > div,
+.site-footer__cta > div {
+  width: 100%;
+}
+
+.dadgar-swiper,
+.swiper,
+.swiper-wrapper,
+.swiper-slide {
+  min-width: 0;
+}
+
+.dadgar-swiper {
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (max-width: 767px) {
+  .editorial-section {
+    padding-block: 3.25rem;
+  }
+
+  .legal-hero__grid {
+    gap: 1.75rem;
+    padding-block: 3rem 4.25rem;
+  }
+
+  .legal-hero__title {
+    max-width: 100%;
+    font-size: clamp(2rem, 9.5vw, 2.85rem);
+    line-height: 1.38;
+  }
+
+  .legal-hero__description {
+    max-width: 100%;
+    margin-top: 1rem;
+    font-size: .96rem;
+    line-height: 1.9;
+  }
+
+  .page-hero__inner {
+    min-height: 14rem;
+    padding-block: 2.8rem;
+  }
+
+  .page-hero__title {
+    max-width: 100%;
+    font-size: clamp(1.85rem, 8.8vw, 2.65rem);
+    line-height: 1.45;
+  }
+
+  .page-hero__description {
+    max-width: 100%;
+    font-size: .94rem;
+    line-height: 1.9;
+  }
+
+  .page-hero__mark {
+    left: -5.5rem;
+    opacity: .055;
+    transform: translateY(-50%) scale(.78);
+  }
+
+  .section-kicker {
+    margin-bottom: 1.8rem;
+  }
+
+  .section-title {
+    font-size: clamp(1.65rem, 7vw, 2.2rem);
+    line-height: 1.5;
+  }
+
+  .section-copy {
+    font-size: .94rem;
+    line-height: 1.9;
+  }
+
+  .trust-bar__item {
+    min-height: 4.8rem;
+    padding: 1rem;
+  }
+
+  .quick-services__item {
+    min-height: 3.4rem;
+    padding-inline: 1rem;
+  }
+
+  .legal-card,
+  .blue-service-card,
+  .blue-article-card,
+  .cta-panel,
+  .lawyer-feature {
+    border-radius: 1rem;
+  }
+
+  .prose-legal {
+    font-size: .96rem;
+  }
+
+  .prose-legal p {
+    line-height: 2;
+  }
+
+  .prose-legal h2 {
+    margin-top: 2rem;
+    font-size: 1.35rem;
+  }
+}
+
+@media (max-width: 479px) {
+  .hero-actions,
+  .footer-cta-actions {
+    width: 100%;
+  }
+
+  .hero-actions [data-slot='button'],
+  .footer-cta-actions [data-slot='button'] {
+    width: 100%;
+  }
+
+  [data-slot='button'] {
+    max-width: 100%;
+  }
+
+  .cta-panel [data-slot='button'] {
+    width: 100%;
+  }
+
+  .site-footer__cta h2 {
+    font-size: 1.45rem;
+  }
+
+  .site-footer__cta {
+    text-align: center;
+  }
+
+  .trust-bar {
+    margin-top: -1rem;
+  }
+}
+
+/* Dashboard: drawer until wide desktop, then fixed sidebar. */
+.dashboard-sidebar {
+  width: min(17.5rem, 88vw);
+}
+
+.dashboard-main {
+  width: 100%;
+  max-width: 100%;
+  margin-right: 0;
+}
+
+.dashboard-topbar {
+  min-height: 4.5rem;
+  padding-inline: .85rem;
+}
+
+.dashboard-content {
+  width: 100%;
+  max-width: 88rem;
+  padding: 1rem .8rem 3.5rem;
+}
+
+.dashboard-card,
+.dashboard-stat,
+.dashboard-table-wrap {
+  max-width: 100%;
+}
+
+.dashboard-table-wrap,
+[data-slot='table'] {
+  -webkit-overflow-scrolling: touch;
+}
+
+.dashboard-table-wrap {
+  overscroll-behavior-inline: contain;
+}
+
+.dashboard-card input,
+.dashboard-card textarea,
+.dashboard-card select,
+.dashboard-content input,
+.dashboard-content textarea,
+.dashboard-content select {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.dashboard-page-header > * {
+  min-width: 0;
+}
+
+@media (max-width: 639px) {
+  .dashboard-content {
+    padding: .85rem .7rem 3rem;
+  }
+
+  .dashboard-topbar {
+    gap: .7rem;
+  }
+
+  .dashboard-page-header {
+    margin-bottom: 1.15rem;
+    padding-bottom: 1rem;
+  }
+
+  .dashboard-page-title {
+    font-size: 1.45rem;
+  }
+
+  .dashboard-page-description {
+    font-size: .82rem;
+    line-height: 1.8;
+  }
+
+  .dashboard-page-header > :last-child:not(:first-child) {
+    width: 100%;
+  }
+
+  .dashboard-page-header > :last-child:not(:first-child) [data-slot='button'] {
+    width: 100%;
+  }
+
+  .dashboard-stat {
+    padding: 1rem;
+  }
+
+  .dashboard-card {
+    border-radius: .9rem;
+  }
+
+  .dashboard-card [data-slot='button'] {
+    white-space: normal;
+  }
+}
+
+@media (min-width: 640px) {
+  .dashboard-content {
+    padding: 1.35rem 1.25rem 4rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .dashboard-sidebar {
+    width: 17.5rem;
+    transform: translateX(0);
+  }
+
+  .dashboard-main {
+    width: auto;
+    margin-right: 17.5rem;
+  }
+
+  .dashboard-topbar {
+    padding-inline: 2rem;
+  }
+
+  .dashboard-content {
+    padding: 2rem 2rem 5rem;
+  }
+}
+
+/* Booking UI */
+.appointment-date-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 100%;
+}
+
+.appointment-date-card,
+.appointment-time-slot {
+  min-width: 0;
+}
+
+@media (max-width: 359px) {
+  .appointment-date-grid {
+    grid-template-columns: 1fr;
+    max-height: 18rem;
+  }
+}
+
+@media (min-width: 640px) {
+  .appointment-date-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) {
+  .appointment-date-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .appointment-date-grid {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+}
+
+/* Never let long URLs, e-mails or labels make the viewport wider. */
+a,
+button,
+label,
+p,
+span,
+td,
+th {
+  overflow-wrap: anywhere;
+}
+
+@supports not (overflow: clip) {
+  html,
+  body { overflow-x: hidden; }
+}
+
+/* Override the older lg dashboard breakpoint: 1024–1279 stays in drawer mode. */
+.dashboard-sidebar { transform: translateX(100%); }
+.dashboard-sidebar[data-open='true'] { transform: translateX(0); }
+@media (min-width: 1280px) {
+  .dashboard-sidebar { transform: translateX(0); }
+}

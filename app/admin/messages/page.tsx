@@ -75,7 +75,7 @@ export default async function AdminMessagesPage({
         description="سرنخ‌های ورودی سایت را بررسی، اولویت‌بندی و نتیجه پیگیری را ثبت کنید."
       />
 
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-5">
+      <div className="grid grid-cols-1 gap-3 mb-5 sm:grid-cols-2 xl:grid-cols-4">
         <Stat label="جدید" value={stats.new} icon={Inbox} />
         <Stat label="در حال پیگیری" value={stats.read} icon={MailOpen} />
         <Stat label="پاسخ داده‌شده" value={stats.replied} icon={UserRoundCheck} />
@@ -101,7 +101,7 @@ export default async function AdminMessagesPage({
           <option value="high">مهم</option>
           <option value="urgent">فوری</option>
         </select>
-        <Button type="submit" variant="secondary">اعمال فیلتر</Button>
+        <Button type="submit" variant="secondary" className="w-full md:w-auto">اعمال فیلتر</Button>
       </form>
 
       {filtered.length === 0 ? (
@@ -142,7 +142,7 @@ export default async function AdminMessagesPage({
 
                 <form action={saveMessageAdminDetails.bind(null, message.id)} className="rounded-lg border border-border bg-muted/25 p-4 space-y-3">
                   <p className="text-sm font-semibold">پیگیری داخلی</p>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <select name="status" defaultValue={message.status} className="h-10 px-3 rounded-sm text-sm bg-card border border-input">
                       <option value="new">جدید</option>
                       <option value="read">در حال پیگیری</option>

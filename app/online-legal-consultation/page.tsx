@@ -48,7 +48,7 @@ export default async function OnlineLegalConsultationPage() {
       <PageHero eyebrow="مشاوره غیرحضوری" title="صحبت با وکیل، بدون پراکندگی پیام و مدارک" description="سؤال، مدارک، پاسخ دفتر و نوبت مشاوره را در یک فضای خصوصی پیگیری کنید؛ مناسب متقاضیان سراسر ایران." />
 
       <section className="editorial-section">
-        <div className="mx-auto max-w-7xl px-6">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="grid gap-10 lg:grid-cols-[.8fr_1.2fr] lg:items-start">
             <div className="section-kicker lg:sticky lg:top-28">
               <Eyebrow>چطور کار می‌کند؟</Eyebrow>
@@ -85,7 +85,7 @@ export default async function OnlineLegalConsultationPage() {
       </section>
 
       <section className="editorial-section editorial-section--soft">
-        <div className="mx-auto max-w-7xl px-6">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="section-kicker">
             <Eyebrow>موضوعات قابل بررسی</Eyebrow>
             <h2 className="section-title">حوزه حقوقی مسئله خود را انتخاب کنید</h2>

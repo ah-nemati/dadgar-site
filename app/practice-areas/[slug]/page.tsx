@@ -55,7 +55,7 @@ export default async function PracticeAreaDetailPage({ params }: { params: Param
 
       <section className="page-hero">
         <div className="page-hero__seal" aria-hidden="true">§</div>
-        <div className="mx-auto max-w-7xl px-6 py-12 md:py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 md:py-16">
           <Link href="/practice-areas" className="mb-8 inline-flex items-center gap-2 text-sm font-bold text-sky-800/70 transition-colors hover:text-sky-600"><ArrowRight size={16} /> حوزه‌های تخصصی</Link>
           <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
             <div className="max-w-3xl">
@@ -72,7 +72,7 @@ export default async function PracticeAreaDetailPage({ params }: { params: Param
       </section>
 
       <section className="editorial-section">
-        <div className="mx-auto grid max-w-7xl gap-10 px-6 lg:grid-cols-[1fr_19rem] lg:items-start">
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_19rem] lg:items-start">
           <div className="space-y-10">
             <section>
               <Eyebrow>درباره این حوزه</Eyebrow>

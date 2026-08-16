@@ -11,8 +11,8 @@ export default function DeletePostButton({ id, slug, title }: { id: number; slug
 
   if (confirming) {
     return (
-      <div className="flex items-center gap-2">
-        <span className="text-xs text-muted-foreground whitespace-nowrap">حذف «{title}»؟</span>
+      <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+        <span className="text-xs leading-6 text-muted-foreground">حذف «{title}»؟</span>
         <Button
           size="sm"
           variant="destructive"

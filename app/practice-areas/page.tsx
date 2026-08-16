@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { ArrowLeft, MapPin, MonitorSmartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PageHero from '@/components/PageHero';
+import Eyebrow from '@/components/Eyebrow';
 import { PRACTICE_AREA_ICONS } from '@/lib/icons';
 import { getPracticeAreas } from '@/lib/content/practice-areas';
 
@@ -19,50 +20,52 @@ export default async function PracticeAreasPage() {
     <>
       <PageHero
         eyebrow="حوزه‌های تخصصی"
-        title="حوزه‌های خدمات حقوقی و کیفری"
-        description="موضوع پرونده را در یکی از حوزه‌های زیر بررسی کنید؛ مشاوره غیرحضوری برای سراسر ایران و مراجعه حضوری در اهواز در دسترس است."
+        title="خدمت حقوقی را بر اساس موضوع پرونده انتخاب کنید"
+        description="هر پرونده مسیر متفاوتی دارد. از دسته‌بندی زیر شروع کنید تا توضیحات، مدارک و نکات مرتبط با همان موضوع را ببینید."
       />
-      <section className="bg-parchment">
-        <div className="max-w-6xl mx-auto px-6 py-20">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {practiceAreas.map((area) => {
+
+      <section className="editorial-section">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="section-kicker">
+            <Eyebrow>خدمات دفتر</Eyebrow>
+            <h2 className="section-title">حوزه‌های اصلی دعاوی و امور حقوقی</h2>
+            <p className="section-copy">اگر مطمئن نیستید موضوع شما در کدام حوزه قرار می‌گیرد، از بخش مشاوره آنلاین شرح کوتاهی از مسئله ثبت کنید.</p>
+          </div>
+
+          <div className="stagger-load grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {practiceAreas.map((area, index) => {
               const AreaIcon = PRACTICE_AREA_ICONS[area.icon];
               return (
-              <Link
-                key={area.slug}
-                href={`/practice-areas/${area.slug}`}
-                className="bg-card border border-border hover:border-gold hover:-translate-y-0.5 transition-all rounded-sm p-6 text-right flex flex-col items-start"
-              >
-                <div className="w-12 h-12 rounded-sm bg-ink flex items-center justify-center mb-5">
-                  <AreaIcon size={22} className="text-gold" aria-hidden="true" />
-                </div>
-                <h3 className="text-lg font-bold text-foreground mb-2">{area.title}</h3>
-                <p className="text-sm text-muted-foreground leading-7 mb-4">{area.shortDesc}</p>
-                <span className="inline-flex items-center gap-1.5 text-teal font-semibold text-sm mt-auto">
-                  بیشتر بدانید <ArrowLeft size={15} aria-hidden="true" />
-                </span>
-              </Link>
+                <Link key={area.slug} href={`/practice-areas/${area.slug}`} className="legal-card group p-6 md:p-7">
+                  <div className="flex items-start justify-between gap-5">
+                    <span className="legal-card__icon"><AreaIcon size={20} aria-hidden="true" /></span>
+                    <span className="text-xs font-bold text-muted-foreground">{String(index + 1).padStart(2, '0')}</span>
+                  </div>
+                  <h3 className="mt-6 text-lg font-extrabold text-foreground">{area.title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-muted-foreground">{area.shortDesc}</p>
+                  <span className="mt-6 inline-flex items-center gap-1.5 text-sm font-bold text-accent transition-transform group-hover:-translate-x-1">
+                    مشاهده جزئیات <ArrowLeft size={14} aria-hidden="true" />
+                  </span>
+                </Link>
               );
             })}
           </div>
+        </div>
+      </section>
 
-          <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2">
-            <div className="rounded-sm bg-ink p-6 text-parchment">
-              <MonitorSmartphone className="text-gold" size={24} aria-hidden="true" />
-              <h2 className="mt-4 text-lg font-bold">مشاوره آنلاین سراسر ایران</h2>
-              <p className="mt-3 text-sm leading-7 text-parchment/75">موضوع و مدارک اصلی بدون نیاز به مراجعه حضوری بررسی می‌شود.</p>
-              <Button className="mt-5" asChild>
-                <Link href="/online-legal-consultation">نحوه دریافت مشاوره آنلاین</Link>
-              </Button>
-            </div>
-            <div className="rounded-sm border border-border bg-card p-6">
-              <MapPin className="text-teal" size={24} aria-hidden="true" />
-              <h2 className="mt-4 text-lg font-bold text-foreground">خدمات حضوری در اهواز</h2>
-              <p className="mt-3 text-sm leading-7 text-muted-foreground">برای بررسی اصل اسناد و هماهنگی قبول وکالت می‌توانید به دفتر اهواز مراجعه کنید.</p>
-              <Button className="mt-5" variant="outline" asChild>
-                <Link href="/lawyer-ahvaz">نشانی و خدمات دفتر اهواز</Link>
-              </Button>
-            </div>
+      <section className="editorial-section editorial-section--soft">
+        <div className="mx-auto grid max-w-7xl gap-5 px-4 sm:px-6 lg:grid-cols-2">
+          <div className="legal-card p-5 sm:p-7 md:p-8">
+            <span className="legal-card__icon"><MonitorSmartphone size={21} aria-hidden="true" /></span>
+            <h2 className="mt-6 text-2xl font-extrabold text-foreground">مشاوره آنلاین برای سراسر ایران</h2>
+            <p className="mt-3 max-w-xl text-sm leading-8 text-muted-foreground">موضوع و مدارک اصلی را بدون مراجعه حضوری در حساب خصوصی ارسال کنید و در همان مسیر پاسخ را پیگیری کنید.</p>
+            <Button className="mt-6" asChild><Link href="/online-legal-consultation">نحوه دریافت مشاوره <ArrowLeft size={15} /></Link></Button>
+          </div>
+          <div className="legal-card p-5 sm:p-7 md:p-8">
+            <span className="legal-card__icon"><MapPin size={21} aria-hidden="true" /></span>
+            <h2 className="mt-6 text-2xl font-extrabold text-foreground">مراجعه حضوری در اهواز</h2>
+            <p className="mt-3 max-w-xl text-sm leading-8 text-muted-foreground">برای بررسی اصل اسناد، جلسه حضوری یا هماهنگی قبول وکالت می‌توانید موقعیت دفتر و نحوه مراجعه را ببینید.</p>
+            <Button className="mt-6" variant="outline" asChild><Link href="/lawyer-ahvaz">آدرس و اطلاعات دفتر <ArrowLeft size={15} /></Link></Button>
           </div>
         </div>
       </section>

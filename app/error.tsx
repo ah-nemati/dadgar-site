@@ -12,7 +12,7 @@ export default function ErrorPage({
 }) {
   return (
     <section className="min-h-[60vh] flex items-center justify-center px-6 py-16">
-      <div className="dashboard-card max-w-lg w-full p-8 text-center">
+      <div className="dashboard-card w-full max-w-lg p-5 text-center sm:p-8">
         <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-full bg-destructive/10 text-destructive">
           <RotateCcw size={26} aria-hidden="true" />
         </div>

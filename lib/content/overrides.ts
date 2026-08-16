@@ -21,7 +21,11 @@ const readContentOverride = unstable_cache(
   },
   ['content-overrides-v2'],
   {
-    revalidate: 300,
+    // Cloudflare/OpenNext is intentionally configured without a revalidation
+    // queue. Keep this cache indefinitely and invalidate it only after CMS
+    // mutations via updateTag()/revalidatePath(). A numeric TTL would trigger
+    // time-based ISR/data-cache revalidation and require a real OpenNext queue.
+    revalidate: false,
     tags: [CONTENT_CACHE_TAG],
   },
 );
