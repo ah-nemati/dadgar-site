@@ -1,5 +1,5 @@
 import { db } from '@/lib/db';
-import { requireAccount } from '@/lib/session';
+import { requireClient, requireStaff } from '@/lib/session';
 import type { Appointment, AppointmentStatus } from '@/types/content';
 
 interface AppointmentRow {
@@ -51,8 +51,7 @@ export async function getAppointmentReferenceTime(): Promise<string> {
 }
 
 export async function getUnavailableAppointmentSlots(maxAdvanceDays = 30): Promise<string[]> {
-  const account = await requireAccount();
-  if (!account) return [];
+  await requireClient();
   const safeDays = Math.min(180, Math.max(1, Math.trunc(maxAdvanceDays || 30)));
   const rows = await db<{ requestedAt: Date }[]>`
     select requested_at
@@ -65,31 +64,45 @@ export async function getUnavailableAppointmentSlots(maxAdvanceDays = 30): Promi
   return rows.map((row) => toTehranDateTimeLocal(row.requestedAt));
 }
 
-export async function getAppointments(): Promise<Appointment[]> {
-  const account = await requireAccount();
-  const rows = account.role !== 'CLIENT'
-    ? await db<AppointmentRow[]>`
-        select a.*, u.name as client_name, u.phone as client_phone, u.email as client_email
-        from appointments a join users u on u.id = a.client_id
-        order by
-          case when a.status in ('pending', 'confirmed') and a.requested_at >= now() then 0 else 1 end,
-          case when a.status in ('pending', 'confirmed') and a.requested_at >= now() then a.requested_at end asc,
-          a.requested_at desc
-      `
-    : await db<AppointmentRow[]>`
-        select a.*, u.name as client_name, u.phone as client_phone, u.email as client_email
-        from appointments a join users u on u.id = a.client_id
-        where a.client_id = ${account.id}
-        order by
-          case when a.status in ('pending', 'confirmed') and a.requested_at >= now() then 0 else 1 end,
-          case when a.status in ('pending', 'confirmed') and a.requested_at >= now() then a.requested_at end asc,
-          a.requested_at desc
-      `;
+export async function getStaffAppointments(): Promise<Appointment[]> {
+  await requireStaff();
+  const rows = await db<AppointmentRow[]>`
+    select a.*, u.name as client_name, u.phone as client_phone, u.email as client_email
+    from appointments a
+    join users u on u.id = a.client_id
+    order by
+      case
+        when a.status = 'pending' then 0
+        when a.status = 'confirmed' and a.requested_at >= now() then 1
+        when a.status = 'confirmed' then 2
+        when a.status = 'completed' then 3
+        else 4
+      end,
+      case when a.status = 'pending' then a.created_at end desc,
+      case when a.status = 'confirmed' and a.requested_at >= now() then a.requested_at end asc,
+      a.updated_at desc,
+      a.requested_at desc
+  `;
   return rows.map(toAppointment);
 }
 
-export async function createAppointment(clientId: string, subject: string, requestedAt: string): Promise<void> {
-  await db.begin(async (tx) => {
+export async function getClientAppointments(): Promise<Appointment[]> {
+  const account = await requireClient();
+  const rows = await db<AppointmentRow[]>`
+    select a.*, u.name as client_name, u.phone as client_phone, u.email as client_email
+    from appointments a
+    join users u on u.id = a.client_id
+    where a.client_id = ${account.id}
+    order by
+      case when a.status in ('pending', 'confirmed') and a.requested_at >= now() then 0 else 1 end,
+      case when a.status in ('pending', 'confirmed') and a.requested_at >= now() then a.requested_at end asc,
+      a.created_at desc
+  `;
+  return rows.map(toAppointment);
+}
+
+export async function createAppointment(clientId: string, subject: string, requestedAt: string): Promise<number> {
+  return db.begin(async (tx) => {
     await tx`select pg_advisory_xact_lock(hashtext(${requestedAt}))`;
 
     const [{ count }] = await tx<{ count: number | string }[]>`
@@ -106,7 +119,12 @@ export async function createAppointment(clientId: string, subject: string, reque
     `;
     if (conflict) throw new Error('APPOINTMENT_TIME_CONFLICT');
 
-    await tx`insert into appointments (client_id, subject, requested_at) values (${clientId}, ${subject}, ${requestedAt})`;
+    const [created] = await tx<{ id: number | string }[]>`
+      insert into appointments (client_id, subject, requested_at)
+      values (${clientId}, ${subject}, ${requestedAt})
+      returning id
+    `;
+    return Number(created.id);
   });
 }
 
@@ -139,7 +157,7 @@ export async function deleteAppointment(id: number): Promise<void> {
 }
 
 export async function cancelOwnAppointment(id: number): Promise<void> {
-  const account = await requireAccount();
+  const account = await requireClient();
   const result = await db`
     update appointments set status = 'cancelled'
     where id = ${id} and client_id = ${account.id} and status in ('pending', 'confirmed')

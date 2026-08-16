@@ -3,7 +3,7 @@ import { Briefcase, CalendarDays, MessageSquare, ShieldCheck } from 'lucide-reac
 import { getCurrentProfile } from '@/lib/profile';
 import { getCases } from '@/lib/cases';
 import { getSupportThreads } from '@/lib/support';
-import { getAppointments } from '@/lib/appointments';
+import { getClientAppointments } from '@/lib/appointments';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CASE_STATUS_LABEL, CASE_STATUS_VARIANT } from '@/lib/status';
@@ -16,7 +16,7 @@ export default async function PortalDashboardPage() {
     getCurrentProfile(),
     getCases(),
     getSupportThreads(),
-    getAppointments(),
+    getClientAppointments(),
   ]);
 
   const cards = [

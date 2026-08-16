@@ -1,6 +1,6 @@
 import { AppointmentRequestForm } from '@/components/AppointmentForms';
 import CancelAppointmentButton from '@/components/CancelAppointmentButton';
-import { getAppointmentReferenceTime, getAppointments, getUnavailableAppointmentSlots } from '@/lib/appointments';
+import { getAppointmentReferenceTime, getClientAppointments, getUnavailableAppointmentSlots } from '@/lib/appointments';
 import { Badge } from '@/components/ui/badge';
 import { Alert } from '@/components/ui/alert';
 import { APPOINTMENT_STATUS_LABEL, APPOINTMENT_STATUS_VARIANT } from '@/lib/status';
@@ -14,7 +14,7 @@ export default async function PortalAppointmentsPage() {
   await requireClient();
   const settings = await getAppointmentSettings();
   const [appointments, referenceTime, unavailableSlots] = await Promise.all([
-    getAppointments(),
+    getClientAppointments(),
     getAppointmentReferenceTime(),
     getUnavailableAppointmentSlots(settings.maxAdvanceDays),
   ]);

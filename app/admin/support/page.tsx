@@ -1,6 +1,7 @@
 import Link from '@/components/NoPrefetchLink';
 import { MessageSquare, Search } from 'lucide-react';
 import AdminHeader from '../AdminHeader';
+import ServerDataAutoRefresh from '@/components/admin/ServerDataAutoRefresh';
 import { getSupportThreads } from '@/lib/support';
 import { getPracticeAreas } from '@/lib/content/practice-areas';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +35,7 @@ export default async function AdminSupportPage({
 
   return (
     <div>
+      <ServerDataAutoRefresh intervalMs={10_000} />
       <AdminHeader
         title="گفت‌وگو با موکلان"
         description={`در حال حاضر ${toPersianDigits(open)} گفت‌وگو نیازمند پاسخ و ${toPersianDigits(answered)} گفت‌وگو پاسخ‌داده‌شده است.`}

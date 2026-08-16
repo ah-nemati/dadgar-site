@@ -39,8 +39,8 @@ export async function createAppointmentAction(
   const requestedAt = validation.iso;
 
   try {
-    await createAppointment(account.id, subject, requestedAt);
-    await recordAudit(account.id, 'appointment.request', 'appointment', null, { subject, requestedAt });
+    const appointmentId = await createAppointment(account.id, subject, requestedAt);
+    await recordAudit(account.id, 'appointment.request', 'appointment', appointmentId, { subject, requestedAt });
   } catch (error) {
     if (error instanceof Error && error.message === 'TOO_MANY_OPEN_APPOINTMENTS') {
       return { error: 'حداکثر پنج نوبت باز می‌توانید داشته باشید. ابتدا وضعیت نوبت‌های قبلی مشخص شود.' };

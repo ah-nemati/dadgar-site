@@ -1,5 +1,6 @@
 import { AlertTriangle, Inbox, MailOpen, Search, Send, UserRoundCheck } from 'lucide-react';
 import AdminHeader from '../AdminHeader';
+import ServerDataAutoRefresh from '@/components/admin/ServerDataAutoRefresh';
 import StatusControls from './StatusControls';
 import { saveMessageAdminDetails } from './actions';
 import { getConsultationRequests } from '@/lib/messages';
@@ -70,6 +71,7 @@ export default async function AdminMessagesPage({
 
   return (
     <div>
+      <ServerDataAutoRefresh intervalMs={10_000} />
       <AdminHeader
         title="درخواست‌های مشاوره"
         description="سرنخ‌های ورودی سایت را بررسی، اولویت‌بندی و نتیجه پیگیری را ثبت کنید."

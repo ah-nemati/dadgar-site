@@ -14,7 +14,8 @@ import { Label } from "@/components/ui/label";
 import { appointmentSettingsLabel, normalizeJalaliDateKey, type AppointmentSettings } from "@/lib/appointment-settings-shared";
 import type { Appointment } from "@/types/content";
 import { CalendarDays, CalendarPlus, CheckCircle2, Clock3, Info, Trash2 } from "lucide-react";
-import { useActionState, useMemo, useState, useTransition } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 
 function Feedback({ state }: { state: AppointmentFormState | undefined }) {
   if (state?.error)
@@ -259,9 +260,18 @@ export function AppointmentRequestForm({
 }) {
   const [state, formAction, pending] = useActionState(createAppointmentAction, undefined);
   const [requestedAt, setRequestedAt] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!state?.success) return;
+    formRef.current?.reset();
+    setRequestedAt("");
+    router.refresh();
+  }, [router, state?.success]);
 
   return (
-    <form action={formAction} className="dashboard-card space-y-5 p-5 md:p-6">
+    <form ref={formRef} action={formAction} className="dashboard-card space-y-5 p-5 md:p-6">
       <div>
         <h2 className="font-extrabold text-foreground">درخواست نوبت جدید</h2>
         <p className="mt-1 text-xs leading-6 text-muted-foreground">فقط زمان‌های واقعاً آزاد قابل انتخاب‌اند و روزهای تعطیل در تقویم مشخص شده‌اند.</p>

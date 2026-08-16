@@ -1,6 +1,6 @@
 import { CalendarCheck2, CalendarDays, Clock3, Search, Settings2 } from 'lucide-react';
 import AdminHeader from '../AdminHeader';
-import { getAppointmentReferenceTime, getAppointments } from '@/lib/appointments';
+import { getAppointmentReferenceTime, getStaffAppointments } from '@/lib/appointments';
 import { AppointmentAdminForm } from '@/components/AppointmentForms';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import { formatJalaliDateTime, toPersianDigits } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
 import { getAppointmentSettings } from '@/lib/content/appointment-settings';
 import { saveAppointmentSettingsAction } from './actions';
+import ServerDataAutoRefresh from '@/components/admin/ServerDataAutoRefresh';
 
 export const dynamic = 'force-dynamic';
 type SearchParams = Promise<{
@@ -37,7 +38,7 @@ function tehranDateKey(value: string | number | Date): string {
 export default async function AdminAppointmentsPage({ searchParams }: { searchParams: SearchParams }) {
   const account = await requireStaff();
   const [appointments, settings, query, referenceTime] = await Promise.all([
-    getAppointments(), getAppointmentSettings(), searchParams, getAppointmentReferenceTime(),
+    getStaffAppointments(), getAppointmentSettings(), searchParams, getAppointmentReferenceTime(),
   ]);
 
   const q = query.q?.trim().toLowerCase() ?? '';
@@ -67,6 +68,7 @@ export default async function AdminAppointmentsPage({ searchParams }: { searchPa
 
   return (
     <div>
+      <ServerDataAutoRefresh intervalMs={10_000} />
       <AdminHeader
         title="مدیریت نوبت‌ها"
         description="درخواست‌های زمانی را جستجو، تأیید، جابه‌جا، تکمیل یا لغو کنید."
@@ -157,6 +159,7 @@ export default async function AdminAppointmentsPage({ searchParams }: { searchPa
                   {item.clientPhone && <a href={`tel:${item.clientPhone}`} dir="ltr" className="hover:text-foreground">{item.clientPhone}</a>}
                   {item.clientEmail && <a href={`mailto:${item.clientEmail}`} dir="ltr" className="hover:text-foreground">{item.clientEmail}</a>}
                 </div>
+                <p className="mt-2 text-[11px] text-sky-700">ثبت درخواست: {formatJalaliDateTime(item.createdAt)}</p>
               </div>
               <div className="text-left">
                 <Badge variant={APPOINTMENT_STATUS_VARIANT[item.status]}>{APPOINTMENT_STATUS_LABEL[item.status]}</Badge>

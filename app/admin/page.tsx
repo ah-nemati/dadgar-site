@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { formatJalaliDate, toPersianDigits } from '@/lib/format';
 import { CASE_STATUS_LABEL, CASE_STATUS_VARIANT } from '@/lib/status';
 import { requireStaff } from '@/lib/session';
+import ServerDataAutoRefresh from '@/components/admin/ServerDataAutoRefresh';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,6 +34,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <div>
+      <ServerDataAutoRefresh intervalMs={15_000} />
       <AdminHeader
         title={account.role === 'LAWYER' ? 'داشبورد وکیل' : 'داشبورد مدیریت'}
         description="مواردی که نیاز به اقدام دارند در اولویت دیده می‌شوند؛ از این صفحه می‌توانید سریع وارد پرونده، درخواست یا گفت‌وگوی مربوط شوید."
