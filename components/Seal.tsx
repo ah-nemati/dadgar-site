@@ -14,7 +14,7 @@ interface SealProps {
 }
 
 export default function Seal({ size = 56, tone = 'gold', className = '' }: SealProps) {
-  const color = tone === 'gold' ? '#B08D45' : '#F6F1E6';
+  const color = tone === 'gold' ? '#0EA5E9' : '#7DD3FC';
   const ticks = Array.from({ length: 24 });
 
   return (

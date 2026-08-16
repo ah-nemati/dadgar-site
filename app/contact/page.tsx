@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
-import { Phone, Mail, MapPin, Clock } from 'lucide-react';
+import { Clock, Mail, MapPin, Phone, ShieldCheck } from 'lucide-react';
 import PageHero from '@/components/PageHero';
-import Seal from '@/components/Seal';
+import Eyebrow from '@/components/Eyebrow';
 import ContactForm from '@/components/ContactForm';
 import OfficeMap from '@/components/OfficeMap';
 import { getFirm } from '@/lib/content/firm';
@@ -15,68 +15,65 @@ export const metadata: Metadata = {
 };
 
 export default async function ContactPage() {
-  const firm = await getFirm();
-  const practiceAreas = await getPracticeAreas();
+  const [firm, practiceAreas] = await Promise.all([getFirm(), getPracticeAreas()]);
+
+  const contacts: Array<{ icon: typeof Phone; title: string; value: string; href?: string; dir?: 'ltr' }> = [
+    { icon: Phone, title: 'تلفن دفتر', value: firm.phone, href: firm.phoneHref, dir: 'ltr' as const },
+    ...(firm.phone2 ? [{ icon: Phone, title: 'تلفن همراه', value: firm.phone2, href: firm.phone2Href ?? '#', dir: 'ltr' as const }] : []),
+    { icon: Mail, title: 'ایمیل', value: firm.email, href: `mailto:${firm.email}`, dir: 'ltr' as const },
+    { icon: Clock, title: 'ساعات پاسخ‌گویی', value: firm.hours },
+  ];
 
   return (
     <>
-      <PageHero eyebrow="تماس با ما" title="درخواست بررسی حقوقی" description="موضوع و راه ارتباطی خود را ثبت کنید تا دفتر پس از بررسی اولیه برای اعلام نحوه ادامه، زمان و هزینه با شما تماس بگیرد." />
-      <section className="bg-parchment">
-        <div className="max-w-6xl mx-auto px-6 py-16 grid grid-cols-1 lg:grid-cols-5 gap-12">
-          <div className="lg:col-span-3">
-            <ContactForm practiceAreas={practiceAreas} />
-          </div>
+      <PageHero eyebrow="تماس با دفتر" title="موضوع را توضیح دهید؛ مسیر ارتباط را انتخاب کنید" description="برای بررسی اولیه می‌توانید فرم را تکمیل کنید، مستقیم تماس بگیرید یا برای مراجعه حضوری موقعیت دفتر را روی نقشه ببینید." />
 
-          <div className="lg:col-span-2">
-            <div className="bg-ink rounded-sm p-8 lg:sticky lg:top-28">
-              <Seal size={40} tone="cream" />
-              <h3 className="text-parchment font-bold text-lg mt-6 mb-6">راه‌های ارتباطی</h3>
-              <ul className="flex flex-col gap-5">
-                <li className="flex items-start gap-3">
-                  <Phone size={18} className="text-gold shrink-0 mt-0.5" aria-hidden="true" />
-                  <span>
-                    <span className="block text-parchment text-sm" dir="ltr" style={{ textAlign: 'right' }}>{firm.phone}</span>
-                    <span className="block text-xs mt-0.5 text-parchment/60">تلفن دفتر</span>
-                  </span>
-                </li>
-                {firm.phone2 && (
-                  <li className="flex items-start gap-3">
-                    <Phone size={18} className="text-gold shrink-0 mt-0.5" aria-hidden="true" />
-                    <span>
-                      <span className="block text-parchment text-sm" dir="ltr" style={{ textAlign: 'right' }}>{firm.phone2}</span>
-                      <span className="block text-xs mt-0.5 text-parchment/60">تلفن همراه</span>
-                    </span>
-                  </li>
-                )}
-                <li className="flex items-start gap-3">
-                  <Mail size={18} className="text-gold shrink-0 mt-0.5" aria-hidden="true" />
-                  <span>
-                    <span className="block text-parchment text-sm" dir="ltr" style={{ textAlign: 'right' }}>{firm.email}</span>
-                    <span className="block text-xs mt-0.5 text-parchment/60">ایمیل</span>
-                  </span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <MapPin size={18} className="text-gold shrink-0 mt-0.5" aria-hidden="true" />
-                  <span>
-                    <span className="block text-parchment text-sm leading-6">{firm.address}</span>
-                    <span className="block text-xs mt-0.5 text-parchment/60">آدرس دفتر</span>
-                  </span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Clock size={18} className="text-gold shrink-0 mt-0.5" aria-hidden="true" />
-                  <span>
-                    <span className="block text-parchment text-sm">{firm.hours}</span>
-                    <span className="block text-xs mt-0.5 text-parchment/60">ساعات کاری</span>
-                  </span>
-                </li>
-              </ul>
+      <section className="editorial-section">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="grid gap-10 lg:grid-cols-[1.25fr_.75fr] lg:items-start">
+            <div>
+              <div className="mb-7">
+                <Eyebrow>ارسال درخواست</Eyebrow>
+                <h2 className="text-2xl font-extrabold text-foreground md:text-3xl">شرح کوتاهی از مسئله ثبت کنید</h2>
+                <p className="mt-3 text-sm leading-7 text-muted-foreground">این فرم برای تماس اولیه است. برای ارسال مدارک پرونده از بخش «صحبت با وکیل» در حساب کاربری استفاده کنید.</p>
+              </div>
+              <ContactForm practiceAreas={practiceAreas} />
             </div>
+
+            <aside className="space-y-4 lg:sticky lg:top-28">
+              <div className="legal-card p-6 md:p-7">
+                <span className="legal-card__icon"><ShieldCheck size={20} /></span>
+                <h2 className="mt-5 text-xl font-extrabold text-foreground">راه‌های ارتباط مستقیم</h2>
+                <div className="mt-5 divide-y divide-border">
+                  {contacts.map(({ icon: Icon, title, value, href, dir }) => (
+                    <div key={title} className="flex items-start gap-3 py-4 first:pt-0 last:pb-0">
+                      <Icon size={18} className="mt-1 shrink-0 text-accent" aria-hidden="true" />
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-muted-foreground">{title}</p>
+                        {href ? <a href={href} dir={dir} className="mt-1 block break-all text-sm font-extrabold text-foreground hover:text-accent">{value}</a> : <p className="mt-1 text-sm font-extrabold text-foreground">{value}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-sky-200 bg-sky-50 p-6 text-sky-900 shadow-sm">
+                <MapPin className="text-sky-500" size={21} aria-hidden="true" />
+                <h2 className="mt-4 text-lg font-extrabold">مراجعه حضوری</h2>
+                <p className="mt-3 text-sm leading-7 text-sky-800/70">{firm.address}</p>
+                <p className="mt-4 text-xs leading-6 text-sky-700/60">پیش از مراجعه، برای زمان جلسه و مدارک مورد نیاز هماهنگ کنید.</p>
+              </div>
+            </aside>
           </div>
         </div>
-        <div className="max-w-6xl mx-auto px-6 pb-16">
-          <div className="mb-5">
-            <h2 className="text-2xl font-bold text-foreground">موقعیت دفتر روی نقشه</h2>
-            <p className="mt-2 text-sm leading-7 text-muted-foreground">برای مراجعه حضوری، نشانی و مسیر دفتر را روی نقشه بررسی کنید.</p>
+      </section>
+
+      <section className="editorial-section editorial-section--soft pt-0">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="mb-6">
+            <Eyebrow>موقعیت دفتر</Eyebrow>
+            <h2 className="text-2xl font-extrabold text-foreground md:text-3xl">آدرس دفتر روی نقشه</h2>
+            <p className="mt-2 text-sm leading-7 text-muted-foreground">نشانگر روی نقشه محل دفتر را مشخص می‌کند و از دکمه مسیریابی می‌توانید مسیر را در Google Maps باز کنید.</p>
           </div>
           <OfficeMap firm={firm} />
         </div>

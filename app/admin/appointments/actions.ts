@@ -4,7 +4,10 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { requireAdmin } from '@/lib/session';
 import { setContentOverride } from '@/lib/content/overrides';
-import type { AppointmentSettings } from '@/lib/appointment-settings-shared';
+import {
+  normalizeJalaliDateKey,
+  type AppointmentSettings,
+} from '@/lib/appointment-settings-shared';
 
 const ALLOWED_SLOT_MINUTES = new Set([15, 30, 60]);
 
@@ -19,13 +22,22 @@ export async function saveAppointmentSettingsAction(formData: FormData) {
   const closeHour = numberValue(formData, 'closeHour');
   const slotMinutes = numberValue(formData, 'slotMinutes');
   const minLeadHours = numberValue(formData, 'minLeadHours');
+  const maxAdvanceDays = numberValue(formData, 'maxAdvanceDays');
+  const holidayLines = String(formData.get('holidayDates') ?? '')
+    .split(/[\n,،;]+/)
+    .map((value) => value.trim())
+    .filter(Boolean);
+  const holidayDates = holidayLines.map(normalizeJalaliDateKey);
+  const hasInvalidHoliday = holidayDates.some((value) => !value);
 
   if (
     workingDays.length === 0 ||
     !Number.isInteger(openHour) || openHour < 0 || openHour > 23 ||
     !Number.isInteger(closeHour) || closeHour < 1 || closeHour > 24 || closeHour <= openHour ||
     !ALLOWED_SLOT_MINUTES.has(slotMinutes) ||
-    !Number.isFinite(minLeadHours) || minLeadHours < 0 || minLeadHours > 168
+    !Number.isFinite(minLeadHours) || minLeadHours < 0 || minLeadHours > 168 ||
+    !Number.isInteger(maxAdvanceDays) || maxAdvanceDays < 1 || maxAdvanceDays > 180 ||
+    hasInvalidHoliday
   ) {
     redirect('/admin/appointments?settingsError=1');
   }
@@ -37,6 +49,8 @@ export async function saveAppointmentSettingsAction(formData: FormData) {
     closeHour,
     slotMinutes,
     minLeadHours,
+    maxAdvanceDays,
+    holidayDates: Array.from(new Set(holidayDates.filter((value): value is string => Boolean(value)))),
   };
 
   await setContentOverride('appointment_settings', settings, admin.id);

@@ -80,7 +80,7 @@ export default async function AdminAppointmentsPage({ searchParams }: { searchPa
           </summary>
           <div className="pt-5">
             {query.settingsSaved && <Alert className="mb-4">تنظیمات نوبت‌دهی ذخیره شد.</Alert>}
-            {query.settingsError && <Alert variant="destructive" className="mb-4">روزها یا ساعت‌های واردشده معتبر نیست.</Alert>}
+            {query.settingsError && <Alert variant="destructive" className="mb-4">روزها، ساعت‌ها، بازه رزرو یا تاریخ‌های تعطیل واردشده معتبر نیست.</Alert>}
             <form action={saveAppointmentSettingsAction} className="space-y-5">
               <label className="flex items-center gap-2.5 text-sm"><Checkbox name="enabled" defaultChecked={settings.enabled} /> رزرو آنلاین فعال باشد</label>
               <div>
@@ -93,11 +93,24 @@ export default async function AdminAppointmentsPage({ searchParams }: { searchPa
                   ))}
                 </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
                 <div><Label htmlFor="openHour">شروع ساعت کاری</Label><Input id="openHour" name="openHour" type="number" min="0" max="23" defaultValue={settings.openHour} className="mt-2" /></div>
                 <div><Label htmlFor="closeHour">پایان ساعت کاری</Label><Input id="closeHour" name="closeHour" type="number" min="1" max="24" defaultValue={settings.closeHour} className="mt-2" /></div>
                 <div><Label htmlFor="slotMinutes">فاصله نوبت‌ها</Label><select id="slotMinutes" name="slotMinutes" defaultValue={settings.slotMinutes} className="mt-2 flex h-11 w-full rounded-sm border border-input bg-card px-4 text-sm"><option value="15">۱۵ دقیقه</option><option value="30">۳۰ دقیقه</option><option value="60">۶۰ دقیقه</option></select></div>
                 <div><Label htmlFor="minLeadHours">حداقل فاصله رزرو (ساعت)</Label><Input id="minLeadHours" name="minLeadHours" type="number" min="0" max="168" defaultValue={settings.minLeadHours} className="mt-2" /></div>
+                <div><Label htmlFor="maxAdvanceDays">حداکثر رزرو تا چند روز آینده</Label><Input id="maxAdvanceDays" name="maxAdvanceDays" type="number" min="1" max="180" defaultValue={settings.maxAdvanceDays} className="mt-2" /></div>
+              </div>
+              <div className="rounded-2xl border border-sky-100 bg-sky-50/60 p-4">
+                <Label htmlFor="holidayDates">روزهای تعطیل اختصاصی به تاریخ شمسی</Label>
+                <textarea
+                  id="holidayDates"
+                  name="holidayDates"
+                  rows={4}
+                  defaultValue={settings.holidayDates.map((date) => toPersianDigits(date)).join('\n')}
+                  className="mt-2 min-h-28 w-full rounded-xl border border-input bg-white px-4 py-3 text-sm leading-7 outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                  placeholder={'۱۴۰۵/۰۶/۰۱\n۱۴۰۵/۰۶/۱۵'}
+                />
+                <p className="mt-2 text-xs leading-6 text-muted-foreground">هر تاریخ را در یک خط وارد کنید. این روزها در تقویم موکل با برچسب «تعطیل» دیده می‌شوند و قابل انتخاب نیستند.</p>
               </div>
               <Button type="submit">ذخیره تنظیمات رزرو</Button>
             </form>

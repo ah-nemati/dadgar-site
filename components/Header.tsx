@@ -1,231 +1,117 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import Link from "@/components/NoPrefetchLink";
-import { usePathname } from "next/navigation";
-import {
-  CircleUserRound,
-  LockKeyhole,
-  Mail,
-  Menu,
-  Phone,
-  X,
-} from "lucide-react";
-import Seal from "./Seal";
-import { Button } from "@/components/ui/button";
-import type { Firm } from "@/types/content";
+import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { motion } from 'motion/react';
+import { ArrowLeft, CircleUserRound, Mail, Menu, Phone } from 'lucide-react';
+import Link from '@/components/NoPrefetchLink';
+import AccountEntryLink from '@/components/AccountEntryLink';
+import Seal from './Seal';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import type { Firm } from '@/types/content';
 
-const NAV_ITEMS = [
-  { href: "/", label: "خانه" },
-  { href: "/lawyer-ahvaz", label: "وکیل در اهواز" },
-  { href: "/online-legal-consultation", label: "مشاوره آنلاین" },
-  { href: "/practice-areas", label: "حوزه‌های تخصصی" },
-  { href: "/fees", label: "تعرفه‌ها" },
-  { href: "/blog", label: "وبلاگ" },
-  { href: "/faq", label: "سوالات متداول" },
-  { href: "/contact", label: "تماس با ما" },
+const DESKTOP_NAV = [
+  { href: '/', label: 'خانه' },
+  { href: '/practice-areas', label: 'حوزه‌های حقوقی' },
+  { href: '/lawyer-ahvaz', label: 'وکیل در اهواز' },
+  { href: '/online-legal-consultation', label: 'مشاوره آنلاین' },
+  { href: '/fees', label: 'تعرفه‌ها' },
+  { href: '/blog', label: 'مجله حقوقی' },
+  { href: '/contact', label: 'تماس' },
+];
+
+const MOBILE_NAV = [
+  ...DESKTOP_NAV,
+  { href: '/about', label: 'درباره دفتر' },
+  { href: '/faq', label: 'سوالات متداول' },
 ];
 
 export default function Header({ firm }: { firm: Firm }) {
-  const [menuPath, setMenuPath] = useState<string | null>(null);
   const pathname = usePathname();
-  const menuOpen = menuPath === pathname;
-  const isActive = (href: string) =>
-    href === "/" ? pathname === "/" : pathname.startsWith(href);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-
-    const previousOverflow = document.body.style.overflow;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenuPath(null);
-    };
-
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", closeOnEscape);
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", closeOnEscape);
-    };
-  }, [menuOpen]);
+  const [menuOpen, setMenuOpen] = useState(false);
+  useEffect(() => setMenuOpen(false), [pathname]);
+  const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
 
   return (
-    <header className="sticky top-0 z-50 bg-ink shadow-lg shadow-ink/10">
-      <div className="hidden border-b border-white/10 lg:block">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-2 text-sm">
+    <header className="site-header">
+      <div className="site-header__utility hidden xl:block">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-2.5">
           <div className="flex items-center gap-6">
-            <a href={firm.phoneHref} className="header-meta-link">
-              <Phone size={14} aria-hidden="true" />
-              <span dir="ltr">{firm.phone}</span>
-            </a>
-            {firm.phone2 && (
-              <a href={firm.phone2Href ?? "#"} className="header-meta-link">
-                <Phone size={14} aria-hidden="true" />
-                <span dir="ltr">{firm.phone2}</span>
-              </a>
-            )}
-            <a href={`mailto:${firm.email}`} className="header-meta-link">
-              <Mail size={14} aria-hidden="true" />
-              <span dir="ltr">{firm.email}</span>
-            </a>
+            <a href={firm.phoneHref} className="header-meta-link"><Phone size={13} /><span dir="ltr">{firm.phone}</span></a>
+            <a href={`mailto:${firm.email}`} className="header-meta-link"><Mail size={13} /><span dir="ltr">{firm.email}</span></a>
           </div>
-
-          <Link href="/account" prefetch={false} className="header-meta-link font-semibold">
-            <LockKeyhole size={14} aria-hidden="true" />
-            <span>حساب کاربری</span>
-          </Link>
+          <div className="flex items-center gap-5">
+            <Link href="/faq" className="header-meta-link">پرسش‌های متداول</Link>
+            <Link href="/about" className="header-meta-link">درباره دفتر</Link>
+            <AccountEntryLink className="header-meta-link font-bold"><CircleUserRound size={14} /> حساب کاربری</AccountEntryLink>
+          </div>
         </div>
       </div>
 
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="flex h-20 items-center justify-between lg:h-[4.75rem]">
-          <Link
-            href="/"
-            prefetch
-            className="flex shrink-0 items-center gap-3"
-            aria-label="صفحه اصلی"
-          >
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="site-header__main flex items-center gap-4 lg:grid lg:grid-cols-[auto_1fr_auto]">
+          <Link href="/" prefetch className="site-brand shrink-0" aria-label="صفحه اصلی">
             <Seal size={42} />
-            <div className="hidden text-right sm:block">
-              <div className="font-display text-xl leading-none text-parchment">
-                {firm.name}
-              </div>
-              <div className="mt-1 text-sm text-gold-light">
-                دفتر خدمات حقوقی
-              </div>
+            <div className="hidden sm:block">
+              <div className="site-brand__name">{firm.name}</div>
+              <div className="site-brand__meta">وکیل پایه یک دادگستری</div>
             </div>
           </Link>
 
-          <div className="flex items-center gap-2">
+          <nav className="header-desktop-nav hidden lg:flex" aria-label="منوی اصلی">
+            {DESKTOP_NAV.map((item) => {
+              const active = isActive(item.href);
+              return (
+                <Link key={item.href} href={item.href} prefetch aria-current={active ? 'page' : undefined} className="header-desktop-nav-link">
+                  <span className="relative z-10">{item.label}</span>
+                  {active && <motion.span layoutId="nav-active-pill" className="header-nav-active-pill" transition={{ type: 'spring', stiffness: 420, damping: 34 }} />}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="mr-auto flex items-center gap-2 lg:mr-0">
             <Button asChild size="sm" className="hidden lg:inline-flex">
-              <Link href="/online-legal-consultation" prefetch>
-                صحبت با وکیل
-              </Link>
+              <Link href="/online-legal-consultation" prefetch>صحبت با وکیل <ArrowLeft size={15} /></Link>
             </Button>
+            <AccountEntryLink className="header-icon-button inline-flex xl:hidden" aria-label="حساب کاربری">
+              <CircleUserRound size={20} />
+            </AccountEntryLink>
 
             <div className="lg:hidden">
-              <Link
-                href="/account"
-                prefetch={false}
-                className="header-icon-button inline-flex"
-                aria-label="حساب کاربری"
-              >
-                <CircleUserRound size={22} aria-hidden="true" />
-              </Link>
+              <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+                <SheetTrigger asChild>
+                  <button type="button" className="header-icon-button inline-flex" aria-label="باز کردن منو"><Menu size={21} /></button>
+                </SheetTrigger>
+                <SheetContent side="start" className="w-[min(90vw,24rem)] border-l border-sky-100 bg-white p-0 text-foreground">
+                  <SheetHeader className="border-b border-sky-100 bg-sky-50/70 px-5 py-5 text-right">
+                    <div className="flex items-center gap-3 pl-10">
+                      <Seal size={38} />
+                      <div>
+                        <SheetTitle className="text-sm font-extrabold text-foreground">{firm.name}</SheetTitle>
+                        <p className="mt-1 text-xs text-muted-foreground">دفتر خدمات حقوقی</p>
+                      </div>
+                    </div>
+                  </SheetHeader>
+                  <nav className="flex-1 overflow-y-auto p-4" aria-label="منوی موبایل">
+                    <div className="space-y-1.5">
+                      {MOBILE_NAV.map((item) => (
+                        <Link key={item.href} href={item.href} prefetch data-active={isActive(item.href)} className="mobile-nav-link" onClick={() => setMenuOpen(false)}>
+                          <span>{item.label}</span><ArrowLeft size={15} />
+                        </Link>
+                      ))}
+                    </div>
+                    <div className="my-5 h-px bg-sky-100" />
+                    <Button asChild className="w-full"><Link href="/online-legal-consultation" onClick={() => setMenuOpen(false)}>شروع مشاوره حقوقی <ArrowLeft size={16} /></Link></Button>
+                    <Button asChild variant="outline" className="mt-3 w-full"><AccountEntryLink onClick={() => setMenuOpen(false)}><CircleUserRound size={17} /> ورود به حساب کاربری</AccountEntryLink></Button>
+                  </nav>
+                </SheetContent>
+              </Sheet>
             </div>
-
-            <button
-              type="button"
-              className="header-icon-button inline-flex lg:hidden"
-              aria-label="باز کردن منو"
-              aria-controls="mobile-navigation"
-              aria-expanded={menuOpen}
-              onClick={() => setMenuPath(pathname)}
-            >
-              <Menu size={24} aria-hidden="true" />
-            </button>
           </div>
         </div>
       </div>
-
-      <div className="hidden border-t border-white/10 lg:block">
-        <div className="mx-auto max-w-6xl px-6">
-          <nav
-            className="flex min-h-12 items-stretch justify-center"
-            aria-label="منوی اصلی"
-          >
-            {NAV_ITEMS.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                prefetch
-                aria-current={isActive(item.href) ? "page" : undefined}
-                className={`header-desktop-nav-link ${
-                  isActive(item.href) ? "header-desktop-nav-link--active" : ""
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-      </div>
-
-      {menuOpen && (
-        <div
-          className="fixed inset-0 z-[70] lg:hidden"
-          role="dialog"
-          aria-modal="true"
-          aria-label="منوی سایت"
-        >
-          <button
-            type="button"
-            className="absolute inset-0 bg-black/55"
-            aria-label="بستن منو"
-            onClick={() => setMenuPath(null)}
-          />
-          <div
-            id="mobile-navigation"
-            className="absolute inset-y-0 right-0 flex w-[min(86vw,22rem)] flex-col bg-ink shadow-2xl"
-          >
-            <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
-              <span className="font-display text-lg text-parchment">
-                {firm.name}
-              </span>
-              <button
-                type="button"
-                className="header-icon-button inline-flex"
-                aria-label="بستن منو"
-                onClick={() => setMenuPath(null)}
-                autoFocus
-              >
-                <X size={22} aria-hidden="true" />
-              </button>
-            </div>
-            <nav
-              className="flex flex-1 flex-col gap-1 overflow-y-auto px-4 py-5"
-              aria-label="منوی موبایل"
-            >
-              {NAV_ITEMS.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  prefetch
-                  onClick={() => setMenuPath(null)}
-                  aria-current={isActive(item.href) ? "page" : undefined}
-                  className={`rounded-sm px-3 py-3 text-right text-base font-medium ${
-                    isActive(item.href)
-                      ? "bg-parchment text-ink"
-                      : "text-parchment/85 hover:bg-white/5"
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              ))}
-              <div className="my-2 border-t border-white/10" />
-              <Link
-                href="/account"
-                prefetch={false}
-                onClick={() => setMenuPath(null)}
-                className="flex items-center gap-2 px-3 py-3 text-base font-medium text-parchment/90"
-              >
-                <CircleUserRound size={17} aria-hidden="true" />
-                حساب کاربری
-              </Link>
-              <Button asChild className="mt-2">
-                <Link
-                  href="/online-legal-consultation"
-                  prefetch
-                  onClick={() => setMenuPath(null)}
-                >
-                  صحبت با وکیل
-                </Link>
-              </Button>
-            </nav>
-          </div>
-        </div>
-      )}
     </header>
   );
 }

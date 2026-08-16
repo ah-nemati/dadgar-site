@@ -1,66 +1,46 @@
 import Eyebrow from "@/components/Eyebrow";
-import PatternStrip from "@/components/PatternStrip";
-import Seal from "@/components/Seal";
 import { Button } from "@/components/ui/button";
-import { blogPostPath } from "@/lib/blog-slug";
 import { getFirm } from "@/lib/content/firm";
 import { getLawyers } from "@/lib/content/lawyers";
 import { getPracticeAreas } from "@/lib/content/practice-areas";
 import { getBlogPosts } from "@/lib/content/blog";
-import { PRACTICE_AREA_ICONS } from "@/lib/icons";
 import {
   ArrowLeft,
   Award,
-  Calendar,
-  MessageSquare,
+  CalendarCheck,
+  Check,
+  FileSearch,
+  MapPin,
+  MessageSquareText,
   Phone,
-  Search,
+  Scale,
   ShieldCheck,
-  type LucideIcon,
 } from "lucide-react";
 import Image from "next/image";
+import Reveal from "@/components/motion/Reveal";
+import PracticeAreaSwiper from "@/components/home/PracticeAreaSwiper";
+import BlogSwiper from "@/components/home/BlogSwiper";
 import Link from "@/components/NoPrefetchLink";
 
-interface InfoPoint {
-  icon: LucideIcon;
-  title?: string;
-  label?: string;
-  text?: string;
-}
-
-const trustPoints: InfoPoint[] = [
-  { icon: Award, label: "پوشش ۹ حوزه اصلی حقوقی و کیفری" },
-  { icon: ShieldCheck, label: "محرمانگی کامل اطلاعات" },
-  { icon: Calendar, label: "مشاوره آنلاین سراسر ایران و حضوری اهواز" },
-  { icon: MessageSquare, label: "اعلام شفاف حدود خدمت و هزینه پیش از شروع" },
-];
-
-const whyUs: InfoPoint[] = [
-  {
-    icon: Award,
-    title: "پوشش موضوعی گسترده",
-    text: "موضوعات حقوقی، کیفری، خانواده، املاک، چک، قرارداد، ارث، امور ثبتی، مطالبات و حقوق کار بررسی می‌شوند.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "محرمانگی کامل",
-    text: "اطلاعات و اسناد پرونده شما با بالاترین استاندارد امنیتی محافظت و صرفاً در اختیار تیم مسئول پرونده قرار می‌گیرد.",
-  },
-  {
-    icon: Search,
-    title: "شفافیت در فرآیند",
-    text: "از همان جلسه اول، مراحل، زمان‌بندی و هزینه‌های احتمالی پرونده به‌روشنی برای شما تشریح می‌شود.",
-  },
-  {
-    icon: Calendar,
-    title: "دسترسی آسان",
-    text: "متقاضیان سراسر ایران می‌توانند مشاوره غیرحضوری دریافت کنند و مراجعه حضوری در دفتر اهواز انجام می‌شود.",
-  },
-];
-
-// Keep the landing page fully static on Cloudflare Workers Free.
-// Dynamic database work belongs to /blog and authenticated dashboards.
 export const dynamic = "force-static";
+
+const process = [
+  {
+    n: "۰۱",
+    title: "شرح مسئله و ارسال مدارک",
+    text: "موضوع را کوتاه توضیح می‌دهید و در صورت نیاز، مدارک اولیه را از مسیر خصوصی ارسال می‌کنید.",
+  },
+  {
+    n: "۰۲",
+    title: "بررسی و تعیین مسیر",
+    text: "موضوع از نظر حقوقی بررسی می‌شود تا نوع مشاوره، مدارک تکمیلی و قدم بعدی روشن باشد.",
+  },
+  {
+    n: "۰۳",
+    title: "مشاوره یا پیگیری پرونده",
+    text: "پس از روشن‌شدن حدود خدمت و هزینه، مشاوره انجام می‌شود یا درباره قبول و پیگیری پرونده تصمیم می‌گیرید.",
+  },
+];
 
 export default async function HomePage() {
   const [firm, practiceAreas, lawyers, blogPosts] = await Promise.all([
@@ -69,253 +49,212 @@ export default async function HomePage() {
     getLawyers(),
     getBlogPosts(),
   ]);
-  const currentTrustPoints = trustPoints.map((item, index) =>
-    index === 0 ? { ...item, label: `پوشش ${practiceAreas.length.toLocaleString("fa-IR")} حوزه اصلی حقوقی و کیفری` } : item
-  );
+
+  const lawyer = lawyers[0];
+  const trustPoints = [
+    { icon: Scale, label: `${practiceAreas.length.toLocaleString("fa-IR")} حوزه اصلی حقوقی و کیفری` },
+    { icon: ShieldCheck, label: "محرمانگی اطلاعات و مدارک" },
+    { icon: CalendarCheck, label: "مشاوره آنلاین و مراجعه حضوری" },
+    { icon: FileSearch, label: "بررسی شفاف مسیر و حدود خدمت" },
+  ];
 
   return (
     <>
-      {/* HERO */}
-      <section className="hero-motion bg-ink relative overflow-hidden">
-        <div
-          className="absolute"
-          style={{ left: "-6%", top: "-10%", opacity: 0.07 }}
-          aria-hidden="true"
-        >
-          <Seal size={460} tone="cream" />
-        </div>
-        <div className="max-w-6xl mx-auto px-6 pt-16 pb-20 md:pt-24 md:pb-28 relative">
-          <Eyebrow dark>{firm.name} — دفتر خدمات حقوقی</Eyebrow>
-          <h1 className="text-4xl md:text-6xl font-bold text-parchment leading-tight mb-6 max-w-3xl">
-            مشاوره حقوقی آنلاین سراسر ایران؛ خدمات حضوری در اهواز
-          </h1>
-          <p className="text-parchment/80 max-w-2xl text-base md:text-lg leading-8 mb-10">
-            {firm.name} در موضوعات حقوقی و کیفری، از بررسی اولیه و تنظیم اوراق
-            تا قبول و پیگیری پرونده، خدمات حقوقی شفاف و محرمانه ارائه می‌دهد.
-          </p>
-          <div className="flex flex-wrap items-center gap-4">
-            <Button size="lg" asChild>
-              <Link href="/online-legal-consultation">
-                مشاوره حقوقی آنلاین
-                <ArrowLeft size={18} aria-hidden="true" />
-              </Link>
-            </Button>
-            <Button size="lg" variant="ghostLight" asChild>
-              <Link href="/lawyer-ahvaz">مراجعه حضوری در اهواز</Link>
-            </Button>
+      <section className="legal-hero">
+        <div className="legal-hero__grid mx-auto max-w-7xl px-6">
+          <div className="relative z-10">
+            <Eyebrow dark>{firm.name} · دفتر وکالت و خدمات حقوقی</Eyebrow>
+            <h1 className="legal-hero__title">
+              مسئله حقوقی را با مسیر روشن‌تر و تصمیم دقیق‌تر پیگیری کنید.
+            </h1>
+            <p className="legal-hero__description">
+              مشاوره حقوقی آنلاین برای سراسر ایران و خدمات حضوری در اهواز؛ از بررسی اولیه و تنظیم اوراق تا قبول و پیگیری پرونده‌های حقوقی و کیفری.
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button size="lg" asChild>
+                <Link href="/online-legal-consultation">
+                  شروع مشاوره حقوقی <ArrowLeft size={17} aria-hidden="true" />
+                </Link>
+              </Button>
+              <Button size="lg" variant="ghostLight" asChild>
+                <Link href="/lawyer-ahvaz">
+                  <MapPin size={17} aria-hidden="true" /> مراجعه حضوری در اهواز
+                </Link>
+              </Button>
+            </div>
+
+            <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-sky-800/65">
+              <span className="inline-flex items-center gap-2"><Check size={14} className="text-gold-light" /> بررسی اولیه موضوع</span>
+              <span className="inline-flex items-center gap-2"><Check size={14} className="text-gold-light" /> ارسال امن مدارک</span>
+              <span className="inline-flex items-center gap-2"><Check size={14} className="text-gold-light" /> ارتباط مستقیم با دفتر</span>
+            </div>
+          </div>
+
+          <div className="legal-hero__aside load-reveal">
+            <div className="absolute inset-x-5 inset-y-0 overflow-hidden rounded-[1.35rem] border border-white/10 bg-white/5 shadow-2xl">
+              <Image
+                src="/images/profile.jpeg"
+                alt={lawyer ? `تصویر ${lawyer.name}` : "وکیل دفتر"}
+                fill
+                priority
+                sizes="(max-width: 1024px) 0px, 380px"
+                className="object-cover object-center opacity-90 grayscale-[12%]"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/10 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 p-5">
+                <p className="text-lg font-extrabold text-parchment">{lawyer?.name ?? firm.name}</p>
+                <p className="mt-1 text-xs text-parchment/65">{lawyer?.role ?? "وکیل پایه یک دادگستری"}</p>
+                {lawyer?.licenseNumber && (
+                  <p className="mt-3 inline-flex rounded-full border border-white/15 bg-black/15 px-3 py-1 text-[11px] text-gold-light">
+                    پروانه وکالت {lawyer.licenseNumber}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="legal-hero__note">
+              <Award size={17} className="mb-2 text-gold-light" aria-hidden="true" />
+              بررسی هر موضوع بر اساس اسناد و شرایط اختصاصی همان پرونده انجام می‌شود.
+            </div>
           </div>
         </div>
-        <PatternStrip id="pattern-hero-bottom" color="#B08D45" />
       </section>
 
-      {/* SERVICE SLIDER — CSS-only, no client JavaScript */}
-      <nav className="service-slider" aria-label="دسترسی سریع به خدمات حقوقی">
-        <div className="service-slider__track">
-          <Link className="service-slider__item" href="/online-legal-consultation">مشاوره حقوقی آنلاین</Link>
-          <Link className="service-slider__item" href="/lawyer-ahvaz">وکیل پایه یک دادگستری در اهواز</Link>
-          <Link className="service-slider__item" href="/practice-areas/real-estate">مشاوره و دعاوی ملکی</Link>
-          <Link className="service-slider__item" href="/practice-areas/criminal">وکیل و مشاوره دعاوی کیفری</Link>
-          <Link className="service-slider__item" href="/practice-areas/family">مشاوره حقوق خانواده</Link>
-          <Link className="service-slider__item" href="/practice-areas/contracts">تنظیم و بررسی قرارداد</Link>
-        </div>
-      </nav>
-
-      {/* TRUST STRIP */}
-      <section className="bg-card border-b border-border">
-        <div className="stagger-load max-w-6xl mx-auto px-6 py-8 grid grid-cols-2 lg:grid-cols-4 gap-6">
-          {currentTrustPoints.map((t, i) => (
-            <div key={i} className="flex items-center gap-3">
-              <t.icon
-                size={22}
-                className="text-gold shrink-0"
-                aria-hidden="true"
-              />
-              <span className="text-sm font-medium text-foreground">
-                {t.label}
-              </span>
+      <div className="trust-bar mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="trust-bar__inner stagger-load">
+          {trustPoints.map(({ icon: Icon, label }) => (
+            <div key={label} className="trust-bar__item">
+              <span className="legal-card__icon size-10 shrink-0"><Icon size={18} aria-hidden="true" /></span>
+              <span className="text-sm font-bold leading-6 text-foreground">{label}</span>
             </div>
           ))}
         </div>
+      </div>
+
+      <section className="editorial-section">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="grid gap-8 lg:grid-cols-[.78fr_1.22fr] lg:items-end">
+            <div className="section-kicker mb-0">
+              <Eyebrow>از کجا شروع کنم؟</Eyebrow>
+              <h2 className="section-title">مسیر کوتاه‌تر برای رسیدن به خدمت مناسب</h2>
+              <p className="section-copy">به‌جای جست‌وجوی پراکنده، از نوع نیاز خود شروع کنید.</p>
+            </div>
+            <div className="quick-services">
+              <Link className="quick-services__item" href="/online-legal-consultation"><span>مشاوره حقوقی آنلاین</span><ArrowLeft size={15} /></Link>
+              <Link className="quick-services__item" href="/lawyer-ahvaz"><span>مراجعه به دفتر اهواز</span><ArrowLeft size={15} /></Link>
+              <Link className="quick-services__item" href="/fees"><span>بررسی نحوه تعیین تعرفه</span><ArrowLeft size={15} /></Link>
+              <Link className="quick-services__item" href="/faq"><span>پاسخ پرسش‌های متداول</span><ArrowLeft size={15} /></Link>
+            </div>
+          </div>
+        </div>
       </section>
 
-      {/* PRACTICE AREAS */}
-      <section className="bg-parchment">
-        <div className="max-w-6xl mx-auto px-6 py-20">
-          <div className="max-w-2xl mb-12">
-            <Eyebrow>حوزه‌های تخصصی</Eyebrow>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              خدمات حقوقی در حوزه‌های اصلی دعاوی
-            </h2>
-            <p className="text-muted-foreground leading-7">
-              هر پرونده، ویژگی‌های حقوقی خاص خود را دارد. با تمرکز موضوعی روی هر
-              حوزه، راهکاری متناسب با شرایط شما ارائه می‌شود.
-            </p>
+      <section className="editorial-section editorial-section--soft">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <div className="section-kicker mb-0">
+              <Eyebrow>حوزه‌های خدمات</Eyebrow>
+              <h2 className="section-title">موضوع پرونده خود را پیدا کنید</h2>
+              <p className="section-copy">خدمات دفتر در حوزه‌های اصلی دعاوی و امور حقوقی دسته‌بندی شده تا سریع‌تر به اطلاعات مرتبط برسید.</p>
+            </div>
+            <Button variant="outline" asChild>
+              <Link href="/practice-areas">همه حوزه‌ها <ArrowLeft size={16} /></Link>
+            </Button>
           </div>
-          <div className="stagger-load grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {practiceAreas.map((area) => {
-              const AreaIcon = PRACTICE_AREA_ICONS[area.icon];
-              return (
-                <Link
-                  key={area.slug}
-                  href={`/practice-areas/${area.slug}`}
-                  className="bg-card border border-border hover:border-gold hover:-translate-y-0.5 transition-all rounded-sm p-6 text-right flex flex-col items-start"
-                >
-                  <div className="w-12 h-12 rounded-sm bg-ink flex items-center justify-center mb-5">
-                    <AreaIcon
-                      size={22}
-                      className="text-gold"
-                      aria-hidden="true"
-                    />
+
+          <Reveal className="mt-10">
+            <PracticeAreaSwiper areas={practiceAreas.slice(0, 9)} />
+          </Reveal>
+        </div>
+      </section>
+
+      <section className="editorial-section">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="grid gap-12 lg:grid-cols-[.8fr_1.2fr] lg:items-start">
+            <div className="section-kicker lg:sticky lg:top-32">
+              <Eyebrow>فرآیند همکاری</Eyebrow>
+              <h2 className="section-title">از سؤال اولیه تا تصمیم حقوقی</h2>
+              <p className="section-copy">فرآیند باید برای موکل قابل فهم باشد؛ قبل از شروع، بدانید مرحله بعدی چیست.</p>
+              <Button className="mt-6" variant="secondary" asChild>
+                <Link href="/online-legal-consultation">ثبت درخواست مشاوره <ArrowLeft size={16} /></Link>
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              {process.map((step) => (
+                <article key={step.n} className="legal-card grid gap-5 p-6 sm:grid-cols-[4rem_1fr] sm:p-7">
+                  <div className="text-3xl font-extrabold text-gold">{step.n}</div>
+                  <div>
+                    <h3 className="text-lg font-extrabold text-foreground">{step.title}</h3>
+                    <p className="mt-2 text-sm leading-7 text-muted-foreground">{step.text}</p>
                   </div>
-                  <h3 className="text-lg font-bold text-foreground mb-2">
-                    {area.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground leading-7 mb-4">
-                    {area.shortDesc}
-                  </p>
-                  <span className="inline-flex items-center gap-1.5 text-teal font-semibold text-sm mt-auto">
-                    بیشتر بدانید <ArrowLeft size={15} aria-hidden="true" />
-                  </span>
-                </Link>
-              );
-            })}
+                </article>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* WHY US */}
-      <section className="bg-ink">
-        <div className="max-w-6xl mx-auto px-6 py-20">
-          <div className="max-w-2xl mb-12">
-            <Eyebrow dark>چرا {firm.name}</Eyebrow>
-            <h2 className="text-3xl md:text-4xl font-bold text-parchment">
-              تعهدی که پشت هر پرونده می‌ایستد
-            </h2>
-          </div>
-          <div className="stagger-load grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {whyUs.map((w, i) => (
-              <div key={i}>
-                <w.icon
-                  size={26}
-                  className="text-gold mb-4"
-                  aria-hidden="true"
-                />
-                <h3 className="text-parchment font-bold mb-2">{w.title}</h3>
-                <p className="text-sm leading-7 text-parchment/75">{w.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* LAWYER SPOTLIGHT */}
-      <section className="bg-parchment">
-        <div className="max-w-6xl mx-auto px-6 py-20">
-          <Eyebrow>معرفی وکیل</Eyebrow>
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-12">
-            وکیلی که پرونده شما را پیگیری می‌کند
-          </h2>
-          {lawyers[0] && (
-            <div className="load-reveal bg-card border border-border rounded-sm p-8 md:p-10 flex flex-col md:flex-row items-center md:items-start gap-8 text-center md:text-right">
-              <div className="relative w-36 h-36 md:w-40 md:h-40 overflow-hidden rounded-full border-4 border-gold/40 bg-ink-2 shadow-2xl">
+      {lawyer && (
+        <section className="editorial-section pt-0">
+          <div className="mx-auto max-w-7xl px-6">
+            <div className="lawyer-feature grid overflow-hidden lg:grid-cols-[.78fr_1.22fr]">
+              <div className="relative min-h-[25rem] lg:min-h-[31rem]">
                 <Image
                   src="/images/profile.jpeg"
-                  alt={`تصویر ${lawyers[0].name}`}
+                  alt={`تصویر ${lawyer.name}`}
                   fill
-                  priority
-                  sizes="(max-width: 640px) 144px, 160px"
+                  sizes="(max-width: 1024px) 100vw, 520px"
                   className="object-cover object-center"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-ink/35 to-transparent lg:bg-gradient-to-l" />
               </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-bold text-foreground mb-1">
-                  {lawyers[0].name}
-                </h3>
-                <p className="text-teal font-semibold text-sm mb-4">
-                  {lawyers[0].role} — {lawyers[0].experience}
-                </p>
-                <p className="text-muted-foreground leading-7 mb-6 max-w-2xl">
-                  {lawyers[0].bio}
-                </p>
-                <Button asChild>
-                  <Link href={`/lawyers/${lawyers[0].slug}`}>
-                    مشاهده پروفایل کامل{" "}
-                    <ArrowLeft size={16} aria-hidden="true" />
-                  </Link>
-                </Button>
+              <div className="relative z-10 flex flex-col justify-center p-7 sm:p-10 lg:p-14">
+                <Eyebrow dark>وکیل پرونده</Eyebrow>
+                <h2 className="text-3xl font-extrabold leading-relaxed text-sky-900 md:text-4xl">{lawyer.name}</h2>
+                <p className="mt-2 font-bold text-gold-light">{lawyer.role} · {lawyer.experience}</p>
+                <p className="mt-6 max-w-2xl text-sm leading-8 text-sky-800/75">{lawyer.bio}</p>
+                <div className="mt-7 flex flex-wrap gap-3">
+                  <Button asChild><Link href={`/lawyers/${lawyer.slug}`}>مشاهده پروفایل کامل <ArrowLeft size={16} /></Link></Button>
+                  <Button asChild variant="ghostLight"><Link href="/online-legal-consultation"><MessageSquareText size={16} /> صحبت با وکیل</Link></Button>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* BLOG PREVIEW */}
-      {blogPosts.length > 0 && (
-        <section className="bg-card">
-          <div className="max-w-6xl mx-auto px-6 py-20">
-            <div className="flex flex-wrap items-end justify-between gap-6 mb-12">
-              <div className="max-w-2xl">
-                <Eyebrow>وبلاگ حقوقی</Eyebrow>
-                <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-                  آخرین مطالب و یادداشت‌های حقوقی
-                </h2>
-              </div>
-              <Link
-                href="/blog"
-                className="inline-flex items-center gap-1.5 text-teal hover:text-gold font-semibold text-sm transition-colors"
-              >
-                مشاهده همه مطالب <ArrowLeft size={15} aria-hidden="true" />
-              </Link>
-            </div>
-            <div className="stagger-load grid grid-cols-1 md:grid-cols-3 gap-6">
-              {blogPosts.slice(0, 3).map((post) => (
-                <Link
-                  key={post.slug}
-                  href={blogPostPath(post.slug)}
-                  className="bg-parchment border border-border hover:border-gold hover:-translate-y-0.5 transition-all rounded-sm p-6 text-right flex flex-col items-start"
-                >
-                  <span className="text-xs font-semibold text-teal mb-3">
-                    {post.category}
-                  </span>
-                  <h3 className="text-base font-bold text-foreground mb-3 leading-7">
-                    {post.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground leading-7 mb-4">
-                    {post.excerpt}
-                  </p>
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground mt-auto">
-                    <span>{post.date}</span>
-                    <span>·</span>
-                    <span>{post.readTime}</span>
-                  </div>
-                </Link>
-              ))}
             </div>
           </div>
         </section>
       )}
 
-      {/* CTA BAND */}
-      <section className="bg-teal">
-        <div className="max-w-4xl mx-auto px-6 py-16 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-parchment mb-4">
-            پیش از شروع، حوزه خدمت و نحوه تعیین هزینه را بررسی کنید
-          </h2>
-          <p className="mb-8 text-parchment/85">
-            رزرو و پرداخت اینترنتی فعلاً فعال نیست؛ هماهنگی از طریق تماس یا فرم درخواست انجام می‌شود.
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <Button size="lg" asChild>
-              <Link href="/fees">
-                مشاهده تعرفه خدمات <ArrowLeft size={18} aria-hidden="true" />
-              </Link>
-            </Button>
-            <Button size="lg" variant="ghostLight" asChild>
-              <Link href={firm.phoneHref}>
-                <Phone size={18} aria-hidden="true" />{" "}
-                <span dir="ltr">{firm.phone}</span>
-              </Link>
-            </Button>
+      {blogPosts.length > 0 && (
+        <section className="editorial-section editorial-section--soft">
+          <div className="mx-auto max-w-7xl px-6">
+            <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+              <div className="section-kicker mb-0">
+                <Eyebrow>مجله حقوقی</Eyebrow>
+                <h2 className="section-title">مطالبی برای تصمیم آگاهانه‌تر</h2>
+                <p className="section-copy">یادداشت‌ها و راهنماهای حقوقی با هدف توضیح روشن موضوعات رایج.</p>
+              </div>
+              <Link href="/blog" className="inline-flex items-center gap-2 text-sm font-bold text-accent hover:text-primary">همه مطالب <ArrowLeft size={15} /></Link>
+            </div>
+
+            <Reveal className="mt-10">
+              <BlogSwiper posts={blogPosts.slice(0, 6)} />
+            </Reveal>
+          </div>
+        </section>
+      )}
+
+      <section className="editorial-section">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="cta-panel grid gap-8 p-7 sm:p-10 lg:grid-cols-[1fr_auto] lg:items-center lg:p-12">
+            <div>
+              <p className="text-xs font-bold text-gold-light">قدم بعدی</p>
+              <h2 className="mt-2 max-w-2xl text-2xl font-extrabold leading-relaxed text-sky-900 md:text-3xl">موضوع حقوقی خود را توضیح دهید تا مسیر مناسب بررسی مشخص شود.</h2>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-sky-800/70">برای شروع لازم نیست تمام جزئیات را بدانید؛ شرح کوتاه مسئله و مدارک اصلی کافی است.</p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Button size="lg" asChild><Link href="/online-legal-consultation">شروع مشاوره <ArrowLeft size={17} /></Link></Button>
+              <Button size="lg" variant="ghostLight" asChild><a href={firm.phoneHref}><Phone size={17} /> <span dir="ltr">{firm.phone}</span></a></Button>
+            </div>
           </div>
         </div>
       </section>

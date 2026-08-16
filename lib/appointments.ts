@@ -30,9 +30,39 @@ function toAppointment(row: AppointmentRow): Appointment {
   };
 }
 
+function toTehranDateTimeLocal(value: Date | string): string {
+  const date = value instanceof Date ? value : new Date(value);
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Tehran',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  });
+  const parts = Object.fromEntries(formatter.formatToParts(date).map((part) => [part.type, part.value]));
+  return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`;
+}
+
 export async function getAppointmentReferenceTime(): Promise<string> {
   const [row] = await db<{ now: Date }[]>`select current_timestamp as now`;
   return row.now.toISOString();
+}
+
+export async function getUnavailableAppointmentSlots(maxAdvanceDays = 30): Promise<string[]> {
+  const account = await requireAccount();
+  if (!account) return [];
+  const safeDays = Math.min(180, Math.max(1, Math.trunc(maxAdvanceDays || 30)));
+  const rows = await db<{ requestedAt: Date }[]>`
+    select requested_at
+    from appointments
+    where status in ('pending', 'confirmed')
+      and requested_at >= now()
+      and requested_at <= now() + (${safeDays} * interval '1 day')
+    order by requested_at asc
+  `;
+  return rows.map((row) => toTehranDateTimeLocal(row.requestedAt));
 }
 
 export async function getAppointments(): Promise<Appointment[]> {
@@ -59,12 +89,25 @@ export async function getAppointments(): Promise<Appointment[]> {
 }
 
 export async function createAppointment(clientId: string, subject: string, requestedAt: string): Promise<void> {
-  const [{ count }] = await db<{ count: number | string }[]>`
-    select count(*)::int as count from appointments
-    where client_id = ${clientId} and status in ('pending', 'confirmed')
-  `;
-  if (Number(count) >= 5) throw new Error('TOO_MANY_OPEN_APPOINTMENTS');
-  await db`insert into appointments (client_id, subject, requested_at) values (${clientId}, ${subject}, ${requestedAt})`;
+  await db.begin(async (tx) => {
+    await tx`select pg_advisory_xact_lock(hashtext(${requestedAt}))`;
+
+    const [{ count }] = await tx<{ count: number | string }[]>`
+      select count(*)::int as count from appointments
+      where client_id = ${clientId} and status in ('pending', 'confirmed')
+    `;
+    if (Number(count) >= 5) throw new Error('TOO_MANY_OPEN_APPOINTMENTS');
+
+    const [conflict] = await tx<{ id: number | string }[]>`
+      select id from appointments
+      where requested_at = ${requestedAt}
+        and status in ('pending', 'confirmed')
+      limit 1
+    `;
+    if (conflict) throw new Error('APPOINTMENT_TIME_CONFLICT');
+
+    await tx`insert into appointments (client_id, subject, requested_at) values (${clientId}, ${subject}, ${requestedAt})`;
+  });
 }
 
 export async function updateAppointment(
@@ -78,11 +121,11 @@ export async function updateAppointment(
     set status = ${status}, notes = ${notes}, requested_at = ${requestedAt}
     where current.id = ${id}
       and (
-        ${status} <> 'confirmed'
+        ${status} not in ('pending', 'confirmed')
         or not exists (
           select 1 from appointments as other
           where other.id <> current.id
-            and other.status = 'confirmed'
+            and other.status in ('pending', 'confirmed')
             and other.requested_at = ${requestedAt}
         )
       )

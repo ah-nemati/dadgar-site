@@ -1,6 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { db } from '@/lib/db';
 import { sha256Hex } from '@/lib/auth/crypto';
 import { hashPassword, passwordNeedsRehash, verifyPassword } from '@/lib/auth/password';
@@ -10,6 +11,7 @@ import {
   requestRateLimitKey,
 } from '@/lib/auth/rate-limit';
 import { endCurrentSession, startSession } from '@/lib/auth/sessions';
+import { dashboardPath } from '@/lib/session';
 import {
   isValidEmail,
   isValidIranianPhone,
@@ -33,11 +35,33 @@ interface AuthUserRow {
 const AUTH_SERVICE_UNAVAILABLE =
   'ارتباط با سرویس حساب کاربری برقرار نشد. چند دقیقه دیگر دوباره تلاش کنید.';
 
+const RETURN_TO_COOKIE = 'dadgar_return_to';
+
+async function authReturnTo(formData: FormData): Promise<string> {
+  const explicit = String(formData.get('returnTo') ?? '').trim();
+  if (explicit) return safeReturnTo(explicit);
+  const cookieStore = await cookies();
+  return safeReturnTo(cookieStore.get(RETURN_TO_COOKIE)?.value);
+}
+
+async function clearAuthReturnToCookie(): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.delete(RETURN_TO_COOKIE);
+}
+
 function reportAuthServiceError(context: string, error: unknown): void {
   console.error(
     context,
     error instanceof Error ? error.message : 'Unknown authentication service error',
   );
+}
+
+function postAuthDestination(role: UserRole, requested: string): string {
+  const dashboard = dashboardPath(role);
+  if (role === 'CLIENT') {
+    return requested === '/portal' || requested.startsWith('/portal/') ? requested : dashboard;
+  }
+  return requested === '/admin' || requested.startsWith('/admin/') ? requested : dashboard;
 }
 
 export interface LoginState {
@@ -51,7 +75,7 @@ export async function loginAction(
 ): Promise<LoginState> {
   const email = normalizeEmail(formData.get('email'));
   const password = String(formData.get('password') ?? '');
-  const returnTo = safeReturnTo(formData.get('returnTo'));
+  const returnTo = await authReturnTo(formData);
 
   if (!isValidEmail(email) || !password) {
     return { error: 'ایمیل و رمز عبور معتبر را وارد کنید.', email };
@@ -137,7 +161,8 @@ export async function loginAction(
       reportAuthServiceError('Login audit write failed.', error);
     });
 
-  redirect(returnTo);
+  await clearAuthReturnToCookie();
+  redirect(postAuthDestination(user.role, returnTo));
 }
 
 export interface SignupState {
@@ -154,7 +179,7 @@ export async function signupAction(
   const email = normalizeEmail(formData.get('email'));
   const password = String(formData.get('password') ?? '');
   const passwordConfirm = String(formData.get('passwordConfirm') ?? '');
-  const returnTo = safeReturnTo(formData.get('returnTo'));
+  const returnTo = await authReturnTo(formData);
   const values = { fullName, phone, email };
 
   const nameError = validateName(fullName);
@@ -229,7 +254,8 @@ export async function signupAction(
   await clearRateLimit(rateKey, 'signup').catch((error) => {
     reportAuthServiceError('Signup rate-limit cleanup failed.', error);
   });
-  redirect(returnTo);
+  await clearAuthReturnToCookie();
+  redirect(postAuthDestination('CLIENT', returnTo));
 }
 
 export interface ResetPasswordState {

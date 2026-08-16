@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
-import { LockKeyhole, ShieldCheck } from 'lucide-react';
+import { LockKeyhole, ShieldCheck, Scale } from 'lucide-react';
 import Eyebrow from '@/components/Eyebrow';
-import PatternStrip from '@/components/PatternStrip';
 import Seal from '@/components/Seal';
 
 interface AuthShellProps {
@@ -11,64 +10,46 @@ interface AuthShellProps {
   children: ReactNode;
 }
 
-export default function AuthShell({
-  eyebrow,
-  title,
-  description,
-  children,
-}: AuthShellProps) {
+export default function AuthShell({ eyebrow, title, description, children }: AuthShellProps) {
   return (
-    <section className="relative flex min-h-[72vh] items-center overflow-hidden bg-parchment py-10 md:py-16">
-      <div
-        className="pointer-events-none absolute -left-28 top-10 size-80 rounded-full bg-accent/5 blur-3xl"
-        aria-hidden="true"
-      />
-      <div className="mx-auto w-full max-w-5xl px-4 sm:px-6">
-        <div className="grid overflow-hidden rounded-sm border border-border bg-card shadow-[0_24px_80px_rgba(12,63,110,0.12)] md:grid-cols-[0.9fr_1.1fr]">
-          <aside className="relative flex min-h-72 flex-col justify-between overflow-hidden bg-ink p-7 text-parchment sm:p-9 md:min-h-[34rem] md:p-10">
-            <div
-              className="absolute -left-24 -top-24 opacity-[0.06]"
-              aria-hidden="true"
-            >
-              <Seal size={360} tone="cream" />
+    <section className="relative overflow-hidden py-10 md:py-16">
+      <div className="pointer-events-none absolute -right-24 top-16 size-72 rounded-full bg-gold/10 blur-3xl" aria-hidden="true" />
+      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
+        <div className="grid overflow-hidden rounded-[1.35rem] border border-border bg-card shadow-[0_28px_90px_rgba(2,132,199,.12)] lg:grid-cols-[.88fr_1.12fr]">
+          <aside className="relative hidden min-h-[38rem] overflow-hidden border-l border-sky-100 bg-[linear-gradient(160deg,#e6f6ff,#f7fcff)] p-10 text-sky-900 lg:flex lg:flex-col lg:justify-between">
+            <div className="absolute -left-24 -top-24 opacity-[0.07]" aria-hidden="true">
+              <Seal size={380} tone="cream" />
             </div>
-
             <div className="relative z-10">
-              <Seal size={62} tone="cream" />
-              <div className="mt-8">
-                <Eyebrow dark>فضای امن موکلین</Eyebrow>
-                <h2 className="max-w-sm text-2xl font-bold leading-[1.8] text-parchment md:text-3xl">
-                  دسترسی امن به پرونده‌ها، اسناد و پیام‌های خصوصی شما
-                </h2>
-              </div>
+              <Seal size={58} />
+              <Eyebrow dark>سامانه امن موکلین</Eyebrow>
+              <h2 className="max-w-md text-3xl font-extrabold leading-[1.75] text-sky-900">
+                پرونده، مدارک و گفت‌وگوهای خصوصی در یک فضای منظم و امن
+              </h2>
+              <p className="mt-5 max-w-md text-sm leading-8 text-sky-800/70">
+                ورود به حساب فقط برای دسترسی به اطلاعات اختصاصی شماست؛ صفحات عمومی سایت بدون ورود قابل استفاده‌اند.
+              </p>
             </div>
 
-            <div className="relative z-10 mt-10 space-y-4 text-sm leading-7 text-parchment/75">
-              <div className="flex items-start gap-3">
-                <ShieldCheck className="mt-1 shrink-0 text-gold-light" size={19} aria-hidden="true" />
-                <p>رمز عبور به‌صورت هش‌شده نگهداری می‌شود و نشست کاربری قابل لغو و زمان‌دار است.</p>
+            <div className="relative z-10 grid gap-3">
+              <div className="flex items-start gap-3 rounded-xl border border-sky-200 bg-white/70 p-4">
+                <ShieldCheck className="mt-1 shrink-0 text-sky-500" size={19} aria-hidden="true" />
+                <div><p className="text-sm font-bold text-sky-900">محرمانگی دسترسی</p><p className="mt-1 text-xs leading-6 text-sky-800/65">اطلاعات پنل برای حساب شما و افراد مجاز دفتر نمایش داده می‌شود.</p></div>
               </div>
-              <div className="flex items-start gap-3">
-                <LockKeyhole className="mt-1 shrink-0 text-gold-light" size={19} aria-hidden="true" />
-                <p>دسترسی به پنل فقط پس از تأیید هویت و تعیین سطح دسترسی انجام می‌شود.</p>
+              <div className="flex items-start gap-3 rounded-xl border border-sky-200 bg-white/70 p-4">
+                <LockKeyhole className="mt-1 shrink-0 text-sky-500" size={19} aria-hidden="true" />
+                <div><p className="text-sm font-bold text-sky-900">ورود محافظت‌شده</p><p className="mt-1 text-xs leading-6 text-sky-800/65">رمز عبور هش می‌شود و نشست کاربری محدود و قابل لغو است.</p></div>
               </div>
-            </div>
-
-            <div className="absolute inset-x-0 bottom-0" aria-hidden="true">
-              <PatternStrip id="auth-shell-pattern" color="#D8BC7E" />
             </div>
           </aside>
 
-          <div className="flex items-center p-6 sm:p-9 md:p-10 lg:p-12">
+          <div className="relative flex min-h-[34rem] items-center p-6 sm:p-10 lg:p-14">
+            <div className="absolute left-8 top-8 hidden text-border sm:block" aria-hidden="true"><Scale size={32} strokeWidth={1.2} /></div>
             <div className="mx-auto w-full max-w-md">
               <Eyebrow>{eyebrow}</Eyebrow>
-              <h1 className="text-2xl font-extrabold leading-10 text-foreground sm:text-3xl">
-                {title}
-              </h1>
-              <p className="mt-3 text-sm leading-7 text-muted-foreground">
-                {description}
-              </p>
-              <div className="mt-7">{children}</div>
+              <h1 className="text-3xl font-extrabold leading-[1.55] text-foreground sm:text-4xl">{title}</h1>
+              <p className="mt-3 text-sm leading-7 text-muted-foreground">{description}</p>
+              <div className="mt-8">{children}</div>
             </div>
           </div>
         </div>

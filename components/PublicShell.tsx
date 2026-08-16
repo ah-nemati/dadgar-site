@@ -1,8 +1,8 @@
-
 'use client';
 
 import type { ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
+import PageTransition from '@/components/motion/PageTransition';
 
 export default function PublicShell({
   header,
@@ -21,8 +21,8 @@ export default function PublicShell({
   return (
     <>
       {header}
-      <main id="main-content" className="flex-1">
-        {children}
+      <main id="main-content" className="flex-1 overflow-x-clip">
+        <PageTransition pageKey={pathname}>{children}</PageTransition>
       </main>
       {footer}
     </>

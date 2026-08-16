@@ -87,7 +87,7 @@ export async function getCurrentAccountForAuthEntry(): Promise<CurrentAccount | 
 
 export async function requireAccount(): Promise<CurrentAccount> {
   const account = await getCurrentAccount();
-  if (!account) redirect('/login?returnTo=/account');
+  if (!account) redirect('/login');
   return account;
 }
 

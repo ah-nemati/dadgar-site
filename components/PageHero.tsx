@@ -9,18 +9,19 @@ interface PageHeroProps {
 
 export default function PageHero({ eyebrow, title, description }: PageHeroProps) {
   return (
-    <section className="bg-ink relative overflow-hidden">
-      <div
-        className="absolute"
-        style={{ left: '-10%', top: '-30%', opacity: 0.06 }}
-        aria-hidden="true"
-      >
-        <Seal size={420} tone="cream" />
-      </div>
-      <div className="max-w-6xl mx-auto px-6 py-16 md:py-20 relative">
-        <Eyebrow dark>{eyebrow}</Eyebrow>
-        <h1 className="text-3xl md:text-5xl font-bold text-parchment mb-4">{title}</h1>
-        {description && <p className="text-parchment/80 max-w-2xl leading-8">{description}</p>}
+    <section className="page-hero">
+      <div className="page-hero__mark" aria-hidden="true"><Seal size={260} tone="cream" /></div>
+      <div className="page-hero__inner mx-auto max-w-7xl px-6">
+        <div className="relative z-10">
+          <Eyebrow dark>{eyebrow}</Eyebrow>
+          <h1 className="page-hero__title">{title}</h1>
+          {description && <p className="page-hero__description">{description}</p>}
+        </div>
+        <div className="hidden justify-self-end lg:block">
+          <div className="w-40 border-t border-sky-200 pt-4 text-xs leading-7 text-sky-800/65">
+            بررسی دقیق موضوع، شفافیت در مسیر و حفظ محرمانگی اطلاعات
+          </div>
+        </div>
       </div>
     </section>
   );

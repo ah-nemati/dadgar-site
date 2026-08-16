@@ -51,10 +51,10 @@ export default async function AdminThreadPage({ params }: { params: Promise<{ id
           const fromAdmin = message.senderRole !== 'CLIENT';
           return (
             <div key={message.id} className={`flex ${fromAdmin ? 'justify-end' : 'justify-start'}`}>
-              <article className={`max-w-[92%] md:max-w-[82%] rounded-xl p-4 ${fromAdmin ? 'bg-ink text-parchment' : 'bg-muted'}`}>
+              <article className={`max-w-[92%] md:max-w-[82%] rounded-xl p-4 ${fromAdmin ? 'bg-sky-100 text-sky-900' : 'bg-sky-50'}`}>
                 <div className="flex items-center justify-between gap-4 mb-2">
-                  <span className={`text-xs font-semibold ${fromAdmin ? 'text-gold-light' : 'text-accent'}`}>{fromAdmin ? 'دفتر وکالت' : message.senderName}</span>
-                  <span className={`text-[10px] ${fromAdmin ? 'text-parchment/60' : 'text-muted-foreground'}`}>{formatJalaliDateTime(message.createdAt)}</span>
+                  <span className={`text-xs font-semibold ${fromAdmin ? 'text-sky-600' : 'text-accent'}`}>{fromAdmin ? 'دفتر وکالت' : message.senderName}</span>
+                  <span className={`text-[10px] ${fromAdmin ? 'text-sky-700/60' : 'text-muted-foreground'}`}>{formatJalaliDateTime(message.createdAt)}</span>
                 </div>
                 <p className="text-sm leading-8 whitespace-pre-wrap">{message.body}</p>
                 {Boolean(message.attachments?.length) && (

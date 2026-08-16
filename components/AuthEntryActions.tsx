@@ -21,7 +21,8 @@ function returnPath(value: string | null): string {
 
 export function LoginEntryActions() {
   const searchParams = useSearchParams();
-  const returnTo = returnPath(searchParams.get('returnTo'));
+  const rawReturnTo = searchParams.get('returnTo');
+  const returnTo = rawReturnTo ? returnPath(rawReturnTo) : '';
   const [state, formAction, pending] = useActionState(loginAction, undefined);
   const resetComplete = searchParams.get('reset') === 'success';
   const loggedOut = searchParams.get('loggedOut') === '1';
@@ -84,7 +85,7 @@ export function LoginEntryActions() {
       </Button>
 
       <Button type="button" variant="outline" className="w-full" asChild>
-        <Link href={`/signup?returnTo=${encodeURIComponent(returnTo)}`}>
+        <Link href={returnTo ? `/signup?returnTo=${encodeURIComponent(returnTo)}` : "/signup"}>
           <UserPlus size={17} aria-hidden="true" />
           ساخت حساب جدید
         </Link>
@@ -95,7 +96,8 @@ export function LoginEntryActions() {
 
 export function SignupEntryActions() {
   const searchParams = useSearchParams();
-  const returnTo = returnPath(searchParams.get('returnTo'));
+  const rawReturnTo = searchParams.get('returnTo');
+  const returnTo = rawReturnTo ? returnPath(rawReturnTo) : '';
   const [state, formAction, pending] = useActionState(signupAction, undefined);
 
   return (
@@ -193,7 +195,7 @@ export function SignupEntryActions() {
       </Button>
 
       <Button type="button" variant="outline" className="w-full" asChild>
-        <Link href={`/login?returnTo=${encodeURIComponent(returnTo)}`}>
+        <Link href={returnTo ? `/login?returnTo=${encodeURIComponent(returnTo)}` : "/login"}>
           <LogIn size={17} aria-hidden="true" />
           قبلاً حساب ساخته‌ام
         </Link>

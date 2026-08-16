@@ -25,7 +25,7 @@ export default function OfficeMap({ firm, compact = false }: { firm: Firm; compa
   const coordinatesAvailable = hasCoordinates(firm);
 
   return (
-    <div className="overflow-hidden rounded-sm border border-border bg-card">
+    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[0_16px_45px_rgba(24,42,47,.08)]">
       <div className={`relative w-full ${compact ? 'h-64' : 'h-[360px] md:h-[420px]'}`}>
         <iframe
           title={`نقشه دفتر ${firm.shortName}`}
@@ -41,7 +41,7 @@ export default function OfficeMap({ firm, compact = false }: { firm: Firm; compa
           aria-hidden="true"
         >
           <div className="flex flex-col items-center drop-shadow-lg">
-            <span className="mb-1 whitespace-nowrap rounded-sm bg-ink px-2.5 py-1 text-xs font-bold text-parchment shadow-md">
+            <span className="mb-1 whitespace-nowrap rounded-full bg-sky-500 px-3 py-1.5 text-xs font-bold text-white shadow-md">
               دفتر وکالت {firm.shortName}
             </span>
             <span className="flex size-11 items-center justify-center rounded-full border-4 border-white bg-primary text-primary-foreground shadow-xl">
@@ -51,11 +51,11 @@ export default function OfficeMap({ firm, compact = false }: { firm: Firm; compa
           </div>
         </div>
       </div>
-      <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 border-t border-border bg-card p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-start gap-2.5">
           <MapPin size={18} className="mt-0.5 shrink-0 text-accent" aria-hidden="true" />
           <div>
-            <p className="text-sm font-semibold">نشانی دفتر</p>
+            <p className="text-sm font-extrabold">نشانی دفتر</p>
             <p className="mt-1 text-xs leading-6 text-muted-foreground">{firm.address}</p>
             {coordinatesAvailable && (
               <p className="mt-1 text-[11px] text-muted-foreground" dir="ltr">
@@ -68,7 +68,7 @@ export default function OfficeMap({ firm, compact = false }: { firm: Firm; compa
           href={officeMapLink(firm)}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-accent hover:underline"
+          className="inline-flex shrink-0 items-center gap-2 text-sm font-extrabold text-accent hover:underline"
         >
           مسیریابی تا دفتر <ExternalLink size={14} />
         </a>

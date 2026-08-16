@@ -101,28 +101,28 @@ export default async function BlogPostDetailPage({
         }}
       />
 
-      <section className="bg-ink">
-        <div className="max-w-4xl mx-auto px-6 py-12">
+      <section className="page-hero">
+        <div className="relative mx-auto max-w-4xl px-6 py-14 md:py-16">
           <Link
             href="/blog"
-            className="inline-flex items-center gap-2 text-sm mb-8 text-parchment/85 hover:text-gold-light transition-colors"
+            className="inline-flex items-center gap-2 text-sm mb-8 text-sky-800/70 hover:text-sky-600 transition-colors"
           >
             <ArrowRight size={16} aria-hidden="true" /> بازگشت به وبلاگ
           </Link>
           <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold text-gold-light">
+            <span className="text-xs font-semibold text-sky-600">
               {post.category}
             </span>
             {post.featured && (
-              <span className="text-xs text-gold-light inline-flex items-center gap-1">
+              <span className="text-xs text-sky-600 inline-flex items-center gap-1">
                 <Star size={13} fill="currentColor" /> ویژه
               </span>
             )}
           </div>
-          <h1 className="text-2xl md:text-4xl font-bold text-parchment mt-3 mb-5 leading-tight">
+          <h1 className="text-3xl md:text-5xl font-extrabold text-sky-900 mt-4 mb-6 leading-[1.45]">
             {post.title}
           </h1>
-          <div className="flex flex-wrap items-center gap-3 text-xs text-parchment/70">
+          <div className="flex flex-wrap items-center gap-3 text-xs text-sky-800/70">
             <span>{post.date}</span>
             <span>·</span>
             <span>{post.readTime}</span>
@@ -136,8 +136,8 @@ export default async function BlogPostDetailPage({
         </div>
       </section>
 
-      <article className="bg-parchment">
-        <div className="max-w-4xl mx-auto px-6 py-12 md:py-16">
+      <article>
+        <div className="mx-auto max-w-4xl px-6 py-12 md:py-16">
           {post.imageUrl && (
             <div className="relative mb-10 aspect-video w-full overflow-hidden rounded-xl border border-border shadow-sm">
               <Image
@@ -151,7 +151,7 @@ export default async function BlogPostDetailPage({
             </div>
           )}
 
-          <p className="text-lg text-muted-foreground leading-9 border-r-4 border-gold pr-5 mb-10">
+          <p className="rounded-xl border border-gold/20 bg-gold/5 p-5 text-lg text-muted-foreground leading-9 mb-10">
             {post.excerpt}
           </p>
 
@@ -183,7 +183,7 @@ export default async function BlogPostDetailPage({
             اختصاصی نیست.
           </div>
 
-          <div className="mt-10 dashboard-card p-6 flex flex-wrap items-center justify-between gap-4">
+          <div className="mt-10 legal-card p-6 flex flex-wrap items-center justify-between gap-4">
             <p className="text-sm text-foreground">
               سوالی درباره این موضوع دارید؟
             </p>

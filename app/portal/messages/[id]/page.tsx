@@ -52,10 +52,10 @@ export default async function PortalThreadPage({ params }: { params: Promise<{ i
           const fromAdmin = message.senderRole !== 'CLIENT';
           return (
             <div key={message.id} className={`flex ${fromAdmin ? 'justify-start' : 'justify-end'}`}>
-              <article className={`max-w-[92%] md:max-w-[82%] rounded-xl p-4 ${fromAdmin ? 'bg-muted' : 'bg-ink text-parchment'}`}>
+              <article className={`max-w-[92%] md:max-w-[82%] rounded-xl p-4 ${fromAdmin ? 'bg-sky-50' : 'bg-sky-100 text-sky-900'}`}>
                 <div className="flex items-center justify-between gap-4 mb-2">
-                  <span className={`text-xs font-semibold ${fromAdmin ? 'text-accent' : 'text-gold-light'}`}>{fromAdmin ? 'دفتر وکالت' : 'شما'}</span>
-                  <span className={`text-[10px] ${fromAdmin ? 'text-muted-foreground' : 'text-parchment/60'}`}>{formatJalaliDateTime(message.createdAt)}</span>
+                  <span className={`text-xs font-semibold ${fromAdmin ? 'text-accent' : 'text-sky-600'}`}>{fromAdmin ? 'دفتر وکالت' : 'شما'}</span>
+                  <span className={`text-[10px] ${fromAdmin ? 'text-muted-foreground' : 'text-sky-700/60'}`}>{formatJalaliDateTime(message.createdAt)}</span>
                 </div>
                 <p className="text-sm leading-8 whitespace-pre-wrap">{message.body}</p>
                 {Boolean(message.attachments?.length) && (

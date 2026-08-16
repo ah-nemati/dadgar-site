@@ -45,6 +45,9 @@ export async function createAppointmentAction(
     if (error instanceof Error && error.message === 'TOO_MANY_OPEN_APPOINTMENTS') {
       return { error: 'حداکثر پنج نوبت باز می‌توانید داشته باشید. ابتدا وضعیت نوبت‌های قبلی مشخص شود.' };
     }
+    if (error instanceof Error && error.message === 'APPOINTMENT_TIME_CONFLICT') {
+      return { error: 'این ساعت همین حالا توسط شخص دیگری رزرو شده است. یک زمان آزاد دیگر انتخاب کنید.' };
+    }
     return { error: 'ثبت درخواست نوبت انجام نشد.' };
   }
 
@@ -70,7 +73,7 @@ export async function updateAppointmentAction(
   const settings = await getAppointmentSettings();
   const isHistoricalStatus = ['completed', 'cancelled'].includes(status);
   const validationSettings = isHistoricalStatus
-    ? { enabled: true, workingDays: [0, 1, 2, 3, 4, 5, 6], openHour: 0, closeHour: 24, slotMinutes: 1, minLeadHours: 0 }
+    ? { enabled: true, workingDays: [0, 1, 2, 3, 4, 5, 6], openHour: 0, closeHour: 24, slotMinutes: 1, minLeadHours: 0, maxAdvanceDays: 36500, holidayDates: [] }
     : { ...settings, enabled: true };
   const validation = validateAppointmentDateTime(
     requestedAtInput,
@@ -86,7 +89,7 @@ export async function updateAppointmentAction(
     await recordAudit(account.id, 'appointment.update', 'appointment', id, { status });
   } catch (error) {
     if (error instanceof Error && error.message === 'APPOINTMENT_TIME_CONFLICT') {
-      return { error: 'در این ساعت یک نوبت تأییدشده دیگر وجود دارد.' };
+      return { error: 'در این ساعت یک نوبت فعال دیگر وجود دارد.' };
     }
     return { error: 'بروزرسانی نوبت انجام نشد.' };
   }

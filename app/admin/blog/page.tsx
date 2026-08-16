@@ -97,7 +97,7 @@ export default async function AdminBlogPage({
                       className="w-full h-44 sm:h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-44 sm:h-full min-h-40 bg-gradient-to-br from-ink to-ink-2 flex items-center justify-center text-parchment/70"><FileText size={30} /></div>
+                    <div className="w-full h-44 sm:h-full min-h-40 bg-gradient-to-br from-sky-100 to-sky-50 flex items-center justify-center text-sky-500"><FileText size={30} /></div>
                   )}
                 </div>
 

@@ -13,7 +13,7 @@ import { officeMapLink } from "@/components/OfficeMap";
 import RouteProgress from "@/components/RouteProgress";
 
 export const viewport: Viewport = {
-  themeColor: "#0c3f6e",
+  themeColor: "#e0f2fe",
   colorScheme: "light",
   width: "device-width",
   initialScale: 1,

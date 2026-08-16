@@ -91,7 +91,7 @@ export default function RouteProgress() {
       }
 
       const anchor = event.target.closest("a[href]") as HTMLAnchorElement | null;
-      if (!anchor || anchor.target === "_blank" || anchor.hasAttribute("download")) return;
+      if (!anchor || anchor.target === "_blank" || anchor.hasAttribute("download") || anchor.dataset.resolveDestination === "true") return;
 
       const nextUrl = new URL(anchor.href, window.location.href);
       const currentUrl = new URL(window.location.href);

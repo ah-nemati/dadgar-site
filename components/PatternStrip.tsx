@@ -3,7 +3,7 @@ interface PatternStripProps {
   color?: string;
 }
 
-export default function PatternStrip({ id, color = '#B08D45' }: PatternStripProps) {
+export default function PatternStrip({ id, color = '#38BDF8' }: PatternStripProps) {
   return (
     <svg
       viewBox="0 0 240 10"
