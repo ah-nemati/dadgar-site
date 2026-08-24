@@ -12,7 +12,6 @@ import {
   FileText,
   Inbox,
   LayoutDashboard,
-  LogOut,
   Menu,
   MessageSquare,
   Settings,
@@ -25,7 +24,7 @@ import {
 } from "lucide-react";
 import Seal from "@/components/Seal";
 import type { CurrentAccount } from "@/types/content";
-import { logoutAction } from "@/app/auth/actions";
+import DashboardLogoutButton from "@/components/dashboard/DashboardLogoutButton";
 
 export type DashboardIconName =
   | "dashboard"
@@ -161,11 +160,7 @@ export default function DashboardShell({
             <Link href="/" className="flex min-h-10 items-center justify-center gap-2 rounded-lg border border-white/10 text-xs font-bold text-parchment/65 hover:bg-white/5 hover:text-parchment">
               <ExternalLink size={15} aria-hidden="true" /> سایت
             </Link>
-            <form action={logoutAction}>
-              <button type="submit" className="dashboard-logout-button">
-                <LogOut size={15} aria-hidden="true" /> خروج
-              </button>
-            </form>
+            <DashboardLogoutButton />
           </div>
         </div>
       </aside>

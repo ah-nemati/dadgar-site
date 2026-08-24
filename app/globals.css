@@ -1540,10 +1540,19 @@ body {
   transition: background-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
 }
 
-.dashboard-logout-button:hover {
+.dashboard-logout-button:hover:not(:disabled) {
   transform: translateY(-1px);
   background: #0369a1;
   box-shadow: 0 10px 22px rgb(2 132 199 / 0.2);
+}
+
+.dashboard-logout-button:disabled,
+.dashboard-logout-button[aria-busy="true"] {
+  opacity: 0.75;
+  cursor: not-allowed;
+  transform: none;
+  background: #0369a1;
+  box-shadow: none;
 }
 
 .dashboard-logout-button:focus-visible {

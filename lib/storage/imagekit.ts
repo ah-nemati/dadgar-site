@@ -20,10 +20,23 @@ export interface AssetMetadata {
   customMetadata?: Record<string, string | number | boolean>;
 }
 
+import { getCloudflareContext } from "@opennextjs/cloudflare";
+
 type ImageKitEnvName = "IMAGEKIT_PRIVATE_KEY" | "IMAGEKIT_URL_ENDPOINT";
 
 function requiredEnv(name: ImageKitEnvName): string {
-  const value = process.env[name]?.trim();
+  let value = process.env[name]?.trim();
+
+  if (!value) {
+    try {
+      const context = getCloudflareContext() as unknown as {
+        env?: Record<string, string | undefined>;
+      };
+      value = context?.env?.[name]?.trim();
+    } catch {
+      // Ignore if outside Cloudflare context
+    }
+  }
 
   if (!value) {
     throw new Error(`${name} is not configured.`);

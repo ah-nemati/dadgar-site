@@ -24,12 +24,15 @@ interface DocumentRow {
 }
 
 function toCase(row: CaseRow): ClientCase {
+  const createdAtIso = row.createdAt instanceof Date ? row.createdAt.toISOString() : new Date(row.createdAt).toISOString();
+  const updatedAtIso = row.updatedAt instanceof Date ? row.updatedAt.toISOString() : new Date(row.updatedAt).toISOString();
+  const nextActionAtIso = row.nextActionAt ? (row.nextActionAt instanceof Date ? row.nextActionAt.toISOString() : new Date(row.nextActionAt).toISOString()) : null;
   return {
     id: Number(row.id), clientId: row.clientId, clientName: row.clientName || 'موکل',
     caseNumber: row.caseNumber, title: row.title, court: row.court, status: row.status,
     description: row.description, nextAction: row.nextAction,
-    nextActionAt: row.nextActionAt?.toISOString() ?? null,
-    createdAt: row.createdAt.toISOString(), updatedAt: row.updatedAt.toISOString(),
+    nextActionAt: nextActionAtIso,
+    createdAt: createdAtIso, updatedAt: updatedAtIso,
   };
 }
 
@@ -38,12 +41,12 @@ export async function getCases(): Promise<ClientCase[]> {
   const rows = account.role !== 'CLIENT'
     ? await db<CaseRow[]>`
         select c.*, u.name as client_name
-        from client_cases c join users u on u.id = c.client_id
+        from client_cases c left join users u on u.id = c.client_id
         order by c.updated_at desc
       `
     : await db<CaseRow[]>`
         select c.*, u.name as client_name
-        from client_cases c join users u on u.id = c.client_id
+        from client_cases c left join users u on u.id = c.client_id
         where c.client_id = ${account.id}
         order by c.updated_at desc
       `;
@@ -55,12 +58,12 @@ export async function getCaseById(id: number): Promise<ClientCase | null> {
   const rows = account.role !== 'CLIENT'
     ? await db<CaseRow[]>`
         select c.*, u.name as client_name
-        from client_cases c join users u on u.id = c.client_id
+        from client_cases c left join users u on u.id = c.client_id
         where c.id = ${id} limit 1
       `
     : await db<CaseRow[]>`
         select c.*, u.name as client_name
-        from client_cases c join users u on u.id = c.client_id
+        from client_cases c left join users u on u.id = c.client_id
         where c.id = ${id} and c.client_id = ${account.id} limit 1
       `;
   return rows[0] ? toCase(rows[0]) : null;
@@ -102,7 +105,13 @@ export async function getCaseUpdates(caseId: number): Promise<CaseUpdate[]> {
     select id, case_id, title, body, created_at from case_updates
     where case_id = ${caseId} order by created_at desc
   `;
-  return rows.map((row) => ({ id: Number(row.id), caseId: Number(row.caseId), title: row.title, body: row.body, createdAt: row.createdAt.toISOString() }));
+  return rows.map((row) => ({
+    id: Number(row.id),
+    caseId: Number(row.caseId),
+    title: row.title,
+    body: row.body,
+    createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : new Date(row.createdAt).toISOString(),
+  }));
 }
 
 export async function addCaseUpdate(caseId: number, title: string, body: string): Promise<void> {
@@ -122,7 +131,8 @@ export async function getCaseDocuments(caseId: number): Promise<ClientDocument[]
   return Promise.all(rows.map(async (row) => ({
     id: Number(row.id), caseId: Number(row.caseId), clientId: row.clientId, title: row.title,
     fileId: row.fileId, filePath: row.filePath, fileName: row.fileName, mimeType: row.mimeType,
-    fileSize: row.fileSize === null ? null : Number(row.fileSize), createdAt: row.createdAt.toISOString(),
+    fileSize: row.fileSize === null ? null : Number(row.fileSize),
+    createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : new Date(row.createdAt).toISOString(),
     downloadUrl: row.fileId ? signedDownloadUrl(row.filePath) : undefined,
   })));
 }

@@ -54,8 +54,9 @@ export default async function AdminAppointmentsPage({ searchParams }: { searchPa
     ].join(' ').toLowerCase().includes(q);
     const matchesStatus = !status || item.status === status;
     const matchesRange =
+      !range ||
       range === 'all' ||
-      (range === 'upcoming' && time >= now && !['cancelled', 'completed'].includes(item.status)) ||
+      (range === 'upcoming' && (time >= now || item.status === 'pending') && !['cancelled', 'completed'].includes(item.status)) ||
       (range === 'today' && tehranDateKey(item.requestedAt) === today) ||
       (range === 'past' && (time < now || ['cancelled', 'completed'].includes(item.status)));
     return matchesQuery && matchesStatus && matchesRange;
@@ -140,10 +141,10 @@ export default async function AdminAppointmentsPage({ searchParams }: { searchPa
           <option value="cancelled">لغو شده</option>
         </select>
         <select name="range" defaultValue={range} className="h-11 px-4 rounded-sm text-sm bg-card border border-input">
-          <option value="upcoming">نوبت‌های آینده</option>
+          <option value="all">همه بازه‌ها</option>
+          <option value="upcoming">نوبت‌های آینده و در انتظار</option>
           <option value="today">امروز</option>
           <option value="past">سوابق</option>
-          <option value="all">همه</option>
         </select>
         <Button type="submit" variant="secondary" className="w-full md:w-auto">اعمال فیلتر</Button>
       </form>
@@ -161,9 +162,12 @@ export default async function AdminAppointmentsPage({ searchParams }: { searchPa
                 </div>
                 <p className="mt-2 text-[11px] text-sky-700">ثبت درخواست: {formatJalaliDateTime(item.createdAt)}</p>
               </div>
-              <div className="text-left">
+              <div className="flex flex-col items-start sm:items-end gap-1.5 text-right sm:text-left">
                 <Badge variant={APPOINTMENT_STATUS_VARIANT[item.status]}>{APPOINTMENT_STATUS_LABEL[item.status]}</Badge>
-                <p className="text-xs text-muted-foreground mt-2" dir="ltr">{formatJalaliDateTime(item.requestedAt)}</p>
+                <p className="flex items-center gap-1.5 text-xs font-bold text-foreground/85 mt-1">
+                  <Clock3 size={13} className="text-sky-600 shrink-0" aria-hidden="true" />
+                  <span>{formatJalaliDateTime(item.requestedAt)}</span>
+                </p>
               </div>
             </div>
             <AppointmentAdminForm appointment={item} settings={settings} />

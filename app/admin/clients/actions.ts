@@ -56,6 +56,12 @@ function readEducation(value: FormDataEntryValue | null): string[] {
     .slice(0, 10);
 }
 
+function toTextArrayLiteral(items: string[] | undefined | null): string {
+  if (!items || items.length === 0) return '{}';
+  const escaped = items.map((item) => `"${item.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`);
+  return `{${escaped.join(',')}}`;
+}
+
 function databaseError(error: unknown): string {
   const code =
     typeof error === 'object' && error && 'code' in error
@@ -129,9 +135,10 @@ export async function createUserAccountAction(
         )
       `;
       if (role === 'LAWYER') {
+        const educationLiteral = toTextArrayLiteral(education);
         await tx`
           insert into lawyer_profiles (user_id, license_number, education)
-          values (${id}, ${licenseNumber}, ${education})
+          values (${id}, ${licenseNumber}, ${educationLiteral}::text[])
         `;
       }
       await tx`
@@ -195,9 +202,10 @@ export async function updateUserAction(
       `;
 
       if (role === 'LAWYER') {
+        const educationLiteral = toTextArrayLiteral(education);
         await tx`
           insert into lawyer_profiles (user_id, license_number, education)
-          values (${userId}, ${licenseNumber}, ${education})
+          values (${userId}, ${licenseNumber}, ${educationLiteral}::text[])
           on conflict (user_id) do update
           set license_number = excluded.license_number,
               education = excluded.education

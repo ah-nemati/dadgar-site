@@ -33,7 +33,9 @@ export function CaseUpdateForm({ caseId }: { caseId: number }) {
         <Textarea id="update-body" name="body" rows={4} required className="resize-y" />
       </div>
       <StateMessage state={state} />
-      <Button type="submit" disabled={pending}>{pending ? 'در حال ثبت...' : 'افزودن به روند پرونده'}</Button>
+      <Button type="submit" disabled={pending}>
+        {pending ? <><span className="button-spinner" aria-hidden="true" />در حال ثبت...</> : 'افزودن به روند پرونده'}
+      </Button>
     </form>
   );
 }
@@ -55,8 +57,17 @@ export function DocumentUploadForm({ caseId, clientId }: { caseId: number; clien
       </div>
       <StateMessage state={state} />
       <Button type="submit" disabled={pending}>
-        <Upload size={16} aria-hidden="true" />
-        {pending ? 'در حال بارگذاری...' : 'بارگذاری فایل'}
+        {pending ? (
+          <>
+            <span className="button-spinner" aria-hidden="true" />
+            در حال بارگذاری...
+          </>
+        ) : (
+          <>
+            <Upload size={16} aria-hidden="true" />
+            بارگذاری فایل
+          </>
+        )}
       </Button>
     </form>
   );

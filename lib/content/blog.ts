@@ -95,6 +95,8 @@ function normalizeSourceUrls(value: unknown): string[] {
 }
 
 function map(row: Row): BlogPost {
+  const createdAtIso = row.createdAt instanceof Date ? row.createdAt.toISOString() : new Date(row.createdAt).toISOString();
+  const updatedAtIso = row.updatedAt instanceof Date ? row.updatedAt.toISOString() : new Date(row.updatedAt).toISOString();
   return {
     id: Number(row.id),
     slug: row.slug,
@@ -112,9 +114,9 @@ function map(row: Row): BlogPost {
     sourceUrls: normalizeSourceUrls(row.sourceUrls),
     seoTitle: row.seoTitle,
     seoDescription: row.seoDescription,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
-    date: formatJalaliDate(row.createdAt.toISOString()),
+    createdAt: createdAtIso,
+    updatedAt: updatedAtIso,
+    date: formatJalaliDate(createdAtIso),
     readTime: estimateReadTime(row.content),
   };
 }

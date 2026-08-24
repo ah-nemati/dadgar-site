@@ -1,24 +1,31 @@
 import Link from '@/components/NoPrefetchLink';
-import { Briefcase, CalendarDays, FileText, Inbox, MessageSquare, Plus, Users } from 'lucide-react';
+import { Briefcase, CalendarDays, Clock3, FileText, Inbox, MessageSquare, Plus, Users } from 'lucide-react';
 import AdminHeader from './AdminHeader';
 import { getAdminDashboardStats } from '@/lib/admin-dashboard';
 import { getConsultationRequests } from '@/lib/messages';
 import { getCases } from '@/lib/cases';
+import { getStaffAppointments } from '@/lib/appointments';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { formatJalaliDate, toPersianDigits } from '@/lib/format';
-import { CASE_STATUS_LABEL, CASE_STATUS_VARIANT } from '@/lib/status';
+import { formatJalaliDate, formatJalaliDateTime, toPersianDigits } from '@/lib/format';
+import {
+  APPOINTMENT_STATUS_LABEL,
+  APPOINTMENT_STATUS_VARIANT,
+  CASE_STATUS_LABEL,
+  CASE_STATUS_VARIANT,
+} from '@/lib/status';
 import { requireStaff } from '@/lib/session';
 import ServerDataAutoRefresh from '@/components/admin/ServerDataAutoRefresh';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboardPage() {
-  const [account, stats, messages, cases] = await Promise.all([
+  const [account, stats, messages, cases, appointments] = await Promise.all([
     requireStaff(),
     getAdminDashboardStats(),
     getConsultationRequests(),
     getCases(),
+    getStaffAppointments(),
   ]);
 
   const cards = [
@@ -71,10 +78,10 @@ export default async function AdminDashboardPage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <section className="dashboard-card p-5 md:p-6">
           <div className="mb-5 flex items-center justify-between gap-4">
-            <div><p className="text-[11px] font-bold text-accent">ورودی‌های جدید</p><h2 className="mt-1 font-extrabold">آخرین درخواست‌های مشاوره</h2></div>
+            <div><p className="text-[11px] font-bold text-accent">ورودی‌های جدید</p><h2 className="mt-1 font-extrabold">آخرین پیام‌های مشاوره</h2></div>
             <Link href="/admin/messages" className="text-xs font-bold text-accent hover:text-primary">مشاهده همه</Link>
           </div>
           <div className="space-y-2.5">
@@ -87,7 +94,29 @@ export default async function AdminDashboardPage() {
                 <p className="mt-2 line-clamp-1 text-xs leading-6 text-muted-foreground">{message.message}</p>
               </Link>
             ))}
-            {messages.length === 0 && <p className="py-10 text-center text-sm text-muted-foreground">درخواستی ثبت نشده است.</p>}
+            {messages.length === 0 && <p className="py-10 text-center text-sm text-muted-foreground">پیامی ثبت نشده است.</p>}
+          </div>
+        </section>
+
+        <section className="dashboard-card p-5 md:p-6">
+          <div className="mb-5 flex items-center justify-between gap-4">
+            <div><p className="text-[11px] font-bold text-accent">رزرو نوبت</p><h2 className="mt-1 font-extrabold">آخرین نوبت‌های ثبت‌شده</h2></div>
+            <Link href="/admin/appointments" className="text-xs font-bold text-accent hover:text-primary">مشاهده همه</Link>
+          </div>
+          <div className="space-y-2.5">
+            {appointments.slice(0, 5).map((item) => (
+              <Link href="/admin/appointments" key={item.id} className="block rounded-xl border border-border p-4 transition-colors hover:border-gold/55 hover:bg-gold/5">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-extrabold truncate">{item.subject}</p>
+                  <Badge variant={APPOINTMENT_STATUS_VARIANT[item.status]}>{APPOINTMENT_STATUS_LABEL[item.status]}</Badge>
+                </div>
+                <div className="mt-2 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                  <span className="font-semibold text-foreground/80">{item.clientName}</span>
+                  <span className="flex items-center gap-1"><Clock3 size={12} className="text-sky-600" /> {formatJalaliDateTime(item.requestedAt)}</span>
+                </div>
+              </Link>
+            ))}
+            {appointments.length === 0 && <p className="py-10 text-center text-sm text-muted-foreground">نوبتی ثبت نشده است.</p>}
           </div>
         </section>
 

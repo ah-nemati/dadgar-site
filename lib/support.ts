@@ -43,6 +43,8 @@ interface AttachmentRow {
 }
 
 function mapThread(row: ThreadRow): SupportThread {
+  const createdAtIso = row.createdAt instanceof Date ? row.createdAt.toISOString() : new Date(row.createdAt).toISOString();
+  const updatedAtIso = row.updatedAt instanceof Date ? row.updatedAt.toISOString() : new Date(row.updatedAt).toISOString();
   return {
     id: Number(row.id),
     clientId: row.clientId,
@@ -50,8 +52,8 @@ function mapThread(row: ThreadRow): SupportThread {
     subject: row.subject,
     practiceArea: row.practiceArea,
     status: row.status,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    createdAt: createdAtIso,
+    updatedAt: updatedAtIso,
     lastMessage: row.lastMessage,
   };
 }
@@ -62,7 +64,7 @@ export async function getSupportThreads(): Promise<SupportThread[]> {
     ? await db<ThreadRow[]>`
         select t.*, u.name as client_name,
           (select m.body from support_messages m where m.thread_id = t.id order by m.created_at desc limit 1) as last_message
-        from support_threads t join users u on u.id = t.client_id
+        from support_threads t left join users u on u.id = t.client_id
         order by
           case t.status when 'open' then 0 when 'answered' then 1 else 2 end,
           t.updated_at desc
@@ -70,7 +72,7 @@ export async function getSupportThreads(): Promise<SupportThread[]> {
     : await db<ThreadRow[]>`
         select t.*, u.name as client_name,
           (select m.body from support_messages m where m.thread_id = t.id order by m.created_at desc limit 1) as last_message
-        from support_threads t join users u on u.id = t.client_id
+        from support_threads t left join users u on u.id = t.client_id
         where t.client_id = ${account.id}
         order by
           case t.status when 'open' then 0 when 'answered' then 1 else 2 end,
@@ -110,6 +112,7 @@ export async function getSupportMessages(threadId: number): Promise<SupportMessa
 
   const byMessage = new Map<number, SupportAttachment[]>();
   for (const row of attachmentRows) {
+    const attachmentCreatedAt = row.createdAt instanceof Date ? row.createdAt.toISOString() : new Date(row.createdAt).toISOString();
     const attachment: SupportAttachment = {
       id: Number(row.id),
       messageId: Number(row.messageId),
@@ -117,7 +120,7 @@ export async function getSupportMessages(threadId: number): Promise<SupportMessa
       fileName: row.fileName,
       mimeType: row.mimeType,
       fileSize: row.fileSize === null ? null : Number(row.fileSize),
-      createdAt: row.createdAt.toISOString(),
+      createdAt: attachmentCreatedAt,
       downloadUrl: signedDownloadUrl(row.filePath),
     };
     const list = byMessage.get(attachment.messageId) ?? [];
@@ -132,7 +135,7 @@ export async function getSupportMessages(threadId: number): Promise<SupportMessa
     senderName: row.senderRole !== 'CLIENT' ? 'پشتیبانی دفتر' : row.senderName || 'موکل',
     senderRole: row.senderRole,
     body: row.body,
-    createdAt: row.createdAt.toISOString(),
+    createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : new Date(row.createdAt).toISOString(),
     attachments: byMessage.get(Number(row.id)) ?? [],
   }));
 }

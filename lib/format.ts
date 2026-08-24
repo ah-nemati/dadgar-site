@@ -47,25 +47,30 @@ function tehranParts(date: Date) {
   };
 }
 
-export function formatJalaliDate(isoDate: string): string {
-  const date = new Date(isoDate);
-  if (Number.isNaN(date.getTime())) return '—';
+function parseToDate(value: string | Date | number | null | undefined): Date | null {
+  if (value === null || value === undefined || value === '') return null;
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+export function formatJalaliDate(isoDate: string | Date | number | null | undefined): string {
+  const date = parseToDate(isoDate);
+  if (!date) return '—';
   const parts = tehranParts(date);
   const { jy, jm, jd } = toJalaali(parts.year, parts.month, parts.day);
   return `${toPersianDigits(jd)} ${JALALI_MONTHS[jm - 1]} ${toPersianDigits(jy)}`;
 }
 
-export function formatJalaliDateTime(isoDate: string): string {
-  const date = new Date(isoDate);
-  if (Number.isNaN(date.getTime())) return '—';
+export function formatJalaliDateTime(isoDate: string | Date | number | null | undefined): string {
+  const date = parseToDate(isoDate);
+  if (!date) return '—';
   const parts = tehranParts(date);
-  return `${formatJalaliDate(isoDate)}، ساعت ${toPersianDigits(`${parts.hour}:${parts.minute}`)}`;
+  return `${formatJalaliDate(date)}، ساعت ${toPersianDigits(`${parts.hour}:${parts.minute}`)}`;
 }
 
-export function toTehranDateTimeLocal(isoDate: string | null): string {
-  if (!isoDate) return '';
-  const date = new Date(isoDate);
-  if (Number.isNaN(date.getTime())) return '';
+export function toTehranDateTimeLocal(isoDate: string | Date | number | null | undefined): string {
+  const date = parseToDate(isoDate);
+  if (!date) return '';
   const parts = tehranParts(date);
   return `${parts.year}-${String(parts.month).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}T${parts.hour}:${parts.minute}`;
 }

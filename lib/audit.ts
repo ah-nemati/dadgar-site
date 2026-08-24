@@ -22,7 +22,16 @@ export async function getAuditLogs(limit = 100): Promise<AuditLogItem[]> {
     order by a.created_at desc
     limit ${Math.max(1, Math.min(limit, 250))}
   `;
-  return rows.map((row) => ({ id: Number(row.id), actorName: row.actorName, actorEmail: row.actorEmail, action: row.action, entityType: row.entityType, entityId: row.entityId, metadata: row.metadata ?? {}, createdAt: row.createdAt.toISOString() }));
+  return rows.map((row) => ({
+    id: Number(row.id),
+    actorName: row.actorName,
+    actorEmail: row.actorEmail,
+    action: row.action,
+    entityType: row.entityType,
+    entityId: row.entityId,
+    metadata: row.metadata ?? {},
+    createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : new Date(row.createdAt).toISOString(),
+  }));
 }
 
 export async function recordAudit(

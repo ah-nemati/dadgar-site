@@ -16,6 +16,8 @@ interface AppointmentRow {
 }
 
 function toAppointment(row: AppointmentRow): Appointment {
+  const reqDate = row.requestedAt ? (row.requestedAt instanceof Date ? row.requestedAt : new Date(row.requestedAt)) : new Date();
+  const creDate = row.createdAt ? (row.createdAt instanceof Date ? row.createdAt : new Date(row.createdAt)) : new Date();
   return {
     id: Number(row.id),
     clientId: row.clientId,
@@ -23,10 +25,10 @@ function toAppointment(row: AppointmentRow): Appointment {
     clientPhone: row.clientPhone,
     clientEmail: row.clientEmail,
     subject: row.subject,
-    requestedAt: row.requestedAt.toISOString(),
+    requestedAt: reqDate.toISOString(),
     status: row.status,
     notes: row.notes,
-    createdAt: row.createdAt.toISOString(),
+    createdAt: creDate.toISOString(),
   };
 }
 
@@ -46,8 +48,9 @@ function toTehranDateTimeLocal(value: Date | string): string {
 }
 
 export async function getAppointmentReferenceTime(): Promise<string> {
-  const [row] = await db<{ now: Date }[]>`select current_timestamp as now`;
-  return row.now.toISOString();
+  const [row] = await db<{ now: Date | string }[]>`select current_timestamp as now`;
+  const nowDate = row?.now instanceof Date ? row.now : row?.now ? new Date(row.now) : new Date();
+  return nowDate.toISOString();
 }
 
 export async function getUnavailableAppointmentSlots(maxAdvanceDays = 30): Promise<string[]> {
@@ -69,7 +72,7 @@ export async function getStaffAppointments(): Promise<Appointment[]> {
   const rows = await db<AppointmentRow[]>`
     select a.*, u.name as client_name, u.phone as client_phone, u.email as client_email
     from appointments a
-    join users u on u.id = a.client_id
+    left join users u on u.id = a.client_id
     order by
       case
         when a.status = 'pending' then 0
@@ -91,7 +94,7 @@ export async function getClientAppointments(): Promise<Appointment[]> {
   const rows = await db<AppointmentRow[]>`
     select a.*, u.name as client_name, u.phone as client_phone, u.email as client_email
     from appointments a
-    join users u on u.id = a.client_id
+    left join users u on u.id = a.client_id
     where a.client_id = ${account.id}
     order by
       case when a.status in ('pending', 'confirmed') and a.requested_at >= now() then 0 else 1 end,

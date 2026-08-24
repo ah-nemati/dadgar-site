@@ -94,6 +94,8 @@ function normalizeSourceUrls(value: unknown): string[] {
 }
 
 function map(row: Row): BlogPost {
+  const createdAtIso = row.createdAt instanceof Date ? row.createdAt.toISOString() : new Date(row.createdAt).toISOString();
+  const updatedAtIso = row.updatedAt instanceof Date ? row.updatedAt.toISOString() : new Date(row.updatedAt).toISOString();
   return {
     id: Number(row.id),
     slug: row.slug,
@@ -111,9 +113,9 @@ function map(row: Row): BlogPost {
     sourceUrls: normalizeSourceUrls(row.sourceUrls),
     seoTitle: row.seoTitle,
     seoDescription: row.seoDescription,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
-    date: formatJalaliDate(row.createdAt.toISOString()),
+    createdAt: createdAtIso,
+    updatedAt: updatedAtIso,
+    date: formatJalaliDate(createdAtIso),
     readTime: estimateReadTime(row.content),
   };
 }
@@ -216,7 +218,14 @@ export async function removeBlogImage(fileId: string | null): Promise<void> {
   await deleteAsset(fileId);
 }
 
+function toPostgresTextArray(urls: string[] | undefined | null): string {
+  if (!urls || urls.length === 0) return '{}';
+  const escaped = urls.map((url) => `"${url.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`);
+  return `{${escaped.join(',')}}`;
+}
+
 export async function createBlogPost(input: BlogPostInput): Promise<BlogPost> {
+  const sourceUrlsLiteral = toPostgresTextArray(input.sourceUrls);
   const [row] = await db<Row[]>`
     insert into blog_posts (
       slug, title, category, excerpt, content, published, featured,
@@ -225,7 +234,7 @@ export async function createBlogPost(input: BlogPostInput): Promise<BlogPost> {
     ) values (
       ${input.slug}, ${input.title}, ${input.category}, ${input.excerpt}, ${input.content},
       ${input.published}, ${input.featured}, ${input.imageUrl}, ${input.imageFileId}, ${input.imageAlt},
-      ${input.authorName}, ${input.reviewerName}, ${input.sourceUrls},
+      ${input.authorName}, ${input.reviewerName}, ${sourceUrlsLiteral}::text[],
       ${input.seoTitle}, ${input.seoDescription}
     )
     returning id, slug, title, category, excerpt, content, published, featured,
@@ -236,6 +245,7 @@ export async function createBlogPost(input: BlogPostInput): Promise<BlogPost> {
 }
 
 export async function updateBlogPost(id: number, input: BlogPostInput): Promise<BlogPost> {
+  const sourceUrlsLiteral = toPostgresTextArray(input.sourceUrls);
   const [row] = await db<Row[]>`
     update blog_posts set
       slug = ${input.slug},
@@ -250,7 +260,7 @@ export async function updateBlogPost(id: number, input: BlogPostInput): Promise<
       image_alt = ${input.imageAlt},
       author_name = ${input.authorName},
       reviewer_name = ${input.reviewerName},
-      source_urls = ${input.sourceUrls},
+      source_urls = ${sourceUrlsLiteral}::text[],
       seo_title = ${input.seoTitle},
       seo_description = ${input.seoDescription}
     where id = ${id}

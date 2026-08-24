@@ -20,11 +20,13 @@ interface Row {
 }
 
 function map(row: Row): ConsultationRequest {
+  const createdAtIso = row.createdAt instanceof Date ? row.createdAt.toISOString() : new Date(row.createdAt).toISOString();
+  const updatedAtIso = row.updatedAt instanceof Date ? row.updatedAt.toISOString() : new Date(row.updatedAt).toISOString();
   return {
     ...row,
     id: Number(row.id),
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    createdAt: createdAtIso,
+    updatedAt: updatedAtIso,
   };
 }
 

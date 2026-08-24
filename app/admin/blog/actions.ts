@@ -32,8 +32,8 @@ function baseForm(formData: FormData) {
     category: String(formData.get('category') ?? '').trim(),
     excerpt: String(formData.get('excerpt') ?? '').trim(),
     content: String(formData.get('content') ?? '').trim(),
-    published: formData.get('published') === 'on',
-    featured: formData.get('featured') === 'on',
+    published: ['on', 'true', '1'].includes(String(formData.get('published') ?? '')),
+    featured: ['on', 'true', '1'].includes(String(formData.get('featured') ?? '')),
     imageAlt: String(formData.get('imageAlt') ?? '').trim() || null,
     authorName: String(formData.get('authorName') ?? '').trim() || null,
     reviewerName: String(formData.get('reviewerName') ?? '').trim() || null,
@@ -67,6 +67,7 @@ function mediaMetadata(base: ReturnType<typeof baseForm>): BlogImageMetadata {
 }
 
 function revalidateBlog(slug?: string, previousSlug?: string) {
+  revalidatePath('/');
   revalidatePath('/admin');
   revalidatePath('/admin/blog');
   revalidatePath('/blog');
@@ -76,16 +77,34 @@ function revalidateBlog(slug?: string, previousSlug?: string) {
 }
 
 function formError(error: unknown): string {
-  const message = error instanceof Error ? error.message : '';
-  if (message.includes('duplicate') || message.includes('unique')) {
+  console.error('[Admin Blog Action Error]:', error);
+  const message = error instanceof Error ? error.message : String(error ?? '');
+
+  if (message.includes('duplicate') || message.includes('unique') || message.includes('23505')) {
     return 'این نامک قبلاً استفاده شده است؛ نامک دیگری انتخاب کنید.';
   }
   if (message === 'INVALID_IMAGE_TYPE') return 'فایل انتخاب‌شده تصویر معتبر نیست.';
   if (message === 'IMAGE_TOO_LARGE') return 'حجم تصویر باید کمتر از ۵ مگابایت باشد.';
-  if (message.includes('IMAGEKIT_') || message.includes('ImageKit')) {
-    return 'ارتباط با ImageKit برقرار نشد. کلید خصوصی و URL Endpoint را بررسی کنید.';
+  if (message === 'EMPTY_UPLOAD_FILE') return 'فایل تصویر انتخاب‌شده نامعتبر یا خالی است.';
+  if (message.includes('IMAGEKIT_PRIVATE_KEY') || message.includes('IMAGEKIT_URL_ENDPOINT')) {
+    return 'متغیرهای ImageKit (کلید خصوصی یا آدرس Endpoint) در سرور یا کلادفلر تنظیم نشده‌اند.';
   }
-  return 'ذخیره مطلب با خطا مواجه شد. تنظیمات دیتابیس و ImageKit را بررسی کنید.';
+  if (message.includes('AuthenticationError') || message.includes('401')) {
+    return 'احراز هویت در ImageKit ناموفق بود. کلید IMAGEKIT_PRIVATE_KEY را بررسی کنید.';
+  }
+  if (message.includes('ImageKit') || message.includes('IMAGEKIT_')) {
+    return 'ارتباط با سرویس ImageKit با خطا مواجه شد. اتصال و کلیدهای ImageKit را بررسی کنید.';
+  }
+  if (message.includes('relation') && message.includes('does not exist')) {
+    return 'جدول‌های دیتابیس یافت نشدند. لطفاً مایگریشن‌های دیتابیس را اجرا کنید (npm run db:migrate).';
+  }
+  if (message.includes('column') && message.includes('does not exist')) {
+    return 'ستون‌های جدول بلاگ در دیتابیس ناقص هستند. لطفاً مایگریشن 005_blog_editorial_metadata را اجرا کنید (npm run db:migrate).';
+  }
+  if (message.includes('ECONNREFUSED') || message.includes('timeout') || message.includes('ETIMEDOUT') || message.includes('connection')) {
+    return 'ارتباط با پایگاه‌داده برقرار نشد. وضعیت Hyperdrive و دیتابیس را بررسی کنید.';
+  }
+  return `ذخیره مطلب با خطا مواجه شد (${message || 'خطای نامشخص'}). تنظیمات دیتابیس و ImageKit را بررسی کنید.`;
 }
 
 export async function createPost(
