@@ -59,7 +59,7 @@ export default async function LawyerDetailPage({ params }: { params: Params }) {
     identifier: lawyer.licenseNumber,
     description: lawyer.bio,
     url: new URL(`/lawyers/${lawyer.slug}`, firm.url).toString(),
-    image: new URL("/images/profile.jpeg", firm.url).toString(),
+    //fucked majid image: new URL("/images/profile.jpeg", firm.url).toString(),
     knowsAbout: specialtyAreas.map((area) => area.title),
     memberOf: { "@type": "Organization", name: "کانون وکلای دادگستری خوزستان" },
     worksFor: { "@type": "LegalService", name: firm.name, url: firm.url },
@@ -94,7 +94,7 @@ export default async function LawyerDetailPage({ params }: { params: Params }) {
           <div className="grid gap-8 lg:grid-cols-[15rem_1fr] lg:items-end">
             <div className="relative mx-auto aspect-[4/5] w-full max-w-[15rem] overflow-hidden rounded-[1.4rem] border border-white/10 bg-ink-2 shadow-2xl lg:mx-0">
               <Image
-                src="/images/profile.jpeg"
+                src="/images/profil.jpeg"
                 alt={`تصویر ${lawyer.name}`}
                 fill
                 priority

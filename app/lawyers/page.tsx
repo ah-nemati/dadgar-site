@@ -43,7 +43,7 @@ export default async function LawyersPage() {
               >
                 <div className="relative min-h-72 md:min-h-[22rem]">
                   <Image
-                    src="/images/profile.jpeg"
+                    src="/images/profil.jpeg"
                     alt={`تصویر ${lw.name}`}
                     fill
                     priority

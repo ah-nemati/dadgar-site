@@ -43,7 +43,7 @@ export default async function LawyerAhvazPage() {
     "@type": "LegalService",
     name: firm.name,
     url: new URL("/lawyer-ahvaz", firm.url).toString(),
-    image: new URL("/images/profile.jpeg", firm.url).toString(),
+    //fucked majid image: new URL("/images/profile.jpeg", firm.url).toString(),
     description: metadata.description,
     telephone: [
       firm.phoneHref.replace("tel:", ""),
@@ -118,7 +118,7 @@ export default async function LawyerAhvazPage() {
           <aside className="lawyer-feature overflow-hidden lg:sticky lg:top-28">
             <div className="relative h-72">
               <Image
-                src="/images/profile.jpeg"
+                src="/images/profil.jpeg"
                 alt=" ، وکیل پایه یک دادگستری در  "
                 fill
                 priority

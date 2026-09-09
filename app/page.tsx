@@ -106,7 +106,7 @@ export default async function HomePage() {
           <div className="legal-hero__aside load-reveal">
             <div className="absolute inset-x-5 inset-y-0 overflow-hidden rounded-[1.35rem] border border-white/10 bg-white/5 shadow-2xl">
               <Image
-                src="/images/profile.jpeg"
+                src="/images/profil.jpeg"
                 alt={lawyer ? `تصویر ${lawyer.name}` : "وکیل دفتر"}
                 fill
                 priority
@@ -264,7 +264,7 @@ export default async function HomePage() {
             <div className="lawyer-feature grid overflow-hidden lg:grid-cols-[.78fr_1.22fr]">
               <div className="relative min-h-[25rem] lg:min-h-[31rem]">
                 <Image
-                  src="/images/profile.jpeg"
+                  src="/images/profil.jpeg"
                   alt={`تصویر ${lawyer.name}`}
                   fill
                   sizes="(max-width: 1024px) 100vw, 520px"

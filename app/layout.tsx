@@ -111,7 +111,7 @@ export default async function RootLayout({
       firm.phone2Href?.replace("tel:", ""),
     ].filter(Boolean),
     email: firm.email,
-    image: new URL("/images/profile.jpeg", firm.url).toString(),
+    //fucked majid image: new URL("/images/profile.jpeg", firm.url).toString(),
     address: {
       "@type": "PostalAddress",
       streetAddress: firm.address,
