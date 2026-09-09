@@ -22,7 +22,7 @@ import PracticeAreaSwiper from "@/components/home/PracticeAreaSwiper";
 import BlogSwiper from "@/components/home/BlogSwiper";
 import Link from "@/components/NoPrefetchLink";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 const process = [
   {
@@ -52,7 +52,10 @@ export default async function HomePage() {
 
   const lawyer = lawyers[0];
   const trustPoints = [
-    { icon: Scale, label: `${practiceAreas.length.toLocaleString("fa-IR")} حوزه اصلی حقوقی و کیفری` },
+    {
+      icon: Scale,
+      label: `${practiceAreas.length.toLocaleString("fa-IR")} حوزه اصلی حقوقی و کیفری`,
+    },
     { icon: ShieldCheck, label: "محرمانگی اطلاعات و مدارک" },
     { icon: CalendarCheck, label: "مشاوره آنلاین و مراجعه حضوری" },
     { icon: FileSearch, label: "بررسی شفاف مسیر و حدود خدمت" },
@@ -68,7 +71,8 @@ export default async function HomePage() {
               مسئله حقوقی را با مسیر روشن‌تر و تصمیم دقیق‌تر پیگیری کنید.
             </h1>
             <p className="legal-hero__description">
-              مشاوره حقوقی آنلاین برای سراسر ایران و خدمات حضوری در اهواز؛ از بررسی اولیه و تنظیم اوراق تا قبول و پیگیری پرونده‌های حقوقی و کیفری.
+              مشاوره حقوقی آنلاین برای سراسر ایران و خدمات حضوری در ؛ از بررسی
+              اولیه و تنظیم اوراق تا قبول و پیگیری پرونده‌های حقوقی و کیفری.
             </p>
 
             <div className="hero-actions mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -79,15 +83,23 @@ export default async function HomePage() {
               </Button>
               <Button size="lg" variant="ghostLight" asChild>
                 <Link href="/lawyer-ahvaz">
-                  <MapPin size={17} aria-hidden="true" /> مراجعه حضوری در اهواز
+                  <MapPin size={17} aria-hidden="true" /> مراجعه حضوری در
                 </Link>
               </Button>
             </div>
 
             <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-sky-800/65">
-              <span className="inline-flex items-center gap-2"><Check size={14} className="text-gold-light" /> بررسی اولیه موضوع</span>
-              <span className="inline-flex items-center gap-2"><Check size={14} className="text-gold-light" /> ارسال امن مدارک</span>
-              <span className="inline-flex items-center gap-2"><Check size={14} className="text-gold-light" /> ارتباط مستقیم با دفتر</span>
+              <span className="inline-flex items-center gap-2">
+                <Check size={14} className="text-gold-light" /> بررسی اولیه
+                موضوع
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <Check size={14} className="text-gold-light" /> ارسال امن مدارک
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <Check size={14} className="text-gold-light" /> ارتباط مستقیم با
+                دفتر
+              </span>
             </div>
           </div>
 
@@ -103,8 +115,12 @@ export default async function HomePage() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/10 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-5">
-                <p className="text-lg font-extrabold text-parchment">{lawyer?.name ?? firm.name}</p>
-                <p className="mt-1 text-xs text-parchment/65">{lawyer?.role ?? "وکیل پایه یک دادگستری"}</p>
+                <p className="text-lg font-extrabold text-parchment">
+                  {lawyer?.name ?? firm.name}
+                </p>
+                <p className="mt-1 text-xs text-parchment/65">
+                  {lawyer?.role ?? "وکیل پایه یک دادگستری"}
+                </p>
                 {lawyer?.licenseNumber && (
                   <p className="mt-3 inline-flex rounded-full border border-white/15 bg-black/15 px-3 py-1 text-[11px] text-gold-light">
                     پروانه وکالت {lawyer.licenseNumber}
@@ -113,8 +129,13 @@ export default async function HomePage() {
               </div>
             </div>
             <div className="legal-hero__note">
-              <Award size={17} className="mb-2 text-gold-light" aria-hidden="true" />
-              بررسی هر موضوع بر اساس اسناد و شرایط اختصاصی همان پرونده انجام می‌شود.
+              <Award
+                size={17}
+                className="mb-2 text-gold-light"
+                aria-hidden="true"
+              />
+              بررسی هر موضوع بر اساس اسناد و شرایط اختصاصی همان پرونده انجام
+              می‌شود.
             </div>
           </div>
         </div>
@@ -124,8 +145,12 @@ export default async function HomePage() {
         <div className="trust-bar__inner stagger-load">
           {trustPoints.map(({ icon: Icon, label }) => (
             <div key={label} className="trust-bar__item">
-              <span className="legal-card__icon size-10 shrink-0"><Icon size={18} aria-hidden="true" /></span>
-              <span className="text-sm font-bold leading-6 text-foreground">{label}</span>
+              <span className="legal-card__icon size-10 shrink-0">
+                <Icon size={18} aria-hidden="true" />
+              </span>
+              <span className="text-sm font-bold leading-6 text-foreground">
+                {label}
+              </span>
             </div>
           ))}
         </div>
@@ -136,14 +161,33 @@ export default async function HomePage() {
           <div className="grid gap-8 lg:grid-cols-[.78fr_1.22fr] lg:items-end">
             <div className="section-kicker mb-0">
               <Eyebrow>از کجا شروع کنم؟</Eyebrow>
-              <h2 className="section-title">مسیر کوتاه‌تر برای رسیدن به خدمت مناسب</h2>
-              <p className="section-copy">به‌جای جست‌وجوی پراکنده، از نوع نیاز خود شروع کنید.</p>
+              <h2 className="section-title">
+                مسیر کوتاه‌تر برای رسیدن به خدمت مناسب
+              </h2>
+              <p className="section-copy">
+                به‌جای جست‌وجوی پراکنده، از نوع نیاز خود شروع کنید.
+              </p>
             </div>
             <div className="quick-services">
-              <Link className="quick-services__item" href="/online-legal-consultation"><span>مشاوره حقوقی آنلاین</span><ArrowLeft size={15} /></Link>
-              <Link className="quick-services__item" href="/lawyer-ahvaz"><span>مراجعه به دفتر اهواز</span><ArrowLeft size={15} /></Link>
-              <Link className="quick-services__item" href="/fees"><span>بررسی نحوه تعیین تعرفه</span><ArrowLeft size={15} /></Link>
-              <Link className="quick-services__item" href="/faq"><span>پاسخ پرسش‌های متداول</span><ArrowLeft size={15} /></Link>
+              <Link
+                className="quick-services__item"
+                href="/online-legal-consultation"
+              >
+                <span>مشاوره حقوقی آنلاین</span>
+                <ArrowLeft size={15} />
+              </Link>
+              <Link className="quick-services__item" href="/lawyer-ahvaz">
+                <span>مراجعه به دفتر </span>
+                <ArrowLeft size={15} />
+              </Link>
+              <Link className="quick-services__item" href="/fees">
+                <span>بررسی نحوه تعیین تعرفه</span>
+                <ArrowLeft size={15} />
+              </Link>
+              <Link className="quick-services__item" href="/faq">
+                <span>پاسخ پرسش‌های متداول</span>
+                <ArrowLeft size={15} />
+              </Link>
             </div>
           </div>
         </div>
@@ -155,10 +199,15 @@ export default async function HomePage() {
             <div className="section-kicker mb-0">
               <Eyebrow>حوزه‌های خدمات</Eyebrow>
               <h2 className="section-title">موضوع پرونده خود را پیدا کنید</h2>
-              <p className="section-copy">خدمات دفتر در حوزه‌های اصلی دعاوی و امور حقوقی دسته‌بندی شده تا سریع‌تر به اطلاعات مرتبط برسید.</p>
+              <p className="section-copy">
+                خدمات دفتر در حوزه‌های اصلی دعاوی و امور حقوقی دسته‌بندی شده تا
+                سریع‌تر به اطلاعات مرتبط برسید.
+              </p>
             </div>
             <Button variant="outline" asChild>
-              <Link href="/practice-areas">همه حوزه‌ها <ArrowLeft size={16} /></Link>
+              <Link href="/practice-areas">
+                همه حوزه‌ها <ArrowLeft size={16} />
+              </Link>
             </Button>
           </div>
 
@@ -174,19 +223,33 @@ export default async function HomePage() {
             <div className="section-kicker lg:sticky lg:top-32">
               <Eyebrow>فرآیند همکاری</Eyebrow>
               <h2 className="section-title">از سؤال اولیه تا تصمیم حقوقی</h2>
-              <p className="section-copy">فرآیند باید برای موکل قابل فهم باشد؛ قبل از شروع، بدانید مرحله بعدی چیست.</p>
+              <p className="section-copy">
+                فرآیند باید برای موکل قابل فهم باشد؛ قبل از شروع، بدانید مرحله
+                بعدی چیست.
+              </p>
               <Button className="mt-6" variant="secondary" asChild>
-                <Link href="/online-legal-consultation">ثبت درخواست مشاوره <ArrowLeft size={16} /></Link>
+                <Link href="/online-legal-consultation">
+                  ثبت درخواست مشاوره <ArrowLeft size={16} />
+                </Link>
               </Button>
             </div>
 
             <div className="space-y-4">
               {process.map((step) => (
-                <article key={step.n} className="legal-card grid gap-5 p-6 sm:grid-cols-[4rem_1fr] sm:p-7">
-                  <div className="text-3xl font-extrabold text-gold">{step.n}</div>
+                <article
+                  key={step.n}
+                  className="legal-card grid gap-5 p-6 sm:grid-cols-[4rem_1fr] sm:p-7"
+                >
+                  <div className="text-3xl font-extrabold text-gold">
+                    {step.n}
+                  </div>
                   <div>
-                    <h3 className="text-lg font-extrabold text-foreground">{step.title}</h3>
-                    <p className="mt-2 text-sm leading-7 text-muted-foreground">{step.text}</p>
+                    <h3 className="text-lg font-extrabold text-foreground">
+                      {step.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-7 text-muted-foreground">
+                      {step.text}
+                    </p>
                   </div>
                 </article>
               ))}
@@ -211,12 +274,26 @@ export default async function HomePage() {
               </div>
               <div className="relative z-10 flex flex-col justify-center p-7 sm:p-10 lg:p-14">
                 <Eyebrow dark>وکیل پرونده</Eyebrow>
-                <h2 className="text-3xl font-extrabold leading-relaxed text-sky-900 md:text-4xl">{lawyer.name}</h2>
-                <p className="mt-2 font-bold text-gold-light">{lawyer.role} · {lawyer.experience}</p>
-                <p className="mt-6 max-w-2xl text-sm leading-8 text-sky-800/75">{lawyer.bio}</p>
+                <h2 className="text-3xl font-extrabold leading-relaxed text-sky-900 md:text-4xl">
+                  {lawyer.name}
+                </h2>
+                <p className="mt-2 font-bold text-gold-light">
+                  {lawyer.role} · {lawyer.experience}
+                </p>
+                <p className="mt-6 max-w-2xl text-sm leading-8 text-sky-800/75">
+                  {lawyer.bio}
+                </p>
                 <div className="mt-7 flex flex-wrap gap-3">
-                  <Button asChild><Link href={`/lawyers/${lawyer.slug}`}>مشاهده پروفایل کامل <ArrowLeft size={16} /></Link></Button>
-                  <Button asChild variant="ghostLight"><Link href="/online-legal-consultation"><MessageSquareText size={16} /> صحبت با وکیل</Link></Button>
+                  <Button asChild>
+                    <Link href={`/lawyers/${lawyer.slug}`}>
+                      مشاهده پروفایل کامل <ArrowLeft size={16} />
+                    </Link>
+                  </Button>
+                  <Button asChild variant="ghostLight">
+                    <Link href="/online-legal-consultation">
+                      <MessageSquareText size={16} /> صحبت با وکیل
+                    </Link>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -231,9 +308,16 @@ export default async function HomePage() {
               <div className="section-kicker mb-0">
                 <Eyebrow>مجله حقوقی</Eyebrow>
                 <h2 className="section-title">مطالبی برای تصمیم آگاهانه‌تر</h2>
-                <p className="section-copy">یادداشت‌ها و راهنماهای حقوقی با هدف توضیح روشن موضوعات رایج.</p>
+                <p className="section-copy">
+                  یادداشت‌ها و راهنماهای حقوقی با هدف توضیح روشن موضوعات رایج.
+                </p>
               </div>
-              <Link href="/blog" className="inline-flex items-center gap-2 text-sm font-bold text-accent hover:text-primary">همه مطالب <ArrowLeft size={15} /></Link>
+              <Link
+                href="/blog"
+                className="inline-flex items-center gap-2 text-sm font-bold text-accent hover:text-primary"
+              >
+                همه مطالب <ArrowLeft size={15} />
+              </Link>
             </div>
 
             <Reveal className="mt-10">
@@ -248,12 +332,25 @@ export default async function HomePage() {
           <div className="cta-panel grid gap-8 p-5 min-[420px]:p-7 sm:p-10 lg:grid-cols-[1fr_auto] lg:items-center lg:p-12">
             <div>
               <p className="text-xs font-bold text-gold-light">قدم بعدی</p>
-              <h2 className="mt-2 max-w-2xl text-2xl font-extrabold leading-relaxed text-sky-900 md:text-3xl">موضوع حقوقی خود را توضیح دهید تا مسیر مناسب بررسی مشخص شود.</h2>
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-sky-800/70">برای شروع لازم نیست تمام جزئیات را بدانید؛ شرح کوتاه مسئله و مدارک اصلی کافی است.</p>
+              <h2 className="mt-2 max-w-2xl text-2xl font-extrabold leading-relaxed text-sky-900 md:text-3xl">
+                موضوع حقوقی خود را توضیح دهید تا مسیر مناسب بررسی مشخص شود.
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-sky-800/70">
+                برای شروع لازم نیست تمام جزئیات را بدانید؛ شرح کوتاه مسئله و
+                مدارک اصلی کافی است.
+              </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Button size="lg" asChild><Link href="/online-legal-consultation">شروع مشاوره <ArrowLeft size={17} /></Link></Button>
-              <Button size="lg" variant="ghostLight" asChild><a href={firm.phoneHref}><Phone size={17} /> <span dir="ltr">{firm.phone}</span></a></Button>
+              <Button size="lg" asChild>
+                <Link href="/online-legal-consultation">
+                  شروع مشاوره <ArrowLeft size={17} />
+                </Link>
+              </Button>
+              <Button size="lg" variant="ghostLight" asChild>
+                <a href={firm.phoneHref}>
+                  <Phone size={17} /> <span dir="ltr">{firm.phone}</span>
+                </a>
+              </Button>
             </div>
           </div>
         </div>

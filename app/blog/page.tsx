@@ -1,17 +1,18 @@
-import type { Metadata } from 'next';
-import PageHero from '@/components/PageHero';
-import BlogList from '@/components/BlogList';
-import { getBlogPosts } from '@/lib/content/blog';
+import type { Metadata } from "next";
+import PageHero from "@/components/PageHero";
+import BlogList from "@/components/BlogList";
+import { getBlogPosts } from "@/lib/content/blog";
 
 export const metadata: Metadata = {
-  alternates: { canonical: '/blog' },
-  title: 'وبلاگ حقوقی',
-  description: 'مقالات حقوقی دفتر وکالت مجید سواری درباره دعاوی حقوقی، کیفری، خانواده، املاک، چک، قراردادها، ارث و سایر موضوعات کاربردی.',
+  alternates: { canonical: "/blog" },
+  title: "وبلاگ حقوقی",
+  description:
+    "مقالات حقوقی دفتر وکالت   درباره دعاوی حقوقی، کیفری، خانواده، املاک، چک، قراردادها، ارث و سایر موضوعات کاربردی.",
 };
 
 // On Workers Free, keep the public blog list build-time static so requests
 // are served from Static Assets instead of invoking the NextServer.
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const revalidate = false;
 
 export default async function BlogPage() {

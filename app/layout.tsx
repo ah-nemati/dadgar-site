@@ -14,7 +14,7 @@ import RouteProgress from "@/components/RouteProgress";
 
 // Production currently uses the read-only OpenNext static-assets cache.
 // Render routes at request time so CMS/auth pages never require runtime cache writes.
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export const viewport: Viewport = {
   themeColor: "#e0f2fe",
@@ -44,7 +44,9 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: seo.defaultDescription,
     keywords: seo.keywords,
-    verification: seo.googleSiteVerification ? { google: seo.googleSiteVerification } : undefined,
+    verification: seo.googleSiteVerification
+      ? { google: seo.googleSiteVerification }
+      : undefined,
     alternates: { canonical: "/", languages: { "fa-IR": "/" } },
     robots: {
       index: true,
@@ -87,8 +89,13 @@ export default async function RootLayout({
   ]);
 
   const schemaDays: Record<number, string> = {
-    0: "Sunday", 1: "Monday", 2: "Tuesday", 3: "Wednesday",
-    4: "Thursday", 5: "Friday", 6: "Saturday",
+    0: "Sunday",
+    1: "Monday",
+    2: "Tuesday",
+    3: "Wednesday",
+    4: "Thursday",
+    5: "Friday",
+    6: "Saturday",
   };
 
   const jsonLd = {
@@ -108,28 +115,32 @@ export default async function RootLayout({
     address: {
       "@type": "PostalAddress",
       streetAddress: firm.address,
-      addressLocality: firm.city || "اهواز",
+      addressLocality: firm.city || " ",
       addressRegion: firm.region || "خوزستان",
       addressCountry: firm.countryCode || "IR",
       postalCode: firm.postalCode || undefined,
     },
-    ...(typeof firm.latitude === "number" && typeof firm.longitude === "number" ? {
-      geo: {
-        "@type": "GeoCoordinates",
-        latitude: firm.latitude,
-        longitude: firm.longitude,
-      },
-    } : {}),
+    ...(typeof firm.latitude === "number" && typeof firm.longitude === "number"
+      ? {
+          geo: {
+            "@type": "GeoCoordinates",
+            latitude: firm.latitude,
+            longitude: firm.longitude,
+          },
+        }
+      : {}),
     hasMap: officeMapLink(firm),
     areaServed: [
       { "@type": "Country", name: "ایران" },
-      { "@type": "City", name: firm.city || "اهواز" },
+      { "@type": "City", name: firm.city || " " },
       { "@type": "AdministrativeArea", name: firm.region || "خوزستان" },
     ],
     openingHoursSpecification: [
       {
         "@type": "OpeningHoursSpecification",
-        dayOfWeek: appointmentSettings.workingDays.map((day) => schemaDays[day]).filter(Boolean),
+        dayOfWeek: appointmentSettings.workingDays
+          .map((day) => schemaDays[day])
+          .filter(Boolean),
         opens: `${appointmentSettings.openHour.toString().padStart(2, "0")}:00`,
         closes: `${appointmentSettings.closeHour.toString().padStart(2, "0")}:00`,
       },

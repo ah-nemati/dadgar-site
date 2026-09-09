@@ -1,7 +1,12 @@
-import { db } from '@/lib/db';
-import { deleteAsset, updateAssetMetadata, uploadAsset, type AssetMetadata } from '@/lib/storage/imagekit';
-import { formatJalaliDate, estimateReadTime } from '@/lib/format';
-import type { BlogPost } from '@/types/content';
+import { db } from "@/lib/db";
+import {
+  deleteAsset,
+  updateAssetMetadata,
+  uploadAsset,
+  type AssetMetadata,
+} from "@/lib/storage/imagekit";
+import { formatJalaliDate, estimateReadTime } from "@/lib/format";
+import type { BlogPost } from "@/types/content";
 
 interface Row {
   id: number | string;
@@ -27,21 +32,21 @@ interface Row {
 function normalizeSourceUrls(value: unknown): string[] {
   if (Array.isArray(value)) {
     return value
-      .filter((item): item is string => typeof item === 'string')
+      .filter((item): item is string => typeof item === "string")
       .map((item) => item.trim())
       .filter(Boolean);
   }
 
-  if (typeof value !== 'string') return [];
+  if (typeof value !== "string") return [];
   const raw = value.trim();
   if (!raw) return [];
 
-  if (raw.startsWith('[')) {
+  if (raw.startsWith("[")) {
     try {
       const parsed: unknown = JSON.parse(raw);
       if (Array.isArray(parsed)) {
         return parsed
-          .filter((item): item is string => typeof item === 'string')
+          .filter((item): item is string => typeof item === "string")
           .map((item) => item.trim())
           .filter(Boolean);
       }
@@ -50,12 +55,12 @@ function normalizeSourceUrls(value: unknown): string[] {
     }
   }
 
-  if (raw.startsWith('{') && raw.endsWith('}')) {
+  if (raw.startsWith("{") && raw.endsWith("}")) {
     const body = raw.slice(1, -1);
     if (!body) return [];
 
     const values: string[] = [];
-    let current = '';
+    let current = "";
     let quoted = false;
     let escaped = false;
 
@@ -65,7 +70,7 @@ function normalizeSourceUrls(value: unknown): string[] {
         escaped = false;
         continue;
       }
-      if (char === '\\' && quoted) {
+      if (char === "\\" && quoted) {
         escaped = true;
         continue;
       }
@@ -73,17 +78,17 @@ function normalizeSourceUrls(value: unknown): string[] {
         quoted = !quoted;
         continue;
       }
-      if (char === ',' && !quoted) {
+      if (char === "," && !quoted) {
         const item = current.trim();
-        if (item && item.toUpperCase() !== 'NULL') values.push(item);
-        current = '';
+        if (item && item.toUpperCase() !== "NULL") values.push(item);
+        current = "";
         continue;
       }
       current += char;
     }
 
     const last = current.trim();
-    if (last && last.toUpperCase() !== 'NULL') values.push(last);
+    if (last && last.toUpperCase() !== "NULL") values.push(last);
     return values;
   }
 
@@ -94,8 +99,14 @@ function normalizeSourceUrls(value: unknown): string[] {
 }
 
 function map(row: Row): BlogPost {
-  const createdAtIso = row.createdAt instanceof Date ? row.createdAt.toISOString() : new Date(row.createdAt).toISOString();
-  const updatedAtIso = row.updatedAt instanceof Date ? row.updatedAt.toISOString() : new Date(row.updatedAt).toISOString();
+  const createdAtIso =
+    row.createdAt instanceof Date
+      ? row.createdAt.toISOString()
+      : new Date(row.createdAt).toISOString();
+  const updatedAtIso =
+    row.updatedAt instanceof Date
+      ? row.updatedAt.toISOString()
+      : new Date(row.updatedAt).toISOString();
   return {
     id: Number(row.id),
     slug: row.slug,
@@ -131,7 +142,9 @@ export async function getAllBlogPostsForAdmin(): Promise<BlogPost[]> {
   return rows.map(map);
 }
 
-export async function getBlogPostByIdForAdmin(id: number): Promise<BlogPost | undefined> {
+export async function getBlogPostByIdForAdmin(
+  id: number,
+): Promise<BlogPost | undefined> {
   const [row] = await db<Row[]>`
     select id, slug, title, category, excerpt, content, published, featured,
            image_url, image_file_id, image_alt, author_name, reviewer_name,
@@ -171,16 +184,16 @@ export interface BlogImageMetadata {
 
 function imageMetadata(input: BlogImageMetadata): AssetMetadata {
   const alt = input.alt?.trim() || input.title;
-  const creator = 'دفتر وکالت مجید سواری';
+  const creator = "دفتر وکالت  ";
 
   return {
     description: alt,
-    tags: ['blog', 'legal-article', input.slug, input.category].filter(Boolean),
+    tags: ["blog", "legal-article", input.slug, input.category].filter(Boolean),
     customMetadata: {
       seoAlt: alt.slice(0, 180),
       seoTitle: input.title.slice(0, 100),
       caption: input.excerpt.slice(0, 300),
-      imageRole: 'article',
+      imageRole: "article",
       creator,
       creditText: creator,
       copyrightNotice: `© ${creator}`,
@@ -191,24 +204,33 @@ function imageMetadata(input: BlogImageMetadata): AssetMetadata {
 
 export async function uploadBlogImage(
   file: File,
-  metadata: BlogImageMetadata
+  metadata: BlogImageMetadata,
 ): Promise<{ fileId: string; path: string; url: string }> {
-  if (!file.type.startsWith('image/')) throw new Error('INVALID_IMAGE_TYPE');
-  if (file.size > 5 * 1024 * 1024) throw new Error('IMAGE_TOO_LARGE');
+  if (!file.type.startsWith("image/")) throw new Error("INVALID_IMAGE_TYPE");
+  if (file.size > 5 * 1024 * 1024) throw new Error("IMAGE_TOO_LARGE");
 
-  const extension = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
-  const uploaded = await uploadAsset('public', file, {
+  const extension =
+    file.name
+      .split(".")
+      .pop()
+      ?.toLowerCase()
+      .replace(/[^a-z0-9]/g, "") || "jpg";
+  const uploaded = await uploadAsset("public", file, {
     fileName: `${metadata.slug || crypto.randomUUID()}.${extension}`,
     folder: String(new Date().getFullYear()),
     ...imageMetadata(metadata),
   });
 
-  return { fileId: uploaded.fileId, path: uploaded.filePath, url: uploaded.url };
+  return {
+    fileId: uploaded.fileId,
+    path: uploaded.filePath,
+    url: uploaded.url,
+  };
 }
 
 export async function updateBlogImageMetadata(
   fileId: string | null,
-  metadata: BlogImageMetadata
+  metadata: BlogImageMetadata,
 ): Promise<void> {
   if (!fileId) return;
   await updateAssetMetadata(fileId, imageMetadata(metadata));
@@ -219,9 +241,11 @@ export async function removeBlogImage(fileId: string | null): Promise<void> {
 }
 
 function toPostgresTextArray(urls: string[] | undefined | null): string {
-  if (!urls || urls.length === 0) return '{}';
-  const escaped = urls.map((url) => `"${url.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`);
-  return `{${escaped.join(',')}}`;
+  if (!urls || urls.length === 0) return "{}";
+  const escaped = urls.map(
+    (url) => `"${url.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`,
+  );
+  return `{${escaped.join(",")}}`;
 }
 
 export async function createBlogPost(input: BlogPostInput): Promise<BlogPost> {
@@ -244,7 +268,10 @@ export async function createBlogPost(input: BlogPostInput): Promise<BlogPost> {
   return map(row);
 }
 
-export async function updateBlogPost(id: number, input: BlogPostInput): Promise<BlogPost> {
+export async function updateBlogPost(
+  id: number,
+  input: BlogPostInput,
+): Promise<BlogPost> {
   const sourceUrlsLiteral = toPostgresTextArray(input.sourceUrls);
   const [row] = await db<Row[]>`
     update blog_posts set
@@ -282,7 +309,7 @@ export function slugify(title: string): string {
   return title
     .trim()
     .toLowerCase()
-    .replace(/['"]/g, '')
-    .replace(/[^\p{L}\p{N}]+/gu, '-')
-    .replace(/^-+|-+$/g, '');
+    .replace(/['"]/g, "")
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
+    .replace(/^-+|-+$/g, "");
 }

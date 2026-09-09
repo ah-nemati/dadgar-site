@@ -1,18 +1,18 @@
-import { scrypt } from 'node:crypto';
-import postgres from 'postgres';
-import { loadEnvFile } from 'node:process';
+import { scrypt } from "node:crypto";
+import postgres from "postgres";
+import { loadEnvFile } from "node:process";
 
 try {
-  loadEnvFile('.env.local');
+  loadEnvFile(".env.local");
 } catch (error) {
-  if (error?.code !== 'ENOENT') throw error;
+  if (error?.code !== "ENOENT") throw error;
 }
 
 const connectionString = process.env.DATABASE_URL;
-if (!connectionString) throw new Error('DATABASE_URL is required.');
+if (!connectionString) throw new Error("DATABASE_URL is required.");
 
 const sql = postgres(connectionString, {
-  ssl: process.env.DATABASE_SSL === 'false' ? false : 'require',
+  ssl: process.env.DATABASE_SSL === "false" ? false : "require",
   max: 1,
   prepare: false,
 });
@@ -23,11 +23,11 @@ const SCRYPT_P = 1;
 const SCRYPT_MAXMEM = 32 * 1024 * 1024;
 
 function validateBootstrapPassword(name, value) {
-  if (!value) return '';
+  if (!value) return "";
   if (
     value.length < 12 ||
     value.length > 128 ||
-    value.startsWith('replace-with-')
+    value.startsWith("replace-with-")
   ) {
     throw new Error(
       `${name} must contain 12 to 128 non-placeholder characters.`,
@@ -57,17 +57,11 @@ function deriveScrypt(password, salt) {
 async function hashPassword(password) {
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const hash = await deriveScrypt(password, salt);
-  const encode = (value) => Buffer.from(value).toString('base64url');
+  const encode = (value) => Buffer.from(value).toString("base64url");
   return `scrypt-v1$${SCRYPT_N}$${SCRYPT_R}$${SCRYPT_P}$${encode(salt)}$${encode(hash)}`;
 }
 
-async function upsertBootstrapUser({
-  email,
-  password,
-  name,
-  phone,
-  role,
-}) {
+async function upsertBootstrapUser({ email, password, name, phone, role }) {
   const normalizedEmail = email.trim().toLowerCase();
   const [existing] = await sql`
     select id, password_hash, status
@@ -78,8 +72,8 @@ async function upsertBootstrapUser({
   if (existing) {
     const shouldSetInitialPassword =
       passwordHash &&
-      (existing.status === 'PASSWORD_RESET_REQUIRED' ||
-        existing.password_hash === '!RESET_REQUIRED!');
+      (existing.status === "PASSWORD_RESET_REQUIRED" ||
+        existing.password_hash === "!RESET_REQUIRED!");
 
     if (shouldSetInitialPassword) {
       await sql`
@@ -103,9 +97,9 @@ async function upsertBootstrapUser({
     insert into users (
       id, email, password_hash, name, phone, role, status, password_changed_at
     ) values (
-      ${id}, ${normalizedEmail}, ${passwordHash ?? '!RESET_REQUIRED!'},
+      ${id}, ${normalizedEmail}, ${passwordHash ?? "!RESET_REQUIRED!"},
       ${name}, ${phone}, ${role},
-      ${passwordHash ? 'ACTIVE' : 'PASSWORD_RESET_REQUIRED'},
+      ${passwordHash ? "ACTIVE" : "PASSWORD_RESET_REQUIRED"},
       ${passwordHash ? new Date() : null}
     )
   `;
@@ -114,11 +108,13 @@ async function upsertBootstrapUser({
 
 const posts = [
   {
-    slug: 'راهنمای-اولیه-مشاوره-حقوقی',
-    title: 'برای جلسه نخست مشاوره حقوقی چه مدارکی همراه داشته باشیم؟',
-    category: 'راهنمای حقوقی',
-    excerpt: 'چک‌لیستی کوتاه برای آماده‌سازی مدارک، قراردادها و پرسش‌های جلسه مشاوره.',
-    content: 'برای استفاده بهتر از زمان جلسه، اصل یا تصویر خوانای قراردادها، مکاتبات، ابلاغیه‌ها و یک خط زمانی کوتاه از رویدادها را همراه داشته باشید. همچنین پرسش‌های اصلی خود را از قبل یادداشت کنید.',
+    slug: "راهنمای-اولیه-مشاوره-حقوقی",
+    title: "برای جلسه نخست مشاوره حقوقی چه مدارکی همراه داشته باشیم؟",
+    category: "راهنمای حقوقی",
+    excerpt:
+      "چک‌لیستی کوتاه برای آماده‌سازی مدارک، قراردادها و پرسش‌های جلسه مشاوره.",
+    content:
+      "برای استفاده بهتر از زمان جلسه، اصل یا تصویر خوانای قراردادها، مکاتبات، ابلاغیه‌ها و یک خط زمانی کوتاه از رویدادها را همراه داشته باشید. همچنین پرسش‌های اصلی خود را از قبل یادداشت کنید.",
   },
 ];
 
@@ -131,15 +127,15 @@ for (const post of posts) {
 }
 
 const lawyerPassword = validateBootstrapPassword(
-  'INITIAL_LAWYER_PASSWORD',
-  process.env.INITIAL_LAWYER_PASSWORD || '',
+  "INITIAL_LAWYER_PASSWORD",
+  process.env.INITIAL_LAWYER_PASSWORD || "",
 );
 const lawyerId = await upsertBootstrapUser({
-  email: process.env.INITIAL_LAWYER_EMAIL || 'savari.vakil2023@gmail.com',
+  email: process.env.INITIAL_LAWYER_EMAIL || "",
   password: lawyerPassword,
-  name: 'مجید سواری',
-  phone: process.env.INITIAL_LAWYER_PHONE || '09168038640',
-  role: 'LAWYER',
+  name: " ",
+  phone: process.env.INITIAL_LAWYER_PHONE || "",
+  role: "LAWYER",
 });
 
 await sql`
@@ -147,7 +143,7 @@ await sql`
   values (
     ${lawyerId},
     '2306',
-    ${['کارشناسی ارشد حقوق خصوصی', 'کارشناسی ارشد زبان و ادبیات عربی']}
+    ${["کارشناسی ارشد حقوق خصوصی", "کارشناسی ارشد زبان و ادبیات عربی"]}
   )
   on conflict (user_id) do update
   set license_number = excluded.license_number,
@@ -156,19 +152,21 @@ await sql`
 
 if (process.env.INITIAL_ADMIN_EMAIL && process.env.INITIAL_ADMIN_PASSWORD) {
   const adminPassword = validateBootstrapPassword(
-    'INITIAL_ADMIN_PASSWORD',
+    "INITIAL_ADMIN_PASSWORD",
     process.env.INITIAL_ADMIN_PASSWORD,
   );
   await upsertBootstrapUser({
     email: process.env.INITIAL_ADMIN_EMAIL,
     password: adminPassword,
-    name: process.env.INITIAL_ADMIN_NAME || 'مدیر سایت',
-    phone: process.env.INITIAL_ADMIN_PHONE || '09120000000',
-    role: 'ADMIN',
+    name: process.env.INITIAL_ADMIN_NAME || "مدیر سایت",
+    phone: process.env.INITIAL_ADMIN_PHONE || "09120000000",
+    role: "ADMIN",
   });
 } else {
-  console.warn('Initial admin was not created: set INITIAL_ADMIN_EMAIL and INITIAL_ADMIN_PASSWORD before running db:seed.');
+  console.warn(
+    "Initial admin was not created: set INITIAL_ADMIN_EMAIL and INITIAL_ADMIN_PASSWORD before running db:seed.",
+  );
 }
 
-console.log('Seed completed.');
+console.log("Seed completed.");
 await sql.end();
